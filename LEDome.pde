@@ -45,34 +45,35 @@ static class LEDome extends LXModel {
     
     private void plotLightsOnFace(HE_Face face) {
       WB_Point faceCenter = face.getFaceCenter();          
-      HE_Vertex topVertex = findTopVertex(face);
-      HE_Vertex currVertex = topVertex;
+      HE_Vertex isocVertex = findIsocVertex(face);
+      HE_Vertex currVertex = isocVertex;
       WB_Transform moveTowardCenter = new WB_Transform();
-      HE_Halfedge currHalfedge = topVertex.getHalfedge(face);
+      HE_Halfedge currHalfedge = isocVertex.getHalfedge(face);
+      HE_FaceEdgeCirculator fecr = new  HE_FaceEdgeCirculator(face);    
                            
       do {                       
         moveTowardCenter.clear();        
         moveTowardCenter.addTranslate(.3, new WB_Vector(currVertex.getPoint(), faceCenter));         
         WB_Point vertexPoint = currVertex.getPoint().apply(moveTowardCenter);  
-        addPoint(new LXPoint(vertexPoint.xf(), vertexPoint.yf(), vertexPoint.zf()));        
+        addPoint(new LXPoint(vertexPoint.xf(), vertexPoint.yf(), vertexPoint.zf()));                
         
         moveTowardCenter.clear();
         moveTowardCenter.addTranslate(.3, new WB_Vector(currHalfedge.getEdgeCenter(), faceCenter));
         WB_Point edgeCenterPoint = currHalfedge.getEdgeCenter().apply(moveTowardCenter);
         addPoint(new LXPoint(edgeCenterPoint.xf(), edgeCenterPoint.yf(), edgeCenterPoint.zf()));
               
-        currHalfedge = currHalfedge.getNextInFace().getNextInFace();      
+        currHalfedge = currHalfedge.getPrevInFace().getPrevInFace();      
         currVertex = currHalfedge.getVertex();
         
-      } while(currVertex != topVertex);      
+      } while(currVertex != isocVertex);      
     }
     
     private HE_Vertex findTopVertex(HE_Face face) {
       List<HE_Vertex> vertices = face.getFaceVertices();
       HE_Vertex topVertex = vertices.get(0);
-      HE_Vertex currVertex;
+      HE_Vertex currVertex;                 
       
-      for( int i = 1; i < vertices.size(); i++) {       
+      for(int i = 1; i < vertices.size(); i++) {       
         currVertex = vertices.get(i);
         
         if (currVertex.yd() > topVertex.yd()) {
@@ -81,6 +82,49 @@ static class LEDome extends LXModel {
       }
   
       return topVertex;    
+    }
+    
+    private HE_Vertex findIsocVertex(HE_Face face) {
+      List<HE_Vertex> vertices = face.getFaceVertices();            
+      HE_Vertex currVertex = vertices.get(0);
+      HE_Vertex otherVertex;      
+      HE_Vertex isocVertex = null;     
+      WB_Point currPoint;
+      WB_Point otherPoint;
+      float dist1;
+      float dist2;      
+      float distanceDiff;
+      float minDistanceDiff = DOME_RADIUS;
+            
+      for(int i = 0; i < vertices.size(); i++) {       
+        currVertex = vertices.get(i);
+        currPoint = currVertex.getPoint();        
+        dist1 = dist2 = 0.0;
+        
+        for (int j = 0; j < vertices.size(); j++) {         
+          if(i == j) { continue; }
+          
+          otherVertex = vertices.get(j);
+          otherPoint = otherVertex.getPoint();
+          if(dist1 == 0.0) {
+            dist1 = dist(currPoint.xf(), currPoint.yf(), currPoint.zf(), otherPoint.xf(), otherPoint.yf(), otherPoint.zf());
+          } else {
+            dist2 = dist(currPoint.xf(), currPoint.yf(), currPoint.zf(), otherPoint.xf(), otherPoint.yf(), otherPoint.zf());
+          }            
+        }
+                
+        println("vertex " + i + ", dist1: " + dist1 + ", dist2: " + dist2);
+        distanceDiff = abs(dist1 - dist2);
+        if (minDistanceDiff > distanceDiff) {
+          minDistanceDiff = distanceDiff;          
+          isocVertex = currVertex;
+          
+          // Can break if the distances are exactly the same.
+          if (distanceDiff == 0.0) { break; }
+        }
+      }
+      
+      return isocVertex;
     }
     
     private void buildGeodome() {    
