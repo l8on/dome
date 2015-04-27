@@ -6,7 +6,7 @@ import java.util.List;
  * of points. The model contains just one fixture.
  */
 static class LEDome extends LXModel {  
-  private LEDomeLights domelights;  
+  private LEDomeLights domelights;
   
   public static final float DOME_RADIUS = 5.5 * FEET;  
   
@@ -17,6 +17,16 @@ static class LEDome extends LXModel {
     
   public static final ArrayList<Integer> NO_LIGHT_FACES = new ArrayList<Integer>(Arrays.asList(16, 17, 18, 47, 48, 49, 75, 76));
     
+  public static final ArrayList<Integer> FACE_LIST_0 = new ArrayList<Integer>(Arrays.asList(20, 19, 50, 51, 78, 77, 95, 96, 104));  
+  public static final ArrayList<Integer> FACE_LIST_1 = new ArrayList<Integer>(Arrays.asList(21, 22, 23, 54, 53, 52, 80, 79, 97, 98));
+  public static final ArrayList<Integer> FACE_LIST_2 = new ArrayList<Integer>(Arrays.asList(25, 24, 56, 55, 81, 82, 83, 84, 99, 100));
+  public static final ArrayList<Integer> FACE_LIST_3 = new ArrayList<Integer>(Arrays.asList(26, 27, 28, 58, 57, 59, 60, 61, 86, 85));
+  public static final ArrayList<Integer> FACE_LIST_4 = new ArrayList<Integer>(Arrays.asList(1, 0, 29, 30, 31, 32, 63, 62, 87, 101));
+  public static final ArrayList<Integer> FACE_LIST_5 = new ArrayList<Integer>(Arrays.asList(2, 3, 4, 34, 33, 35, 65, 64, 88, 89));
+  public static final ArrayList<Integer> FACE_LIST_6 = new ArrayList<Integer>(Arrays.asList(7, 6, 5, 36, 37, 38, 66, 67, 90, 102));
+  public static final ArrayList<Integer> FACE_LIST_7 = new ArrayList<Integer>(Arrays.asList(8, 9, 10, 41, 40, 39, 68, 69, 70, 91));
+  public static final ArrayList<Integer> FACE_LIST_8 = new ArrayList<Integer>(Arrays.asList(13, 12, 11, 42, 43, 44, 73, 72, 71, 92));
+  public static final ArrayList<Integer> FACE_LIST_9 = new ArrayList<Integer>(Arrays.asList(14, 15, 46, 45, 74, 94, 93, 103));
 
   public LEDome() {
     super(new LEDomeLights());
@@ -33,6 +43,7 @@ static class LEDome extends LXModel {
   
   private static class LEDomeLights extends LXAbstractFixture {    
     public HE_Mesh geodome;
+    public ArrayList<List<Integer>> lightStringFaceLists = new ArrayList<List<Integer>>();
     public List<LEDomeFace> faces = new ArrayList<LEDomeFace>();
         
     public static final double LIGHT_OFFSET = 5;
@@ -40,11 +51,58 @@ static class LEDome extends LXModel {
     private LEDomeLights() {
        buildGeodome();
        createLEDFaces();
-       // Here's the core loop where we generate the positions
-       // of the points in our model
+       initializeLightStringFaceLists();       
        plotLightsOnDome();
     }
     
+    private void buildGeodome() {    
+      HEC_Geodesic creator = new HEC_Geodesic();  
+      creator.setRadius(DOME_RADIUS); 
+      
+      // http://stackoverflow.com/questions/3031875/math-for-a-geodesic-sphere
+      // N=B+C=number of divisions
+      // B=N and C=0 or B=0 and C=N: class I
+      // B=C=N/2: class II
+      // Other: class III 
+      creator.setB(3);
+      creator.setC(0);
+    
+      // class I, II and III: TETRAHEDRON,OCTAHEDRON,ICOSAHEDRON
+      // class II only: CUBE, DODECAHEDRON
+      creator.setType(HEC_Geodesic.ICOSAHEDRON);
+      creator.setCenter(0, 0, 0);
+      
+      // Make the ZAxis the YAxis. Will generate with correct "top"
+      creator.setZAxis(0, 1, 0);
+      HE_Mesh geosphere = new HE_Mesh(creator); 
+        
+      HE_Selection selection = new HE_Selection(geosphere);
+      HE_FaceIterator fItr = new HE_FaceIterator(geosphere);    
+      
+      while (fItr.hasNext()) {
+        HE_Face face = fItr.next();
+        if (face.getFaceCenter().yd() > -5 * INCHES) {        
+          selection.add(face);
+        }
+      }
+      
+      geodome = selection.getAsMesh();
+      println("numFaces: " + geodome.getNumberOfFaces());     
+    }
+             
+    private void initializeLightStringFaceLists() {      
+      lightStringFaceLists.add(FACE_LIST_0);
+      lightStringFaceLists.add(FACE_LIST_1);
+      lightStringFaceLists.add(FACE_LIST_2);
+      lightStringFaceLists.add(FACE_LIST_3);
+      lightStringFaceLists.add(FACE_LIST_4);
+      lightStringFaceLists.add(FACE_LIST_5);
+      lightStringFaceLists.add(FACE_LIST_6);
+      lightStringFaceLists.add(FACE_LIST_7);
+      lightStringFaceLists.add(FACE_LIST_8);
+      lightStringFaceLists.add(FACE_LIST_9);      
+    }
+       
     private void createLEDFaces() {
       int currDirection = DIRECTION_RIGHT;
       HE_Face currFace = getFirstFace();
@@ -62,7 +120,7 @@ static class LEDome extends LXModel {
 
         currFace = nextFace;        
       }
-    }
+    }       
     
     private HE_Face getNextFaceInDirection(HE_Face face, int direction) {
       List<HE_Face> neighborFaces = face.getNeighborFaces();                  
@@ -172,24 +230,15 @@ static class LEDome extends LXModel {
       return firstFace;      
     }
     
-    private void plotLightsOnDome() {    
-       for(int i = 0; i < faces.size(); i++) {
-         if (NO_LIGHT_FACES.contains(i)) {
-           continue;  
-         }
-         
-         plotLightsOnFace(faces.get(i));    
-       }
-      
-//      HE_FaceIterator fItr = new HE_FaceIterator(geodome);
-//      
-//      while (fItr.hasNext()) {
-//        HE_Face face = fItr.next();
-//        
-//        plotLightsOnFace(face);
-//      }      
+    private void plotLightsOnDome() {          
+      for (int i = 0; i < lightStringFaceLists.size(); i++) {
+        List<Integer> faceList = lightStringFaceLists.get(i);
         
-
+        for(int j = 0; j < faceList.size(); j++) {
+          int index = faceList.get(j);
+          plotLightsOnFace(faces.get(index));   
+        }
+      }
     }
     
     private void plotLightsOnFace(LEDomeFace face) {      
@@ -280,47 +329,7 @@ static class LEDome extends LXModel {
       }
       
       return isocVertex;
-    }
-    
-    private void buildGeodome() {    
-      HEC_Geodesic creator = new HEC_Geodesic();  
-      creator.setRadius(DOME_RADIUS); 
-      
-      // http://stackoverflow.com/questions/3031875/math-for-a-geodesic-sphere
-      // N=B+C=number of divisions
-      // B=N and C=0 or B=0 and C=N: class I
-      // B=C=N/2: class II
-      // Other: class III 
-      creator.setB(3);
-      creator.setC(0);
-    
-      // class I, II and III: TETRAHEDRON,OCTAHEDRON,ICOSAHEDRON
-      // class II only: CUBE, DODECAHEDRON
-      creator.setType(HEC_Geodesic.ICOSAHEDRON);
-      creator.setCenter(0, 0, 0);
-      
-      // Make the ZAxis the YAxis. Will generate with correct "top"
-      creator.setZAxis(0, 1, 0);
-      HE_Mesh geosphere = new HE_Mesh(creator); 
-        
-      HE_Selection selection = new HE_Selection(geosphere);
-      HE_FaceIterator fItr = new HE_FaceIterator(geosphere);    
-      
-      while (fItr.hasNext()) {
-        HE_Face face = fItr.next();
-        if (face.getFaceCenter().yd() > -5 * INCHES) {        
-          selection.add(face);
-        }
-      }
-      
-      geodome = selection.getAsMesh();
-      println("numFaces: " + geodome.getNumberOfFaces());
-      
-//      HEM_Lattice lattice = new HEM_Lattice().setDepth(LATTICE_DEPTH).setWidth(LATTICE_WIDTH);
-//      geodome.modify(lattice);
-      
-//      println("numFaces: " + geodome.getNumberOfFaces());
-    }
+    }       
   }
   
   private static class LEDomeFace {

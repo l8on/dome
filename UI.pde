@@ -11,15 +11,8 @@ class UIDome extends UI3dComponent {
     stroke(5);
     render.drawEdges(geodome);
     
-//    stroke(1);
-    int numFaces = geodome.getNumberOfFaces();
-    HE_Face currentFace;
-    WB_Point faceCenter;
-    
-    labelFaces(geodome);
-        
-    // noStroke();
-    // render.drawFaces(geodome);   
+//    stroke(1);    
+//    labelFaces(geodome);             
   }
   
   private void labelFaces(HE_Mesh geodome) {  
