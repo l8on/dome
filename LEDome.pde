@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -13,6 +14,9 @@ static class LEDome extends LXModel {
   public static final int DIRECTION_FORWARD = 1;
   public static final int DIRECTION_LEFT = 2;
   public static final int DIRECTION_BACK = 3;
+    
+  public static final ArrayList<Integer> NO_LIGHT_FACES = new ArrayList<Integer>(Arrays.asList(16, 17, 18, 47, 48, 49, 75, 76));
+    
 
   public LEDome() {
     super(new LEDomeLights());
@@ -170,6 +174,10 @@ static class LEDome extends LXModel {
     
     private void plotLightsOnDome() {    
        for(int i = 0; i < faces.size(); i++) {
+         if (NO_LIGHT_FACES.contains(i)) {
+           continue;  
+         }
+         
          plotLightsOnFace(faces.get(i));    
        }
       
