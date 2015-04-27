@@ -12,22 +12,30 @@ class UIDome extends UI3dComponent {
     render.drawEdges(geodome);
     
 //    stroke(1);
-//    int numFaces = geodome.getNumberOfFaces();
-//    HE_Face currentFace;
-//    WB_Point faceCenter;
-  
-//    for(int i = 0; i < numFaces; i++) {
-//    for(int i = 0; i < 40; i++) {
-//      currentFace = geodome.getFaceByIndex(i);
-//      faceCenter = currentFace.getFaceCenter();
-//      pushMatrix();    
-//      text(i, faceCenter.xf(), faceCenter.yf(), faceCenter.zf());
-//      popMatrix();    
-//    } 
-
+    int numFaces = geodome.getNumberOfFaces();
+    HE_Face currentFace;
+    WB_Point faceCenter;
     
+    labelFaces(geodome);
+        
     // noStroke();
     // render.drawFaces(geodome);   
+  }
+  
+  private void labelFaces(HE_Mesh geodome) {  
+    int numFaces = geodome.getNumberOfFaces();
+    HE_Face currentFace;
+    WB_Point faceCenter;  
+    
+    for(int i = 0; i < numFaces; i++) {    
+      currentFace = geodome.getFaceByIndex(i);
+      faceCenter = currentFace.getFaceCenter();
+      if (currentFace.getLabel() != -1) {
+        pushMatrix();    
+        text(currentFace.getLabel(), faceCenter.xf(), faceCenter.yf(), faceCenter.zf());
+        popMatrix();
+      }
+    }      
   }
 }
 
