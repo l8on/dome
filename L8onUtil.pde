@@ -16,24 +16,26 @@ class L8onWave {
   }
 }
 
-class L8onSpotLight {  
+class L8onSpotLight {   
   float center_x;
   float center_z;
   float dest_x;
   float dest_z;  
+  float hue_value;
+  float min_dist;
   float time_at_dest_ms;
-  float hue_value;  
+    
   
-  public L8onSpotLight(float center_x, float center_z, float dest_x, float dest_z) {
+  public L8onSpotLight(float center_x, float center_z, float dest_x, float dest_z, float min_dist) {
     this.time_at_dest_ms = 0.0;
     this.center_x = center_x;
     this.center_z = center_z;
     this.dest_x = dest_x;
     this.dest_z = dest_z;
+    this.min_dist = min_dist;
   }
   
-  public void setDestination(float dest_x, float dest_z) {
-    println("setting new destination: x: " + dest_x + ", z: " + dest_z); 
+  public void setDestination(float dest_x, float dest_z) {    
     this.dest_x = dest_x;
     this.dest_z = dest_z;
     this.time_at_dest_ms = 0.0;

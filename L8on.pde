@@ -1,29 +1,36 @@
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 class SpotLights extends LXPattern {
   // Used to store info about each wave.
   // See L8onUtil.pde for the definition.
-  private List<L8onSpotLight> spotlights = new LinkedList<L8onSpotLight>();  
+  private List<L8onSpotLight> spotlights = new ArrayList<L8onSpotLight>();  
   
   // Controls the radius of the spotlights.
   private BasicParameter radiusParameter = new BasicParameter("RAD", 2 * FEET, 1.0, model.xRange / 2.0);
   private BasicParameter numLightsParameter = new BasicParameter("NUM", 2.0, 1.0, 30.0);
+  private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);
+  private BasicParameter saturationParameter = new BasicParameter("SAT", 0, 0, 100);
+  
   private BasicParameter rateParameter = new BasicParameter("RATE", 1500.0, 1.0, 5000.0);  
   private BasicParameter restParameter = new BasicParameter("REST", 900.0, 1.0, 10000.0);
   private BasicParameter delayParameter = new BasicParameter("DELAY", 0, 0.0, 2000.0);
-  private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);
-  private BasicParameter saturationParameter = new BasicParameter("SAT", 0, 0, 100);
+  private BasicParameter minDistParameter = new BasicParameter("DIST", 100.0, 1.0, model.xRange);
+  
+  
  
   public SpotLights(LX lx) {
     super(lx);
     
     addParameter(radiusParameter);
     addParameter(numLightsParameter);
+    addParameter(brightnessParameter);
+    addParameter(saturationParameter);
+    
     addParameter(rateParameter);
     addParameter(restParameter);
     addParameter(delayParameter);
-    addParameter(brightnessParameter);
-    addParameter(saturationParameter);    
+    addParameter(minDistParameter);
     
     initL8onSpotlights();
   }
@@ -43,7 +50,7 @@ class SpotLights extends LXPattern {
       dist_from_dest = spotlight.distFromDestination();
       
       if (dist_from_dest == 0.0) {
-        if(spotlight.time_at_dest_ms > restParameter.getValuef()) {
+        if(spotlight.time_at_dest_ms > restParameter.getValuef()) {          
           spotlight.setDestination(model.xMin + random(model.xRange), model.zMin + random(model.zRange));      
         } else {
           spotlight.addTimeAtDestination((float)deltaMs);  
@@ -109,16 +116,24 @@ class SpotLights extends LXPattern {
    */
   private void initL8onSpotlights() {    
     int num_spotlights = (int) numLightsParameter.getValue();
+    if (this.spotlights.size() == num_spotlights) {
+      return;
+    }
     
-    if (this.spotlights.size() != num_spotlights) {    
-      this.spotlights = new LinkedList<L8onSpotLight>();
+    if (this.spotlights.size() < num_spotlights) {
+      float min_dist = minDistParameter.getValuef();
       
-      for(int i = 0; i < num_spotlights; i++) {        
+      for(int i = 0; i < (num_spotlights - this.spotlights.size()); i++) {
         this.spotlights.add(
           new L8onSpotLight(model.xMin + random(model.xRange), model.yMin + random(model.yRange), 
-                            model.xMin + random(model.xRange), model.yMin + random(model.yRange))
-        );   
-      } 
+                            model.xMin + random(model.xRange), model.yMin + random(model.yRange),
+                            min_dist)
+        );  
+      }  
+    } else {
+      for(int i = (this.spotlights.size() - 1); i >= num_spotlights; i--) {
+        this.spotlights.remove(i);  
+      }
     }
   }
 }
