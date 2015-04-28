@@ -5,9 +5,9 @@ import java.util.List;
  * This is a very basic model class that is a 3-D matrix
  * of points. The model contains just one fixture.
  */
-static class LEDome extends LXModel {  
+static class LEDome extends LXModel {
   private LEDomeLights domelights;
-  
+
   public static final float DOME_RADIUS = 5.5 * FEET;  
   
   public static final int DIRECTION_RIGHT = 0;
@@ -103,14 +103,14 @@ static class LEDome extends LXModel {
       lightStringFaceLists.add(FACE_LIST_6);
       lightStringFaceLists.add(FACE_LIST_7);
       lightStringFaceLists.add(FACE_LIST_8);
-      lightStringFaceLists.add(FACE_LIST_9);      
+      lightStringFaceLists.add(FACE_LIST_9);
     }
-       
+
     private void createLEDFaces() {
       int currDirection = DIRECTION_RIGHT;
       HE_Face currFace = getFirstFace();
-      HE_Face nextFace;      
-      
+      HE_Face nextFace;
+
       for (int i = 0; i < geodome.getNumberOfFaces(); i++) {        
         faces.add(new LEDomeFace(currFace));
         currFace.setLabel(i);            
@@ -275,23 +275,7 @@ static class LEDome extends LXModel {
         
       } while(currVertex != isocVertex);      
     }
-    
-    private HE_Vertex findTopVertex(HE_Face face) {
-      List<HE_Vertex> vertices = face.getFaceVertices();
-      HE_Vertex topVertex = vertices.get(0);
-      HE_Vertex currVertex;                 
-      
-      for(int i = 1; i < vertices.size(); i++) {       
-        currVertex = vertices.get(i);
         
-        if (currVertex.yd() > topVertex.yd()) {
-          topVertex = currVertex;
-        }
-      }
-  
-      return topVertex;    
-    }
-    
     private HE_Vertex findIsocVertex(HE_Face face) {
       List<HE_Vertex> vertices = face.getFaceVertices();            
       HE_Vertex currVertex = vertices.get(0);
@@ -337,20 +321,20 @@ static class LEDome extends LXModel {
   
   private static class LEDomeFace {
     public HE_Face he_face;
-    public List<LXPoint> points;     
- 
+    public List<LXPoint> points;
+
     public LEDomeFace(HE_Face face) {
-      he_face = face;      
+      he_face = face;
     }
-    
+
     public LEDomeFace(HE_Face face, List<LXPoint> lxPoints) {
       he_face = face;
-      points = lxPoints; 
+      points = lxPoints;
     }
-    
+
     public void setPoints(List<LXPoint> lxPoints) {
-      points = lxPoints;  
-    }    
+      points = lxPoints;
+    }
   }
 }
 

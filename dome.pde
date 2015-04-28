@@ -38,16 +38,20 @@ void setup() {
   lx = new P2LX(this, model);  
   setupPatterns();
   setupUI();
-//  setupOutput();
+  setupOutput();
   
   render = new WB_Render(this);  
 }
 
 void setupPatterns() {
   lx.setPatterns(new LXPattern[] {
-    new LayerDemoPattern(lx),
-    new IteratorTestPattern(lx).setTransition(new DissolveTransition(lx)),
-    new L8onMixColor(lx)
+    // Create New Pattern Instances HERE
+    
+    // L8on
+    new SpotLights(lx),
+    new L8onMixColor(lx),    
+    new LayerDemoPattern(lx),    
+    new IteratorTestPattern(lx).setTransition(new DissolveTransition(lx))    
   });  
 }
 
