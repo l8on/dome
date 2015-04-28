@@ -1,4 +1,3 @@
-import artnetP5.*;
 import wblut.math.*;
 import wblut.processing.*;
 import wblut.core.*;
@@ -9,6 +8,7 @@ import heronarts.lx.audio.*;
 import heronarts.lx.color.*;
 import heronarts.lx.model.*;
 import heronarts.lx.modulator.*;
+import heronarts.lx.output.*;
 import heronarts.lx.parameter.*;
 import heronarts.lx.pattern.*;
 import heronarts.lx.transition.*;
@@ -21,15 +21,33 @@ import processing.opengl.*;
 // Let's work in inches
 final static int INCHES = 1;
 final static int FEET = 12*INCHES;
+final static int NUM_CONNECTED_LIGHTS = 48;
 
 LEDome model;
 P2LX lx;
 WB_Render render;
 
-void setupPatters() {
+void setup() {
+  size(800, 600, OPENGL);
+  smooth(8);
+  textSize(6);
+  
+  model = new LEDome();
+  
+  // Create the P2LX engine
+  lx = new P2LX(this, model);  
+  setupPatterns();
+  setupUI();
+//  setupOutput();
+  
+  render = new WB_Render(this);  
+}
+
+void setupPatterns() {
   lx.setPatterns(new LXPattern[] {
     new LayerDemoPattern(lx),
     new IteratorTestPattern(lx).setTransition(new DissolveTransition(lx)),
+    new L8onMixColor(lx)
   });  
 }
 
@@ -77,76 +95,26 @@ void setupUI() {
   lx.ui.addLayer(new UIComponentsDemo(lx.ui, width-144, 4));
 }
 
-int B, C;
-void setup() {
-  size(800, 600, OPENGL);
-  smooth(8);
-  textSize(6);
+void setupOutput() {
+  int[] points = new int[NUM_CONNECTED_LIGHTS];
+  for (int i = 0; i < points.length; ++i) {
+    points[i] = i;
+  }
   
-  model = new LEDome();
-  
-  // Create the P2LX engine
-  lx = new P2LX(this, model);  
-  setupPatters();
-  setupUI();
-  
-  render = new WB_Render(this);  
+  try {
+    LXDatagramOutput output = new LXDatagramOutput(lx);
+    DDPDatagram datagram = (DDPDatagram)new DDPDatagram(points).setAddress("10.0.0.116"); // whatever the IP is
+    output.addDatagram(datagram);
+    lx.addOutput(output);
+  } catch (Exception x) {
+    x.printStackTrace();
+  }  
 }
 
 void draw() {
-  background(#292929);
+  background(#292929);  
 }
 
 void mousePressed() {
-  println("mouseX:" + mouseX + ", mouseY: " + mouseY);
-  println("number_of_faces:" + model.getLEDomeMesh().getNumberOfFaces());
-  println("model_points:" + model.points.size());
+  println("mouseX:" + mouseX + ", mouseY: " + mouseY);  
 }
-
-
-//ArtnetP5 artnet;
-//PImage img;
-//
-//void setup(){
-//  size(640, 480);
-//  artnet = new ArtnetP5();
-//  img = new PImage(24, 2, PApplet.RGB);
-//  print("width:" + img.width + "\n");
-//  print("height:" + img.height + "\n");
-//}
-//
-//void draw(){
-//  int r = mouseX % 255;
-//  int other_r = 255 - r;
-//  int g = mouseY % 255;
-//  int other_g = 255 - g;
-//  int b = (mouseX + mouseY) % 255;
-//  int other_b = 255 - b;
-//  color first_color = color(r, g, b);
-//  //color first_color = color(0, 173, 242);
-//  color other_color = color(other_r, other_g, other_b);
-//  //color other_color = color(4, 82, 111);
-//  color current_color;
-//
-//  noStroke();
-//  fill(first_color);
-//  rect(0, 0, width, height / 2);
-//
-//  fill(other_color);
-//  rect(0, height / 2, width, height / 2);
-//
-//  current_color = first_color;
-//  for(int i = 0; i < img.width; i++) {
-//    if (i % 2 == 0) {
-//      current_color = first_color;
-//    } else {
-//      current_color = other_color;
-//    }
-//
-//    for (int j = 0; j < img.height; j++) {
-//      img.set(i, j, current_color);
-//    }
-//  }
-//
-//  artnet.send(img.pixels, "10.0.0.116");
-//}

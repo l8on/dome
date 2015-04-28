@@ -3,13 +3,12 @@
  * concepts and tools of the LX framework.
  */
  
-class LayerDemoPattern extends LXPattern {
-  
+class LayerDemoPattern extends LXPattern {  
   private final BasicParameter colorSpread = new BasicParameter("Clr", 0.5, 0, 3);
   private final BasicParameter stars = new BasicParameter("Stars", 100, 0, 100);
   
   public LayerDemoPattern(LX lx) {
-    super(lx);
+    super(lx);        
     addParameter(colorSpread);
     addParameter(stars);
     addLayer(new CircleLayer(lx));
@@ -36,7 +35,7 @@ class LayerDemoPattern extends LXPattern {
     
     public void run(double deltaMs) {
       // The layers run automatically
-      float falloff = 100 / (4*FEET);
+      float falloff = 100 / (4*FEET);      
       for (LXPoint p : model.points) {
         float yWave = model.yRange/2 * sin(p.x / model.xRange * PI); 
         float distanceFromCenter = dist(p.x, p.y, model.cx, model.cy);
@@ -46,7 +45,7 @@ class LayerDemoPattern extends LXPattern {
           100,
           max(0, 100 - falloff*distanceFromBrightness)
         );
-      }
+      }           
     }
   }
   

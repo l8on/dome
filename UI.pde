@@ -11,7 +11,7 @@ class UIDome extends UI3dComponent {
     stroke(5);
     render.drawEdges(geodome);
     
-//    stroke(1);    
+//    stroke(1);
 //    labelFaces(geodome);             
   }
   
