@@ -14,7 +14,7 @@
  */ 
  
 LXPattern[] patterns(LX lx) {
-  return new LXPattern[] {
+  return new LXPattern[] {  
     // Create New Pattern Instances Below HERE
     
     // L8on

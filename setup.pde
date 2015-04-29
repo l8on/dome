@@ -17,30 +17,35 @@
 LEDome model;
 P2LX lx;
 WB_Render render;
+LEDomeOutputManager output_manager;
 
 /*
-*/
-
-void setupPatterns() {
-  lx.setPatterns(patterns(lx));  
-}
-
-
+ * Setup methods. Sets stuff up.
+ */
 void setup() {
   size(800, 600, OPENGL);
   smooth(8);
   textSize(6);
   
+  // Create LEDome instance
   model = new LEDome();
   
   // Create the P2LX engine
   lx = new P2LX(this, model);  
-  setupPatterns();
-  setupUI();
-//  setupOutput();
+  
+  // Create the NDB output manager
+  output_manager = new LEDomeOutputManager(lx);
+  
+  setupPatterns();  
+  setupUI();  
   
   render = new WB_Render(this);  
 }
+
+void setupPatterns() {
+  lx.setPatterns(patterns(lx));  
+}
+
 
 void setupUI() {
   lx.ui.addLayer(
@@ -83,23 +88,8 @@ void setupUI() {
   // A basic built-in 2-D control for a channel
   lx.ui.addLayer(new UIChannelControl(lx.ui, lx.engine.getChannel(0), 4, 4));
   lx.ui.addLayer(new UIEngineControl(lx.ui, 4, 326));
-  lx.ui.addLayer(new UIComponentsDemo(lx.ui, width-144, 4));
-}
-
-void setupOutput() {
-  int[] points = new int[NUM_CONNECTED_LIGHTS];
-  for (int i = 0; i < points.length; ++i) {
-    points[i] = i;
-  }
-  
-  try {
-    LXDatagramOutput output = new LXDatagramOutput(lx);
-    DDPDatagram datagram = (DDPDatagram)new DDPDatagram(points).setAddress("10.0.0.116"); // whatever the IP is
-    output.addDatagram(datagram);
-    lx.addOutput(output);
-  } catch (Exception x) {
-    x.printStackTrace();
-  }  
+  lx.ui.addLayer(new LEDomeNDBOutputControl(lx.ui, 4, 426));
+  lx.ui.addLayer(new LEDomeUIWindow(lx.ui, width-144, 4));    
 }
 
 void draw() {

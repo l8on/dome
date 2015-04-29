@@ -40,10 +40,61 @@ import java.util.LinkedList;
 // Let's work in inches
 final static int INCHES = 1;
 final static int FEET = 12*INCHES;
-final static int NUM_CONNECTED_LIGHTS = 48;
+
+// Let's work with human level times.
 final static int SECONDS = 1000;
 final static int MINUTES = 60 * SECONDS;
-final static int HOURS = 60 * MINUTES;
+
+// Configure the NDB and the number of connected lights.
+final static int NUM_CONNECTED_LIGHTS = 48;
+final static String NDB_IP_ADDRESS = "10.0.0.116";
+
+static class LEDomeOutputManager {
+  private P2LX lx;  
+  private boolean ndb_output_enabled;
+  private LXDatagramOutput ndb_output; 
+  
+  public LEDomeOutputManager(P2LX lx) {    
+    this.lx = lx;
+    this.ndb_output_enabled = false;
+  }  
+  
+  public void toggleNDBOutput() {
+    this.toggleNDBOutput(!this.ndb_output_enabled); 
+  }
+  
+  public void toggleNDBOutput(boolean enable) {    
+    if (enable) {
+      this.addLXOutputForNDB();
+    } else {
+      this.removeLXOutputForNDB();  
+    }
+    
+    this.ndb_output_enabled = enable;
+  }
+ 
+  private void addLXOutputForNDB() {    
+    int[] points = new int[NUM_CONNECTED_LIGHTS];
+    for (int i = 0; i < points.length; ++i) {
+      points[i] = i;
+    }
+    
+    try {
+      this.ndb_output = new LXDatagramOutput(this.lx);
+      DDPDatagram datagram = (DDPDatagram)new DDPDatagram(points).setAddress(NDB_IP_ADDRESS); // whatever the IP is
+      this.ndb_output.addDatagram(datagram);
+      this.lx.addOutput(this.ndb_output);
+    } catch (Exception x) {
+      x.printStackTrace();
+    }  
+  } 
+  
+  private void removeLXOutputForNDB() {
+    if (this.ndb_output != null) {
+      this.lx.removeOutput(this.ndb_output);  
+    }
+  }
+}
 
 /**
  * This is a very basic model class that is a 3-D matrix

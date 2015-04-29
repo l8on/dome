@@ -74,29 +74,31 @@ class UIEngineControl extends UIWindow {
   }
 }
 
-class UIComponentsDemo extends UIWindow {
-  
-  static final int NUM_KNOBS = 4; 
-  final BasicParameter[] knobParameters = new BasicParameter[NUM_KNOBS];  
-  
-  UIComponentsDemo(UI ui, float x, float y) {
-    super(ui, "UI COMPONENTS", x, y, 140, 10);
-    
-    for (int i = 0; i < knobParameters.length; ++i) {
-      knobParameters[i] = new BasicParameter("Knb" + (i+1), i+1, 0, 4);
-      knobParameters[i].addListener(new LXParameterListener() {
-        public void onParameterChanged(LXParameter p) {
-          println(p.getLabel() + " value:" + p.getValue());
-        }
-      });
-    }
+class LEDomeNDBOutputControl extends UIWindow { 
+  LEDomeNDBOutputControl(UI ui, float x, float y) {
+    super(ui, "NDB Output", x, y, UIChannelControl.WIDTH, 50);    
     
     y = UIWindow.TITLE_LABEL_HEIGHT;
     
-    new UIButton(4, y, width-8, 20)
-    .setLabel("Toggle Button")
+    new UIButton(4, y, width-8, 20) {
+      protected void onToggle(boolean enabled) {
+        println("Toggle NDB output: " + enabled);
+        output_manager.toggleNDBOutput(enabled);
+      }  
+    }
+    .setInactiveLabel("Output to NDB")
+    .setActiveLabel("Disconnect NDB")    
     .addToContainer(this);
-    y += 24;
+  }
+}
+
+class LEDomeUIWindow extends UIWindow {
+  public BooleanParameter outputNDBParameter = new BooleanParameter("NDB", false);  
+  
+  LEDomeUIWindow(UI ui, float x, float y) {
+    super(ui, "UI COMPONENTS", x, y, 140, 10);       
+        
+    y = UIWindow.TITLE_LABEL_HEIGHT;    
     
     new UIButton(4, y, width-8, 20)
     .setActiveLabel("Boop!")
@@ -104,15 +106,7 @@ class UIComponentsDemo extends UIWindow {
     .setMomentary(true)
     .addToContainer(this);
     y += 24;
-    
-    for (int i = 0; i < 4; ++i) {
-      new UIKnob(4 + i*34, y)
-      .setParameter(knobParameters[i])
-      .setEnabled(i % 2 == 0)
-      .addToContainer(this);
-    }
-    y += 48;
-    
+        
     for (int i = 0; i < 4; ++i) {
       new UISlider(UISlider.Direction.VERTICAL, 4 + i*34, y, 30, 60)
       .setParameter(new BasicParameter("VSl" + i, (i+1)*.25))
@@ -150,4 +144,4 @@ class UIComponentsDemo extends UIWindow {
     
     setSize(width, y);
   }
-} 
+}
