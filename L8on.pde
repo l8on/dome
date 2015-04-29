@@ -1,5 +1,3 @@
-import java.util.ArrayList;
-import java.util.LinkedList;
 
 class SpotLights extends LXPattern {
   // Used to store info about each wave.
@@ -17,8 +15,6 @@ class SpotLights extends LXPattern {
   private BasicParameter delayParameter = new BasicParameter("DELAY", 0, 0.0, 2000.0);
   private BasicParameter minDistParameter = new BasicParameter("DIST", 100.0, 1.0, model.xRange);
   
-  
- 
   public SpotLights(LX lx) {
     super(lx);
     

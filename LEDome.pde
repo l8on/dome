@@ -1,5 +1,46 @@
+/**
+ *     DOUBLE BLACK DIAMOND        DOUBLE BLACK DIAMOND
+ *
+ *         //\\   //\\                 //\\   //\\  
+ *        ///\\\ ///\\\               ///\\\ ///\\\
+ *        \\\/// \\\///               \\\/// \\\///
+ *         \\//   \\//                 \\//   \\//
+ *
+ *        EXPERTS ONLY!!              EXPERTS ONLY!!
+ *
+ * This file implements the mapping needed to generate, identify and order 
+ * each face dome and plots the lights on the faces. It should only be modified
+ * when physical changes or tuning is being done to the structure.
+ */
+ 
+import wblut.math.*;
+import wblut.processing.*;
+import wblut.core.*;
+import wblut.hemesh.*;
+import wblut.geom.*;
+import heronarts.lx.*;
+import heronarts.lx.audio.*;
+import heronarts.lx.color.*;
+import heronarts.lx.model.*;
+import heronarts.lx.modulator.*;
+import heronarts.lx.output.*;
+import heronarts.lx.parameter.*;
+import heronarts.lx.pattern.*;
+import heronarts.lx.transition.*;
+import heronarts.p2lx.*;
+import heronarts.p2lx.ui.*;
+import heronarts.p2lx.ui.control.*;
+import ddf.minim.*;
+import processing.opengl.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedList;
+
+// Let's work in inches
+final static int INCHES = 1;
+final static int FEET = 12*INCHES;
+final static int NUM_CONNECTED_LIGHTS = 48;
 
 /**
  * This is a very basic model class that is a 3-D matrix

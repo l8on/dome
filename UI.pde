@@ -1,4 +1,19 @@
 /**
+ *     DOUBLE BLACK DIAMOND        DOUBLE BLACK DIAMOND
+ *
+ *         //\\   //\\                 //\\   //\\  
+ *        ///\\\ ///\\\               ///\\\ ///\\\
+ *        \\\/// \\\///               \\\/// \\\///
+ *         \\//   \\//                 \\//   \\//
+ *
+ *        EXPERTS ONLY!!              EXPERTS ONLY!!
+ *
+ * This file contains code to draws the dome model and set up 
+ * the UI for the simulation. Please do not change this file
+ * unless you know what you are doing. 
+ */
+ 
+/**
  * Here's a simple extension of a camera component. This will be
  * rendered inside the camera view context. We just override the
  * onDraw method and invoke Processing drawing methods directly.
