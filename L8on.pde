@@ -2,13 +2,14 @@
 class SpotLights extends LXPattern {
   // Used to store info about each wave.
   // See L8onUtil.pde for the definition.
-  private List<L8onSpotLight> spotlights = new ArrayList<L8onSpotLight>();  
+  private List<L8onSpotLight> spotlights = new ArrayList<L8onSpotLight>();
+
+  private final SinLFO saturationModulator = new SinLFO(0.0, 100.0, 10 * SECONDS);  
   
   // Controls the radius of the spotlights.
   private BasicParameter radiusParameter = new BasicParameter("RAD", 2 * FEET, 1.0, model.xRange / 2.0);
   private BasicParameter numLightsParameter = new BasicParameter("NUM", 2.0, 1.0, 30.0);
-  private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);
-  private BasicParameter saturationParameter = new BasicParameter("SAT", 0, 0, 100);
+  private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);  
   
   private BasicParameter rateParameter = new BasicParameter("RATE", 1500.0, 1.0, 5000.0);  
   private BasicParameter restParameter = new BasicParameter("REST", 900.0, 1.0, 10000.0);
@@ -16,17 +17,18 @@ class SpotLights extends LXPattern {
   private BasicParameter minDistParameter = new BasicParameter("DIST", 100.0, 1.0, model.xRange);
   
   public SpotLights(LX lx) {
-    super(lx);
+    super(lx);        
     
     addParameter(radiusParameter);
     addParameter(numLightsParameter);
     addParameter(brightnessParameter);
-    addParameter(saturationParameter);
     
     addParameter(rateParameter);
     addParameter(restParameter);
     addParameter(delayParameter);
     addParameter(minDistParameter);
+    
+    addModulator(saturationModulator).start();
     
     initL8onSpotlights();
   }
@@ -61,7 +63,7 @@ class SpotLights extends LXPattern {
    
     color c;    
     float hue_value = 0.0;
-    float sat_value = saturationParameter.getValuef();
+    float sat_value = saturationModulator.getValuef();
     float brightness_value = brightnessParameter.getValuef();    
     float min_hv;
     float max_hv;
@@ -105,7 +107,8 @@ class SpotLights extends LXPattern {
     
   public float decayed_brightness(double deltaMs, color c) {
     float bright_prop = min(((float)deltaMs / delayParameter.getValuef()), 1.0);
-    return max(LXColor.b(c) - (LXColor.b(c) * bright_prop), 0.0);
+    float bright_diff = max((LXColor.b(c) * bright_prop), 0.01);
+    return max(LXColor.b(c) - bright_diff, 0.0);
   }
   /**
    * Initialize the waves.

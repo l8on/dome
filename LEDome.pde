@@ -41,6 +41,9 @@ import java.util.LinkedList;
 final static int INCHES = 1;
 final static int FEET = 12*INCHES;
 final static int NUM_CONNECTED_LIGHTS = 48;
+final static int SECONDS = 1000;
+final static int MINUTES = 60 * SECONDS;
+final static int HOURS = 60 * MINUTES;
 
 /**
  * This is a very basic model class that is a 3-D matrix

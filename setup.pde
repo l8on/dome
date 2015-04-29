@@ -37,7 +37,7 @@ void setup() {
   lx = new P2LX(this, model);  
   setupPatterns();
   setupUI();
-  setupOutput();
+//  setupOutput();
   
   render = new WB_Render(this);  
 }
