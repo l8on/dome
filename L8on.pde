@@ -16,7 +16,7 @@ class SpotLights extends LXPattern {
   private BasicParameter delayParameter = new BasicParameter("DELAY", 0, 0.0, 2000.0);
   private BasicParameter minDistParameter = new BasicParameter("DIST", 100.0, 1.0, model.xRange);
   
-  public SpotLights(LX lx) {
+  public SpotLights(P2LX lx) {
     super(lx);        
     
     addParameter(radiusParameter);
@@ -174,7 +174,7 @@ class L8onMixColor extends LXPattern {
   // Controls the rate of life algorithm ticks, in milliseconds
   private BasicParameter delayParameter = new BasicParameter("DELAY", 500, 0.0, 2000.0);
   
-  public L8onMixColor(LX lx) {
+  public L8onMixColor(P2LX lx) {
     super(lx);
     
     initL8onWaves();
@@ -309,3 +309,298 @@ class L8onMixColor extends LXPattern {
     this.l8on_waves.add( new L8onWave(L8onWave.DIRECTION_Z, -1.0) );
   }  
 }
+
+/**
+ * A "Game of Life" simulation in 2 dimensions with the cubes as cells.
+ *
+ * The "DELAY parameter controls the rate of change.
+ * The "MUT" parameter controls the probability of mutations. Useful when life oscillates between few states.
+ * The "SAT" parameter controls the saturation.
+ *
+ * Thanks to Jack for starting me up, Tim for the parameter code, and Slee for the fade idea.
+ */
+class Life extends LXPattern {
+  // Controls the rate of life algorithm ticks, in milliseconds
+  private BasicParameter rateParameter = new BasicParameter("DELAY", 500, 0.0, 10 * SECONDS);
+  // Controls the probability of a mutation in the cycleOfLife
+  private BasicParameter mutationParameter = new BasicParameter("MUT", 0.000000011, 0.0, 0.1);
+  // Controls the saturation.
+  private BasicParameter saturationParameter = new BasicParameter("SAT", 75.0, 0.0, 100.0);
+  
+  private BasicParameter neighborCountParameter = new BasicParameter("NEIG", 0.0, -2.0, 2.0);
+
+  // Alive probability ranges for randomization
+  public final double MIN_ALIVE_PROBABILITY = 0.2;
+  public final double MAX_ALIVE_PROBABILITY = 0.9;
+  
+  // The maximum brightness for an alive cell.
+  public final float MAX_ALIVE_BRIGHTNESS = 75.0;
+
+  // Cube position oscillator used to select color. 
+//  private final SawLFO facePos = new SawLFO(0, ((LEDome)model).getFaces().size(), 4000);
+  private final SawLFO facePos = new SawLFO(0, model.yRange, 10 * SECONDS);
+  
+  // Contains the state of all cubes by index.
+  // See L8onUtil.pde for definition of L8onFaceLife.
+  private List<L8onFaceLife> face_lives;
+  
+  private List<LEDomeFace> faces;
+  // Contains the amount of time since the last cycle of life.
+  private int time_since_last_run;
+  // Boolean describing if life changes were made during the current run.
+  private boolean any_changes_this_run;
+  // Hold the new lives
+  private List<Boolean> new_lives;
+
+  public Life(P2LX lx) {
+     super(lx);         
+     this.faces = ((LEDome)model).faces;
+     
+     //Print debug info about the cubes.
+     //outputFaceInfo();
+
+     initFaceStates();
+     time_since_last_run = 0;
+     any_changes_this_run = false;
+     new_lives = new ArrayList<Boolean>(this.faces.size());
+     
+     addParameter(rateParameter);     
+     addParameter(mutationParameter);
+     addParameter(saturationParameter);
+     addParameter(neighborCountParameter);     
+
+     addModulator(facePos).trigger();
+  }
+//  
+  public void run(double deltaMs) {        
+    any_changes_this_run = false;        
+    new_lives.clear();
+    time_since_last_run += deltaMs;
+    
+    for (L8onFaceLife face_life : this.face_lives) {
+      LEDomeFace face = this.faces.get(face_life.index);
+      if (!face.has_lights) {
+        continue;  
+      }
+
+      if(shouldLightFace(face_life)) {
+        lightLiveFace(face, face_life, deltaMs);
+      } else {
+        lightDeadFace(face, face_life, deltaMs);
+      } 
+    }
+    
+    // If we have landed in a static state, randomize cubes.
+    if(!any_changes_this_run) {
+      randomizeFaceStates();  
+    } else {
+      // Apply new states AFTER ALL new states are decided.
+      applyNewLives();
+    }
+    
+    // Reset "tick" timer
+    if(time_since_last_run >= rateParameter.getValuef()) {
+      time_since_last_run = 0;
+    }    
+  }
+  
+  /**
+   * Light a live face.
+   * Uses deltaMs for fade effect.
+   */
+  private void lightLiveFace(LEDomeFace face, L8onFaceLife face_life, double deltaMs) {
+    float face_dist = LXUtils.wrapdistf(face.yf() - model.yMin, facePos.getValuef(), model.yRange);
+    float hv = (face_dist / model.yRange) * 360;
+    float bv = face_life.current_brightness;
+
+    // Only change brightness if we are between "ticks" or if there is not enough time to fade.
+    if(!face_life.just_changed || deltaMs >= rateParameter.getValuef()) {
+      float bright_prop = min(((float) time_since_last_run / rateParameter.getValuef()), 1.0);
+      bv = min(MAX_ALIVE_BRIGHTNESS, bright_prop * MAX_ALIVE_BRIGHTNESS);
+
+      if(face_life.current_brightness < bv) {
+        face_life.current_brightness = bv;
+      } else {
+        bv = face_life.current_brightness;
+      }
+    }
+    
+    for (LXPoint p : face.points) {      
+      colors[p.index] = lx.hsb(
+        hv,
+        saturationParameter.getValuef(),        
+        bv
+      );
+    }
+  }
+  
+  /**
+   * Light a dead face.
+   * Uses deltaMs for fade effect.
+   */
+  private void lightDeadFace(LEDomeFace face, L8onFaceLife face_life, double deltaMs) {    
+    float face_dist = LXUtils.wrapdistf(face.yf() - model.yMin, facePos.getValuef(), model.yRange);
+    float hv = (face_dist / model.yRange) * 360;
+    float bv = face_life.current_brightness;
+
+    // Only change brightness if we are between "ticks" or if there is not enough time to fade.
+    if(!face_life.just_changed || deltaMs >= rateParameter.getValuef()) {
+      float bright_prop = 1.0 - min(((float) time_since_last_run / rateParameter.getValuef()), 1.0);
+      bv = max(0.0, bright_prop * MAX_ALIVE_BRIGHTNESS);
+
+      if(face_life.current_brightness > bv) {
+        face_life.current_brightness = bv;
+      } else {
+        bv = face_life.current_brightness;
+      }
+    }
+
+    for (LXPoint p : face.points) {
+      colors[p.index] = lx.hsb(
+        hv,
+        saturationParameter.getValuef(),        
+        bv
+      );     
+    }  
+  } 
+    
+  /**
+   * Output debug info about the cubes.
+   */
+  private void outputFaceInfo() {
+    int i = 0;      
+    for (LEDomeFace face : this.faces) {
+      print("LEDomeFace " + i + ": " + face.xf() + "," + face.yf() + "," + face.zf() + "\n");
+      ++i;
+    }    
+  }
+  
+  /**
+   * Initialize the list of face states.
+   */
+  private void initFaceStates() {   
+    boolean alive = false;  
+    L8onFaceLife face_life;      
+    this.face_lives = new ArrayList<L8onFaceLife>(this.faces.size());
+    float current_brightness = 0.0;
+    Integer i = 0;     
+    
+    for (LEDomeFace led_face : this.faces) {      
+      alive = false;
+      face_life = new L8onFaceLife(i, alive, current_brightness);
+      this.face_lives.add(face_life);      
+      ++i;
+    }
+  }
+ 
+ /**
+  * Randomizes the state of the cubes.
+  * A value between MIN_ALIVE_PROBABILITY and MAX_ALIVE_PROBABILITY is chosen.
+  * Each cube then has that probability of living.
+  */
+  private void randomizeFaceStates() {  
+    double prob_range = (1.0 - MIN_ALIVE_PROBABILITY) - (1.0 - MAX_ALIVE_PROBABILITY);
+    double prob = MIN_ALIVE_PROBABILITY + (prob_range * Math.random());
+    
+    println("Randomizing faces p = " + prob);
+     
+    for (L8onFaceLife face_life : this.face_lives) {   
+      face_life.alive = (Math.random() <= prob);            
+    }   
+  }
+  
+  /**
+   * Will initiate a cycleOfLife if it is time.
+   * Otherwise responds based on the current state of the face.
+   */
+  private boolean shouldLightFace(L8onFaceLife face_life) {
+    // Respect rate parameter.
+    if(time_since_last_run < rateParameter.getValuef()) {
+      any_changes_this_run = true;
+      face_life.just_changed = false;
+      return face_life.alive;
+    } else {
+      return cycleOfLife(face_life);
+    }
+  }
+
+  /**
+   * The meat of the life algorithm.
+   * Uses the count of live neighbors and the face's current state
+   * to decide the face's fate as such:
+   * - If alive, needs 2 or 3 living neighbors to stay alive.
+   * - If dead, needs 2 living neighbors to be born again.
+   *
+   * Populates the new_lives array and returns the new state of the cube.
+   */
+  private boolean cycleOfLife(L8onFaceLife face_life) {
+    Integer index = face_life.index;
+    Integer alive_neighbor_count = countLiveNeighbors(face_life);               
+    boolean before_alive = face_life.alive;
+    boolean after_alive = before_alive;
+    double mutation = Math.random();
+    int neighbor_count_delta = (int) neighborCountParameter.getValuef();       
+    
+//    if (this.faces.get(face_life.index).getNeighborIndexes().size() > 9) {
+//      neighbor_count_delta++;  
+//    }
+
+    if(face_life.alive) {
+      if(alive_neighbor_count < (2 + neighbor_count_delta) || alive_neighbor_count > (3 +  neighbor_count_delta)) {
+        after_alive = false;
+      } else {
+        after_alive = true;
+      }
+
+    } else {
+      if(alive_neighbor_count == (3 + neighbor_count_delta)) {
+        after_alive = true;
+      } else {
+        after_alive = false;
+      }
+    }
+
+    if(mutation <= mutationParameter.getValuef()) {
+      after_alive = !after_alive;
+    }
+
+    if(before_alive != after_alive) {
+      face_life.just_changed = true;
+      any_changes_this_run = true;
+    }
+
+    new_lives.add(after_alive);
+
+    return after_alive;      
+  }
+      
+  /**
+   * Counts the number of living neighbors of a cube.
+   */
+  private Integer countLiveNeighbors(L8onFaceLife face_life) {
+    Integer count = 0;
+    L8onFaceLife neighbor_life;
+    
+    for(Integer neighbor_index : this.faces.get(face_life.index).getNeighborIndexes()) {
+       neighbor_life = this.face_lives.get(neighbor_index);
+       if(neighbor_life.alive) {
+         count++;
+       }
+    }   
+
+    return count;
+  }
+
+  /**
+   * Apply the new states from the new_lives array.
+   */
+  private void applyNewLives() {
+    int index = 0;
+    for(boolean liveliness: new_lives) {
+      L8onFaceLife face_life = this.face_lives.get(index);
+      face_life.alive = new_lives.get(index);
+      index++;
+    }
+  }
+}
+

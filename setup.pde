@@ -23,7 +23,7 @@ LEDomeOutputManager output_manager;
  * Setup methods. Sets stuff up.
  */
 void setup() {
-  size(800, 600, OPENGL);
+  size(1024, 768, OPENGL);
   smooth(8);
   textSize(6);
   

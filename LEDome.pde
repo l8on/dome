@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Iterator;
 
 // Let's work in inches
 final static int INCHES = 1;
@@ -49,59 +50,13 @@ final static int MINUTES = 60 * SECONDS;
 final static int NUM_CONNECTED_LIGHTS = 48;
 final static String NDB_IP_ADDRESS = "10.0.0.116";
 
-static class LEDomeOutputManager {
-  private P2LX lx;  
-  private boolean ndb_output_enabled;
-  private LXDatagramOutput ndb_output; 
-  
-  public LEDomeOutputManager(P2LX lx) {    
-    this.lx = lx;
-    this.ndb_output_enabled = false;
-  }  
-  
-  public void toggleNDBOutput() {
-    this.toggleNDBOutput(!this.ndb_output_enabled); 
-  }
-  
-  public void toggleNDBOutput(boolean enable) {    
-    if (enable) {
-      this.addLXOutputForNDB();
-    } else {
-      this.removeLXOutputForNDB();  
-    }
-    
-    this.ndb_output_enabled = enable;
-  }
- 
-  private void addLXOutputForNDB() {    
-    int[] points = new int[NUM_CONNECTED_LIGHTS];
-    for (int i = 0; i < points.length; ++i) {
-      points[i] = i;
-    }
-    
-    try {
-      this.ndb_output = new LXDatagramOutput(this.lx);
-      DDPDatagram datagram = (DDPDatagram)new DDPDatagram(points).setAddress(NDB_IP_ADDRESS); // whatever the IP is
-      this.ndb_output.addDatagram(datagram);
-      this.lx.addOutput(this.ndb_output);
-    } catch (Exception x) {
-      x.printStackTrace();
-    }  
-  } 
-  
-  private void removeLXOutputForNDB() {
-    if (this.ndb_output != null) {
-      this.lx.removeOutput(this.ndb_output);  
-    }
-  }
-}
-
 /**
  * This is a very basic model class that is a 3-D matrix
  * of points. The model contains just one fixture.
  */
 static class LEDome extends LXModel {
   private LEDomeLights domelights;
+  public List<LEDomeFace> faces;
 
   public static final float DOME_RADIUS = 5.5 * FEET;  
   
@@ -128,6 +83,7 @@ static class LEDome extends LXModel {
   public LEDome() {
     super(new LEDomeLights());
     domelights = ((LEDomeLights)fixtures.get(0));
+    faces = this.getFaces();
   }
  
   public HE_Mesh getLEDomeMesh() {
@@ -206,7 +162,7 @@ static class LEDome extends LXModel {
       HE_Face currFace = getFirstFace();
       HE_Face nextFace;
 
-      for (int i = 0; i < geodome.getNumberOfFaces(); i++) {        
+      for (int i = 0; i < geodome.getNumberOfFaces(); i++) {
         faces.add(new LEDomeFace(currFace));
         currFace.setLabel(i);            
         nextFace = getNextFaceInDirection(currFace, currDirection);
@@ -218,8 +174,8 @@ static class LEDome extends LXModel {
 
         currFace = nextFace;        
       }
-    }       
-    
+    }     
+
     private HE_Face getNextFaceInDirection(HE_Face face, int direction) {
       List<HE_Face> neighborFaces = face.getNeighborFaces();                  
       HE_Face nextFace = null;            
@@ -339,8 +295,8 @@ static class LEDome extends LXModel {
       }
     }
     
-    private void plotLightsOnFace(LEDomeFace face) {      
-      List<LXPoint> points = new ArrayList<LXPoint>();
+    private void plotLightsOnFace(LEDomeFace face) {
+      ArrayList<LXPoint> points = new ArrayList<LXPoint>();
       LXPoint lx_point;
       HE_Face he_face = face.he_face;
       WB_Point faceCenter = he_face.getFaceCenter();          
@@ -368,7 +324,9 @@ static class LEDome extends LXModel {
         currHalfedge = currHalfedge.getPrevInFace().getPrevInFace();      
         currVertex = currHalfedge.getVertex();
         
-      } while(currVertex != isocVertex);      
+      } while(currVertex != isocVertex);
+
+      face.setPoints(points);      
     }
         
     private HE_Vertex findIsocVertex(HE_Face face) {
@@ -413,22 +371,110 @@ static class LEDome extends LXModel {
       return isocVertex;
     }       
   }
+   
+}
+
+public static class LEDomeFace {
+  public boolean has_lights;  
+  public HE_Face he_face;
+  public List<LXPoint> points;
+  public List<Integer> neighbors;
+  public List<Integer> next_door_neighbors;
+
+  public LEDomeFace(HE_Face face) {
+    he_face = face;
+    has_lights = false;
+  }
+
+  public LEDomeFace(HE_Face face, List<LXPoint> lxPoints) {
+    he_face = face;
+    points = lxPoints;
+    has_lights = (lxPoints != null && lxPoints.size() > 0);
+  }
   
-  private static class LEDomeFace {
-    public HE_Face he_face;
-    public List<LXPoint> points;
+  public float xf() {
+    return he_face.getFaceCenter().xf();  
+  }
+  
+  public float yf() {
+    return he_face.getFaceCenter().yf();  
+  }
+  
+  public float zf() {
+    return he_face.getFaceCenter().zf();  
+  }
 
-    public LEDomeFace(HE_Face face) {
-      he_face = face;
+  public void setPoints(List<LXPoint> lxPoints) {
+    points = lxPoints;
+    has_lights = (lxPoints != null && lxPoints.size() > 0);
+  }
+  
+  public List<Integer> getNeighborIndexes() {
+    if (this.neighbors == null) {
+      this.neighbors = new ArrayList<Integer>();
+      for(HE_Vertex he_vertex : this.he_face.getFaceVertices()) {
+        for(HE_Face he_neighbor : he_vertex.getFaceStar()) {
+          if (he_neighbor.getLabel() == this.he_face.getLabel()) {
+            continue;  
+          }
+          
+          if (!this.neighbors.contains(he_neighbor.getLabel())) {
+            this.neighbors.add(he_neighbor.getLabel());  
+          }
+        }
+      }
+            
+      println("num neighbors: " + this.neighbors.size());
+      println("num edges: " + this.he_face.getFaceEdges().size());
     }
+    
+    return this.neighbors;
+  }    
+}
 
-    public LEDomeFace(HE_Face face, List<LXPoint> lxPoints) {
-      he_face = face;
-      points = lxPoints;
+static class LEDomeOutputManager {
+  private P2LX lx;  
+  private boolean ndb_output_enabled;  
+  private LXDatagramOutput ndb_output; 
+  
+  public LEDomeOutputManager(P2LX lx) {    
+    this.lx = lx;
+    this.ndb_output_enabled = false;
+  }  
+  
+  public void toggleNDBOutput() {
+    this.toggleNDBOutput(!this.ndb_output_enabled); 
+  }
+  
+  public void toggleNDBOutput(boolean enable) {    
+    if (enable) {
+      this.addLXOutputForNDB();
+    } else {
+      this.removeLXOutputForNDB();  
     }
-
-    public void setPoints(List<LXPoint> lxPoints) {
-      points = lxPoints;
+    
+    this.ndb_output_enabled = enable;
+  }
+ 
+  private void addLXOutputForNDB() {    
+    int[] points = new int[NUM_CONNECTED_LIGHTS];
+    for (int i = 0; i < points.length; ++i) {
+      points[i] = i;
+    }
+    
+    try {
+      this.ndb_output = new LXDatagramOutput(this.lx);
+      DDPDatagram datagram = (DDPDatagram)new DDPDatagram(points).setAddress(NDB_IP_ADDRESS); // whatever the IP is
+      this.ndb_output.addDatagram(datagram);
+      this.lx.addOutput(this.ndb_output);
+    } catch (Exception x) {
+      x.printStackTrace();
+    }  
+  } 
+  
+  private void removeLXOutputForNDB() {
+    if (this.ndb_output != null) {
+      this.lx.removeOutput(this.ndb_output);  
     }
   }
 }

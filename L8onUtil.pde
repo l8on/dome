@@ -70,3 +70,25 @@ class L8onSpotLight {
     }   
   }  
 }
+
+/**
+ * Base class for keeping the state of a shape for a
+ * game of life simulation.
+ */
+class L8onFaceLife {
+  // Index of face
+   public Integer index;
+   // Boolean which describes if shape is alive.
+   public boolean alive;
+   // Boolean which describes if strip was just changed;
+   public boolean just_changed;
+   // Current brightness
+   public float current_brightness;
+
+   public L8onFaceLife(Integer index, boolean alive, float current_brightness) {
+     this.index = index;
+     this.alive = alive;
+     this.current_brightness = current_brightness;
+     this.just_changed = false;
+   }
+}

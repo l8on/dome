@@ -13,12 +13,13 @@
  * your name. Implement your classes there, and add them to the list below.
  */ 
  
-LXPattern[] patterns(LX lx) {
+LXPattern[] patterns(P2LX lx) {
   return new LXPattern[] {  
     // Create New Pattern Instances Below HERE
     
     // L8on
     new SpotLights(lx),
+    new Life(lx),
     new L8onMixColor(lx),    
     new LayerDemoPattern(lx),    
     new IteratorTestPattern(lx).setTransition(new DissolveTransition(lx))    
