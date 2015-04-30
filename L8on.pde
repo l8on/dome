@@ -4,7 +4,7 @@ class SpotLights extends LXPattern {
   // See L8onUtil.pde for the definition.
   private List<L8onSpotLight> spotlights = new ArrayList<L8onSpotLight>();
 
-  private final SinLFO saturationModulator = new SinLFO(0.0, 100.0, 10 * SECONDS);  
+  private final SinLFO saturationModulator = new SinLFO(0.0, 100.0, 20 * SECONDS);  
   
   // Controls the radius of the spotlights.
   private BasicParameter radiusParameter = new BasicParameter("RAD", 2 * FEET, 1.0, model.xRange / 2.0);
@@ -581,7 +581,7 @@ class Life extends LXPattern {
     Integer count = 0;
     L8onFaceLife neighbor_life;
     
-    for(Integer neighbor_index : this.faces.get(face_life.index).getNeighborIndexes()) {
+    for(Integer neighbor_index : this.faces.get(face_life.index).getNeighbors()) {
        neighbor_life = this.face_lives.get(neighbor_index);
        if(neighbor_life.alive) {
          count++;

@@ -57,7 +57,7 @@ final static String NDB_IP_ADDRESS = "10.0.0.116";
 static class LEDome extends LXModel {
   private LEDomeLights domelights;
   public List<LEDomeFace> faces;
-
+  
   public static final float DOME_RADIUS = 5.5 * FEET;  
   
   public static final int DIRECTION_RIGHT = 0;
@@ -371,65 +371,6 @@ static class LEDome extends LXModel {
       return isocVertex;
     }       
   }
-   
-}
-
-public static class LEDomeFace {
-  public boolean has_lights;  
-  public HE_Face he_face;
-  public List<LXPoint> points;
-  public List<Integer> neighbors;
-  public List<Integer> next_door_neighbors;
-
-  public LEDomeFace(HE_Face face) {
-    he_face = face;
-    has_lights = false;
-  }
-
-  public LEDomeFace(HE_Face face, List<LXPoint> lxPoints) {
-    he_face = face;
-    points = lxPoints;
-    has_lights = (lxPoints != null && lxPoints.size() > 0);
-  }
-  
-  public float xf() {
-    return he_face.getFaceCenter().xf();  
-  }
-  
-  public float yf() {
-    return he_face.getFaceCenter().yf();  
-  }
-  
-  public float zf() {
-    return he_face.getFaceCenter().zf();  
-  }
-
-  public void setPoints(List<LXPoint> lxPoints) {
-    points = lxPoints;
-    has_lights = (lxPoints != null && lxPoints.size() > 0);
-  }
-  
-  public List<Integer> getNeighborIndexes() {
-    if (this.neighbors == null) {
-      this.neighbors = new ArrayList<Integer>();
-      for(HE_Vertex he_vertex : this.he_face.getFaceVertices()) {
-        for(HE_Face he_neighbor : he_vertex.getFaceStar()) {
-          if (he_neighbor.getLabel() == this.he_face.getLabel()) {
-            continue;  
-          }
-          
-          if (!this.neighbors.contains(he_neighbor.getLabel())) {
-            this.neighbors.add(he_neighbor.getLabel());  
-          }
-        }
-      }
-            
-      println("num neighbors: " + this.neighbors.size());
-      println("num edges: " + this.he_face.getFaceEdges().size());
-    }
-    
-    return this.neighbors;
-  }    
 }
 
 static class LEDomeOutputManager {
