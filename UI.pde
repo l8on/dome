@@ -30,7 +30,7 @@ class UIDome extends UI3dComponent {
 //    labelFaces(geodome);             
   }
   
-  private void labelFaces(HE_Mesh geodome) {  
+  private void labelFaces(HE_Mesh geodome) {      
     int numFaces = geodome.getNumberOfFaces();
     HE_Face currentFace;
     WB_Point faceCenter;  
@@ -39,7 +39,7 @@ class UIDome extends UI3dComponent {
       currentFace = geodome.getFaceByIndex(i);
       faceCenter = currentFace.getFaceCenter();
       if (currentFace.getLabel() != -1) {
-        pushMatrix();    
+        pushMatrix();
         text(currentFace.getLabel(), faceCenter.xf(), faceCenter.yf(), faceCenter.zf());
         popMatrix();
       }

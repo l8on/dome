@@ -55,8 +55,10 @@ final static String NDB_IP_ADDRESS = "10.0.0.116";
  * of points. The model contains just one fixture.
  */
 static class LEDome extends LXModel {
-  private LEDomeLights domelights;
   public List<LEDomeFace> faces;
+  public WB_Sphere sphere;  
+  
+  private LEDomeLights domelights;
   
   public static final float DOME_RADIUS = 5.5 * FEET;  
   
@@ -83,6 +85,7 @@ static class LEDome extends LXModel {
   public LEDome() {
     super(new LEDomeLights());
     domelights = ((LEDomeLights)fixtures.get(0));
+    sphere = new WB_Sphere(domelights.geodome.getCenter(), DOME_RADIUS);
     faces = this.getFaces();
   }
  
@@ -93,6 +96,15 @@ static class LEDome extends LXModel {
   public List<LEDomeFace> getFaces() {
     return domelights.faces;
   }
+  
+  public WB_Point projectToSphere(float x, float y, float z) {
+    return projectToSphere(new WB_Point(x, y, z));
+  }
+  
+  public WB_Point projectToSphere(WB_Point point) {
+    return sphere.projectToSphere(point); 
+  }
+  
   
   private static class LEDomeLights extends LXAbstractFixture {    
     public HE_Mesh geodome;

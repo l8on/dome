@@ -83,7 +83,6 @@ public static class LEDomeFace {
           this.next_door_neighbors.add(he_neighbor.getLabel());  
         }
       }
-      
     }
     
     return this.next_door_neighbors;

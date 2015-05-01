@@ -2,7 +2,7 @@
 class SpotLights extends LXPattern {
   // Used to store info about each wave.
   // See L8onUtil.pde for the definition.
-  private List<L8onSpotLight> spotlights = new ArrayList<L8onSpotLight>();
+  private List<L8onSpotLight> spotlights = new ArrayList<L8onSpotLight>();  
 
   private final SinLFO saturationModulator = new SinLFO(0.0, 100.0, 20 * SECONDS);  
   
@@ -14,7 +14,7 @@ class SpotLights extends LXPattern {
   private BasicParameter rateParameter = new BasicParameter("RATE", 1500.0, 1.0, 5000.0);  
   private BasicParameter restParameter = new BasicParameter("REST", 900.0, 1.0, 10000.0);
   private BasicParameter delayParameter = new BasicParameter("DELAY", 0, 0.0, 2000.0);
-  private BasicParameter minDistParameter = new BasicParameter("DIST", 100.0, 1.0, model.xRange);
+  private BasicParameter minDistParameter = new BasicParameter("DIST", 100.0, 10.0, model.xRange);
   
   public SpotLights(P2LX lx) {
     super(lx);        
@@ -29,7 +29,7 @@ class SpotLights extends LXPattern {
     addParameter(minDistParameter);
     
     addModulator(saturationModulator).start();
-    
+        
     initL8onSpotlights();
   }
 
@@ -47,9 +47,11 @@ class SpotLights extends LXPattern {
       base_hue += wave_hue_diff;
       dist_from_dest = spotlight.distFromDestination();
       
-      if (dist_from_dest == 0.0) {
-        if(spotlight.time_at_dest_ms > restParameter.getValuef()) {          
-          spotlight.setDestination(model.xMin + random(model.xRange), model.zMin + random(model.zRange));      
+      if (dist_from_dest < 0.01) {
+        if(spotlight.time_at_dest_ms > restParameter.getValuef()) {
+          // Will set a new destination if first guess is greater than min distance.
+          // Otherwise, will keep object as is and try again next tick.
+          spotlight.tryNewDestination();
         } else {
           spotlight.addTimeAtDestination((float)deltaMs);  
         }
@@ -72,7 +74,7 @@ class SpotLights extends LXPattern {
       int num_spotlights_in = 0;
      
       for(L8onSpotLight spotlight : this.spotlights) {
-        float dist_from_spotlight = dist(spotlight.center_x, spotlight.center_z, p.x, p.z);
+        float dist_from_spotlight = dist(spotlight.center_x, spotlight.center_y, spotlight.center_z, p.x, p.y, p.z);
         
         if(dist_from_spotlight <= spotlight_radius) {
           num_spotlights_in++;
@@ -124,8 +126,9 @@ class SpotLights extends LXPattern {
       
       for(int i = 0; i < (num_spotlights - this.spotlights.size()); i++) {
         this.spotlights.add(
-          new L8onSpotLight(model.xMin + random(model.xRange), model.yMin + random(model.yRange), 
-                            model.xMin + random(model.xRange), model.yMin + random(model.yRange),
+          new L8onSpotLight(((LEDome)model).sphere,
+                            model.xMin + random(model.xRange), model.yMin + random(model.yRange), model.zMin + random(model.zRange), 
+                            model.yMin + random(model.yRange), model.yMin + random(model.yRange), model.zMin + random(model.zRange),
                             min_dist)
         );  
       }  
@@ -321,9 +324,9 @@ class L8onMixColor extends LXPattern {
  */
 class Life extends LXPattern {
   // Controls the rate of life algorithm ticks, in milliseconds
-  private BasicParameter rateParameter = new BasicParameter("DELAY", 500, 0.0, 10 * SECONDS);
+  private BasicParameter rateParameter = new BasicParameter("DELAY", 700, 0.0, 10 * SECONDS);
   // Controls the probability of a mutation in the cycleOfLife
-  private BasicParameter mutationParameter = new BasicParameter("MUT", 0.000000011, 0.0, 0.1);
+  private BasicParameter mutationParameter = new BasicParameter("MUT", 0.011, 0.0, 0.1);
   // Controls the saturation.
   private BasicParameter saturationParameter = new BasicParameter("SAT", 75.0, 0.0, 100.0);
   
@@ -353,7 +356,7 @@ class Life extends LXPattern {
   private List<Boolean> new_lives;
 
   public Life(P2LX lx) {
-     super(lx);         
+     super(lx);
      this.faces = ((LEDome)model).faces;
      
      //Print debug info about the cubes.
@@ -380,7 +383,7 @@ class Life extends LXPattern {
     for (L8onFaceLife face_life : this.face_lives) {
       LEDomeFace face = this.faces.get(face_life.index);
       if (!face.has_lights) {
-        continue;  
+        continue;
       }
 
       if(shouldLightFace(face_life)) {
@@ -541,9 +544,9 @@ class Life extends LXPattern {
     double mutation = Math.random();
     int neighbor_count_delta = (int) neighborCountParameter.getValuef();       
     
-//    if (this.faces.get(face_life.index).getNeighborIndexes().size() > 9) {
-//      neighbor_count_delta++;  
-//    }
+    if (this.faces.get(face_life.index).getNeighbors().size() > 9) {
+      neighbor_count_delta++;  
+    }
 
     if(face_life.alive) {
       if(alive_neighbor_count < (2 + neighbor_count_delta) || alive_neighbor_count > (3 +  neighbor_count_delta)) {
@@ -551,7 +554,6 @@ class Life extends LXPattern {
       } else {
         after_alive = true;
       }
-
     } else {
       if(alive_neighbor_count == (3 + neighbor_count_delta)) {
         after_alive = true;
@@ -563,6 +565,10 @@ class Life extends LXPattern {
     if(mutation <= mutationParameter.getValuef()) {
       after_alive = !after_alive;
     }
+    
+    if(face_life.index == 51) {
+      after_alive = true;  
+    }
 
     if(before_alive != after_alive) {
       face_life.just_changed = true;
@@ -571,7 +577,7 @@ class Life extends LXPattern {
 
     new_lives.add(after_alive);
 
-    return after_alive;      
+    return before_alive;
   }
       
   /**
