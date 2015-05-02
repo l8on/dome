@@ -13,6 +13,14 @@
  * up the DDP output to the NDB. This file should only be changed 
  * by people who know what their doing.
  */
+ 
+import java.awt.Dimension;
+import java.awt.Toolkit;
+ 
+Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+final int VIEWPORT_WIDTH = (int)screenSize.getWidth();;
+final int VIEWPORT_HEIGHT = (int)screenSize.getHeight();
+
 
 LEDome model;
 P2LX lx;
@@ -23,7 +31,8 @@ LEDomeOutputManager output_manager;
  * Setup methods. Sets stuff up.
  */
 void setup() {
-  size(1024, 768, OPENGL);
+  size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, OPENGL);
+  frame.setResizable(true);
   smooth(8);
   textSize(6);
   

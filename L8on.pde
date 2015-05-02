@@ -1,3 +1,148 @@
+class Explosions extends LXPattern {  
+  // Used to store info about each wave.
+  // See L8onUtil.pde for the definition.
+  private List<LEDomeFace> dome_faces;
+  private List<L8onExplosion> explosions = new ArrayList<L8onExplosion>();
+  private HashMap<Integer, SinLFO> explosionModulators = new HashMap<Integer, SinLFO>(); 
+
+  private final SinLFO saturationModulator = new SinLFO(40.0, 100.0, 20 * SECONDS);
+
+  private BasicParameter numExplosionsParameter = new BasicParameter("NUM", 2.0, 1.0, 30.0);
+  private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);
+
+  private BasicParameter rateParameter = new BasicParameter("RATE", 4000.0, 1.0, 20000.0);
+  private BasicParameter delayParameter = new BasicParameter("DELAY", 1000.0, 10.0, 3000.0);
+  
+  public Explosions(P2LX lx) {
+    super(lx);
+        
+    dome_faces = ((LEDome)model).faces;
+    
+    addParameter(numExplosionsParameter);
+    addParameter(brightnessParameter);
+    
+    addParameter(rateParameter);    
+    addParameter(delayParameter);
+    
+    addModulator(saturationModulator).start();
+    
+    initExplosions();
+  } 
+  
+  public void run(double deltaMs) {
+    initExplosions();
+    
+    float base_hue = lx.getBaseHuef();   
+    float wave_hue_diff = (float) (360.0 / this.explosions.size());    
+    
+    for(L8onExplosion explosion : this.explosions) {
+      if(explosion.isChillin((float)deltaMs)) {
+        continue;
+      }
+        
+      explosion.hue_value = base_hue;
+      base_hue += wave_hue_diff;
+      
+      float dist_to_travel = rateParameter.getValuef() / ((float)deltaMs * 500);
+      float dist_to_max_radius = abs(model.xRange - explosion.radius);
+      float dist_to_travel_perc = min(dist_to_travel / dist_to_max_radius, 1.0);
+      float new_radius = explosion.radius + (dist_to_max_radius * dist_to_travel_perc);
+      
+      if (explosion.radius >= model.xRange) {
+        println("assigning a new center");
+        assignNewCenter(explosion);
+      } else {
+        explosion.setRadius(new_radius);        
+      }      
+    }  
+    
+    color c;    
+    float hue_value = 0.0;
+    float sat_value = saturationModulator.getValuef();
+    float brightness_value = brightnessParameter.getValuef();    
+    float min_hv;
+    float max_hv;
+    
+    for (LXPoint p : model.points) {
+      int num_explosions_in = 0;
+     
+      for(L8onExplosion explosion : this.explosions) {
+        if(explosion.isChillin(0)) {
+          continue;
+        }
+      
+        if(explosion.onExplosion(p.x, p.y, p.z)) {
+          num_explosions_in++;
+
+          if(num_explosions_in == 1) {
+            hue_value = explosion.hue_value;
+          } if(num_explosions_in == 2) {
+            // Blend new color with previous color.
+            min_hv = min(hue_value, explosion.hue_value);
+            max_hv = max(hue_value, explosion.hue_value);
+            hue_value = (min_hv * 2.0 + max_hv / 2.0) / 2.0;
+          } else {
+            // Jump color by 180 before blending again.
+            hue_value = LXUtils.wrapdistf(0, hue_value + 180, 360);
+            min_hv = min(hue_value, explosion.hue_value);
+            max_hv = max(hue_value, explosion.hue_value);
+            hue_value = (min_hv * 2.0 + max_hv / 2.0) / 2.0;
+          }
+        }
+      }
+
+      if(num_explosions_in > 0) {
+        c = lx.hsb(hue_value, sat_value, brightness_value);
+      } else {
+        c = colors[p.index];                       
+        c = lx.hsb(LXColor.h(c), LXColor.s(c), decayed_brightness(deltaMs, c));
+      }
+
+      colors[p.index] = c;
+    }     
+  }
+  
+  private void initExplosions() {    
+    int num_explosions = (int) numExplosionsParameter.getValue();    
+    
+    if (this.explosions.size() == num_explosions) {
+      return;
+    }
+    
+    if (this.explosions.size() < num_explosions) {      
+      for(int i = 0; i < (num_explosions - this.explosions.size()); i++) {
+        float stroke_width = (6 * INCHES) + random(2 * FEET);
+        LEDomeFace dome_face = dome_faces.get((int)random(dome_faces.size()));
+        this.explosions.add(
+          new L8onExplosion(0, stroke_width, dome_face.he_face.getFaceCenter().xf(), dome_face.he_face.getFaceCenter().yf(), dome_face.he_face.getFaceCenter().zf())
+        );
+      }  
+    } else {
+      for(int i = (this.explosions.size() - 1); i >= num_explosions; i--) {
+        this.explosions.remove(i);  
+      }
+    }
+  }
+  
+  private void assignNewCenter(L8onExplosion explosion) {
+//    float stroke_width = (6 * INCHES) + random(2 * FEET);
+    float stroke_width = 3 * INCHES;
+    WB_Point new_center = dome_faces.get((int)random(dome_faces.size())).he_face.getFaceCenter();
+    float chill_time = (3.0 + random(7)) * SECONDS;
+    
+    println("Chill time" + chill_time);
+    
+    explosion.setCenter(new_center.xf(), new_center.yf(), new_center.zf());
+    explosion.setRadius(0, stroke_width);
+    explosion.setChillTime(chill_time);
+  }
+  
+  public float decayed_brightness(double deltaMs, color c) {
+    float bright_prop = min(((float)deltaMs / delayParameter.getValuef()), 1.0);
+    float bright_diff = max((LXColor.b(c) * bright_prop), 1);
+    return max(LXColor.b(c) - bright_diff, 0.0);
+  }
+}
 
 class SpotLights extends LXPattern {
   // Used to store info about each wave.
@@ -7,11 +152,11 @@ class SpotLights extends LXPattern {
   private final SinLFO saturationModulator = new SinLFO(0.0, 100.0, 20 * SECONDS);  
   
   // Controls the radius of the spotlights.
-  private BasicParameter radiusParameter = new BasicParameter("RAD", 2 * FEET, 1.0, model.xRange / 2.0);
+  private BasicParameter radiusParameter = new BasicParameter("RAD", 3 * FEET, 1.0, model.xRange / 2.0);
   private BasicParameter numLightsParameter = new BasicParameter("NUM", 2.0, 1.0, 30.0);
   private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);  
   
-  private BasicParameter rateParameter = new BasicParameter("RATE", 1500.0, 1.0, 5000.0);  
+  private BasicParameter rateParameter = new BasicParameter("RATE", 4000.0, 1.0, 10000.0);  
   private BasicParameter restParameter = new BasicParameter("REST", 900.0, 1.0, 10000.0);
   private BasicParameter delayParameter = new BasicParameter("DELAY", 0, 0.0, 2000.0);
   private BasicParameter minDistParameter = new BasicParameter("DIST", 100.0, 10.0, model.xRange);
@@ -39,8 +184,6 @@ class SpotLights extends LXPattern {
     float base_hue = lx.getBaseHuef();   
     float wave_hue_diff = (float) (360.0 / this.spotlights.size());
     float dist_from_dest;
-    float dist_x;
-    float dist_z;
    
     for(L8onSpotLight spotlight : this.spotlights) {
       spotlight.hue_value = base_hue;
@@ -109,7 +252,7 @@ class SpotLights extends LXPattern {
     
   public float decayed_brightness(double deltaMs, color c) {
     float bright_prop = min(((float)deltaMs / delayParameter.getValuef()), 1.0);
-    float bright_diff = max((LXColor.b(c) * bright_prop), 0.01);
+    float bright_diff = max((LXColor.b(c) * bright_prop), 1);
     return max(LXColor.b(c) - bright_diff, 0.0);
   }
   /**

@@ -18,6 +18,7 @@ LXPattern[] patterns(P2LX lx) {
     // Create New Pattern Instances Below HERE
     
     // L8on
+    new Explosions(lx),
     new SpotLights(lx),
     new Life(lx),
     new L8onMixColor(lx),    

@@ -124,3 +124,65 @@ class L8onFaceLife {
      this.just_changed = false;
    }
 }
+
+/**
+ * Contains the current state of an explosion.
+ */
+class L8onExplosion {
+  float radius;
+  float center_x;
+  float center_y;
+  float center_z;  
+  float stroke_width;
+  float hue_value;
+  float chill_time;
+  float time_chillin;
+  
+  private float _min_dist;
+  private float _max_dist;
+  
+  public L8onExplosion(float radius, float stroke_width, float center_x, float center_y, float center_z) {    
+    this.setRadius(radius, stroke_width);    
+    this.center_x = center_x;
+    this.center_y = center_y;
+    this.center_z = center_z;
+  }
+  
+  public void setChillTime(float chill_time) {
+    this.chill_time = chill_time;  
+    this.time_chillin = 0;
+  }
+  
+  public boolean isChillin(float deltaMs) {
+    this.time_chillin += deltaMs;
+    
+    return time_chillin < this.chill_time;  
+  }
+  
+  public float distanceFromCenter(float x, float y, float z) {
+    return dist(this.center_x, this.center_y, this.center_z, x, y, z);
+  }
+
+  public void setRadius(float new_radius) {
+    this.radius = new_radius;
+    this._min_dist = max(0.0, radius - (stroke_width / 2.0));
+    this._max_dist = radius + (stroke_width / 2.0);
+  }
+  
+  public void setRadius(float new_radius, float stroke_width) {
+    this.stroke_width = stroke_width;
+    this.setRadius(new_radius);
+  }
+
+  public void setCenter(float x, float y, float z) {
+    this.center_x = x;
+    this.center_y = y;
+    this.center_z = z;  
+  }
+  
+  public boolean onExplosion(float x, float y, float z) {
+    float point_dist = this.distanceFromCenter(x, y, z);
+    
+    return (point_dist >= this._min_dist && point_dist <= this._max_dist);  
+  }
+}
