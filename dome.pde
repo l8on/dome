@@ -14,13 +14,15 @@
  */ 
  
 LXPattern[] patterns(P2LX lx) {
-  return new LXPattern[] {  
+  return new LXPattern[] {
     // Create New Pattern Instances Below HERE
     
     // L8on
     new SpotLights(lx),
     new Life(lx),
     new L8onMixColor(lx),    
+
+    // Test Patterns
     new LayerDemoPattern(lx),    
     new IteratorTestPattern(lx).setTransition(new DissolveTransition(lx))    
   };
