@@ -152,8 +152,8 @@ class SpotLights extends LXPattern {
   private final SinLFO saturationModulator = new SinLFO(0.0, 100.0, 20 * SECONDS);  
   
   // Controls the radius of the spotlights.
-  private BasicParameter radiusParameter = new BasicParameter("RAD", 3 * FEET, 1.0, model.xRange / 2.0);
-  private BasicParameter numLightsParameter = new BasicParameter("NUM", 2.0, 1.0, 30.0);
+  private BasicParameter radiusParameter = new BasicParameter("RAD", 2.5 * FEET, 1.0, model.xRange / 2.0);
+  private BasicParameter numLightsParameter = new BasicParameter("NUM", 3.0, 1.0, 30.0);
   private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);  
   
   private BasicParameter rateParameter = new BasicParameter("RATE", 4000.0, 1.0, 10000.0);  
