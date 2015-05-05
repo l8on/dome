@@ -42,8 +42,7 @@ class L8onSpotLight {
     this.min_dist = min_dist;
   }
   
-  public void tryNewDestination() {
-    float current_dist = 0;
+  public void tryNewDestination() {    
     float new_x = model.xMin + random(model.xRange);    
     float new_y = model.yMin + random(model.yRange);
     float new_z = model.zMin + random(model.zRange);

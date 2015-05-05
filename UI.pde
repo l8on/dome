@@ -19,15 +19,18 @@
  * onDraw method and invoke Processing drawing methods directly.
  */
 class UIDome extends UI3dComponent {
-   
+  private boolean LABEL_FACES = false; 
+  
   protected void onDraw(UI ui, PGraphics pg) {
     HE_Mesh geodome = model.getLEDomeMesh();        
     
     stroke(5);
     render.drawEdges(geodome);
     
-//    stroke(1);
-//    labelFaces(geodome);             
+    if (LABEL_FACES) {
+      stroke(1);
+      labelFaces(geodome);
+    }    
   }
   
   private void labelFaces(HE_Mesh geodome) {      

@@ -1,4 +1,34 @@
 /**
+ *  Importing a bunch of stuff.
+ *  Artists, keep scrolling to add your patterns.
+ */
+import wblut.math.*;
+import wblut.processing.*;
+import wblut.core.*;
+import wblut.hemesh.*;
+import wblut.geom.*;
+import heronarts.lx.*;
+import heronarts.lx.audio.*;
+import heronarts.lx.color.*;
+import heronarts.lx.model.*;
+import heronarts.lx.modulator.*;
+import heronarts.lx.output.*;
+import heronarts.lx.parameter.*;
+import heronarts.lx.pattern.*;
+import heronarts.lx.transition.*;
+import heronarts.p2lx.*;
+import heronarts.p2lx.ui.*;
+import heronarts.p2lx.ui.control.*;
+import heronarts.p2lx.ui.component.*;
+import ddf.minim.*;
+import processing.opengl.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Iterator;
+
+/** 
  * This is the code to be thrown at LEDome! 
  * 
  * This Processing sketch is a fun place to build animations, effects, and 
@@ -12,7 +42,7 @@
  * If you're an artist, create a new tab in the Processing environment with
  * your name. Implement your classes there, and add them to the list below.
  */ 
- 
+
 LXPattern[] patterns(P2LX lx) {
   return new LXPattern[] {
     // Create New Pattern Instances Below HERE

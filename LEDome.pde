@@ -12,31 +12,6 @@
  * each face dome and plots the lights on the faces. It should only be modified
  * when physical changes or tuning is being done to the structure.
  */
- 
-import wblut.math.*;
-import wblut.processing.*;
-import wblut.core.*;
-import wblut.hemesh.*;
-import wblut.geom.*;
-import heronarts.lx.*;
-import heronarts.lx.audio.*;
-import heronarts.lx.color.*;
-import heronarts.lx.model.*;
-import heronarts.lx.modulator.*;
-import heronarts.lx.output.*;
-import heronarts.lx.parameter.*;
-import heronarts.lx.pattern.*;
-import heronarts.lx.transition.*;
-import heronarts.p2lx.*;
-import heronarts.p2lx.ui.*;
-import heronarts.p2lx.ui.control.*;
-import ddf.minim.*;
-import processing.opengl.*;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Iterator;
 
 // Let's work in inches
 final static int INCHES = 1;
@@ -111,7 +86,7 @@ static class LEDome extends LXModel {
     public ArrayList<List<Integer>> lightStringFaceLists = new ArrayList<List<Integer>>();
     public List<LEDomeFace> faces = new ArrayList<LEDomeFace>();
         
-    public static final double LIGHT_OFFSET = 5;
+    public static final double LIGHT_OFFSET_PROP = 0.3;
     
     private LEDomeLights() {
        buildGeodome();
@@ -284,8 +259,7 @@ static class LEDome extends LXModel {
       List<HE_Face> faces = firstVertex.getFaceStar();    
       println("Num star faces: " + faces.size());  
       for(int i = 0; i < faces.size(); i++) {
-        WB_Point faceCenter = faces.get(i).getFaceCenter();
-        println("Face center " + i + ": " + faceCenter);
+        WB_Point faceCenter = faces.get(i).getFaceCenter();        
         
         if (faceCenter.xf() < minX) {
           minX = faceCenter.xf();
@@ -316,18 +290,17 @@ static class LEDome extends LXModel {
       HE_Vertex currVertex = isocVertex;
       WB_Transform moveTowardCenter = new WB_Transform();
       HE_Halfedge currHalfedge = isocVertex.getHalfedge(he_face);
-      HE_FaceEdgeCirculator fecr = new  HE_FaceEdgeCirculator(he_face);    
                            
       do {                       
         moveTowardCenter.clear();        
-        moveTowardCenter.addTranslate(.3, new WB_Vector(currVertex.getPoint(), faceCenter));         
+        moveTowardCenter.addTranslate(LIGHT_OFFSET_PROP, new WB_Vector(currVertex.getPoint(), faceCenter));         
         WB_Point vertexPoint = currVertex.getPoint().apply(moveTowardCenter);   
         lx_point = new LXPoint(vertexPoint.xf(), vertexPoint.yf(), vertexPoint.zf());
         points.add(lx_point);
         addPoint(lx_point);                
         
         moveTowardCenter.clear();
-        moveTowardCenter.addTranslate(.3, new WB_Vector(currHalfedge.getEdgeCenter(), faceCenter));
+        moveTowardCenter.addTranslate(LIGHT_OFFSET_PROP, new WB_Vector(currHalfedge.getEdgeCenter(), faceCenter));
         WB_Point edgeCenterPoint = currHalfedge.getEdgeCenter().apply(moveTowardCenter);
         lx_point = new LXPoint(edgeCenterPoint.xf(), edgeCenterPoint.yf(), edgeCenterPoint.zf());
         points.add(lx_point);
@@ -431,4 +404,3 @@ static class LEDomeOutputManager {
     }
   }
 }
-

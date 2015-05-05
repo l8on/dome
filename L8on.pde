@@ -5,7 +5,6 @@ class Explosions extends LXPattern {
   private List<LEDomeFace> dome_faces;
 
   private final SinLFO saturationModulator = new SinLFO(40.0, 100.0, 20 * SECONDS);
-
   private BasicParameter numExplosionsParameter = new BasicParameter("NUM", 2.0, 1.0, 30.0);
   private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);
 
@@ -91,10 +90,10 @@ class Explosions extends LXPattern {
       }
 
       if(num_explosions_in > 0) {
-        c = lx.hsb(hue_value, sat_value, brightness_value);
+        c = LX.hsb(hue_value, sat_value, brightness_value);
       } else {
         c = colors[p.index];                       
-        c = lx.hsb(LXColor.h(c), LXColor.s(c), decayed_brightness(deltaMs, c));
+        c = LX.hsb(LXColor.h(c), LXColor.s(c), decayed_brightness(deltaMs, c));
       }
 
       colors[p.index] = c;
@@ -129,8 +128,6 @@ class Explosions extends LXPattern {
     WB_Point new_center = dome_faces.get((int)random(dome_faces.size())).he_face.getFaceCenter();
     float chill_time = (3.0 + random(7)) * SECONDS;
     
-    println("Chill time" + chill_time);
-    
     explosion.setCenter(new_center.xf(), new_center.yf(), new_center.zf());
     explosion.setRadius(0, stroke_width);
     explosion.setChillTime(chill_time);
@@ -144,7 +141,7 @@ class Explosions extends LXPattern {
 }
 
 class SpotLights extends LXPattern {
-  // Used to store info about each wave.
+  // Used to store info about each spotlight.
   // See L8onUtil.pde for the definition.
   private List<L8onSpotLight> spotlights = new ArrayList<L8onSpotLight>();  
 
@@ -239,10 +236,10 @@ class SpotLights extends LXPattern {
       }
 
       if(num_spotlights_in > 0) {
-        c = lx.hsb(hue_value, sat_value, brightness_value);
+        c = LX.hsb(hue_value, sat_value, brightness_value);
       } else {
         c = colors[p.index];                       
-        c = lx.hsb(LXColor.h(c), LXColor.s(c), decayed_brightness(deltaMs, c));
+        c = LX.hsb(LXColor.h(c), LXColor.s(c), decayed_brightness(deltaMs, c));
       }
 
       colors[p.index] = c;
@@ -343,8 +340,7 @@ class L8onMixColor extends LXPattern {
   }
   
   public void run(double deltaMs) {
-    float offset_value_x = xOffsetMax.getValuef();
-    float offset_value_y = yOffsetMax.getValuef();
+    float offset_value_x = xOffsetMax.getValuef();    
     float offset_value_z = zOffsetMax.getValuef();
     float base_hue = lx.getBaseHuef();
     float wave_hue_diff = (float) (360.0 / this.l8on_waves.size());
@@ -355,7 +351,7 @@ class L8onMixColor extends LXPattern {
     }
 
     color c;
-    float dist_percentage;
+//    float dist_percentage;
     float hue_value = 0.0;
     float sat_value = saturationParameter.getValuef();
     float brightness_value = brightnessParameter.getValuef();
@@ -370,12 +366,12 @@ class L8onMixColor extends LXPattern {
       float x_percentage = (p.x - model.xMin) / model.xRange;
       float y_percentage = (p.y - model.yMin) / model.yRange;
       float z_percentage = (p.z - model.zMin) / model.zRange;
-      float sin_x = sin(PI / 2 + numWavesX.getValuef() * PI * x_percentage);
+//      float sin_x = sin(PI / 2 + numWavesX.getValuef() * PI * x_percentage);
       float cos_x = cos(PI / 2 + numWavesX.getValuef() * PI * x_percentage);
       float sin_y = sin(PI / 2 + numWavesY.getValuef() * PI * y_percentage);
-      float cos_y = cos(PI / 2 + numWavesY.getValuef() * PI * y_percentage);
+//      float cos_y = cos(PI / 2 + numWavesY.getValuef() * PI * y_percentage);
       float sin_z = sin(PI / 2 + numWavesZ.getValuef() * PI * z_percentage);
-      float cos_z = cos(PI / 2 + numWavesZ.getValuef() * PI * z_percentage);
+//      float cos_z = cos(PI / 2 + numWavesZ.getValuef() * PI * z_percentage);
 
       int num_waves_in = 0;
 
@@ -418,10 +414,10 @@ class L8onMixColor extends LXPattern {
       }
 
       if(num_waves_in > 0) {
-        c = lx.hsb(hue_value, sat_value, brightness_value);
+        c = LX.hsb(hue_value, sat_value, brightness_value);
       } else {
         c = colors[p.index];                       
-        c = lx.hsb(LXColor.h(c), LXColor.s(c), decayed_brightness(deltaMs, c));
+        c = LX.hsb(LXColor.h(c), LXColor.s(c), decayed_brightness(deltaMs, c));
       }
 
       colors[p.index] = c;
@@ -568,7 +564,7 @@ class Life extends LXPattern {
     }
     
     for (LXPoint p : face.points) {      
-      colors[p.index] = lx.hsb(
+      colors[p.index] = LX.hsb(
         hv,
         saturationParameter.getValuef(),        
         bv
@@ -598,7 +594,7 @@ class Life extends LXPattern {
     }
 
     for (LXPoint p : face.points) {
-      colors[p.index] = lx.hsb(
+      colors[p.index] = LX.hsb(
         hv,
         saturationParameter.getValuef(),        
         bv
@@ -611,13 +607,13 @@ class Life extends LXPattern {
   /**
    * Output debug info about the cubes.
    */
-  private void outputFaceInfo() {
-    int i = 0;      
-    for (LEDomeFace face : this.faces) {
-      print("LEDomeFace " + i + ": " + face.xf() + "," + face.yf() + "," + face.zf() + "\n");
-      ++i;
-    }    
-  }
+//  private void outputFaceInfo() {
+//    int i = 0;      
+//    for (LEDomeFace face : this.faces) {
+//      print("LEDomeFace " + i + ": " + face.xf() + "," + face.yf() + "," + face.zf() + "\n");
+//      ++i;
+//    }    
+//  }
   
   /**
    * Initialize the list of face states.
@@ -627,13 +623,11 @@ class Life extends LXPattern {
     L8onFaceLife face_life;      
     this.face_lives = new ArrayList<L8onFaceLife>(this.faces.size());
     float current_brightness = 0.0;
-    Integer i = 0;     
-    
-    for (LEDomeFace led_face : this.faces) {      
+
+    for (int i=0; i< this.faces.size(); i++) {      
       alive = false;
       face_life = new L8onFaceLife(i, alive, current_brightness);
-      this.face_lives.add(face_life);      
-      ++i;
+      this.face_lives.add(face_life);
     }
   }
  
@@ -754,13 +748,11 @@ class Life extends LXPattern {
   /**
    * Apply the new states from the new_lives array.
    */
-  private void applyNewLives() {
-    int index = 0;
-    for(boolean liveliness: new_lives) {
+  private void applyNewLives() {    
+    for(int index = 0; index < this.face_lives.size(); index++) {
       L8onFaceLife face_life = this.face_lives.get(index);
       face_life.alive = new_lives.get(index);
       index++;
     }
   }
 }
-

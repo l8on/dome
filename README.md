@@ -23,3 +23,6 @@ To contribute your own light animations to this repo, you will need to:
 * Add your class to the list of patterns in `dome.pde`
 * Select your pattern when the simulator runs.
 * Rejoice!
+
+# tools
+For more advanced IDE features check out [PDE X](https://github.com/processing/processing-experimental)
