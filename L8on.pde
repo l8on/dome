@@ -1,9 +1,8 @@
 class Explosions extends LXPattern {  
-  // Used to store info about each wave.
-  // See L8onUtil.pde for the definition.
-  private List<LEDomeFace> dome_faces;
+  // Used to store info about each explosion.
+  // See L8onUtil.pde for the definition.  
   private List<L8onExplosion> explosions = new ArrayList<L8onExplosion>();
-  private HashMap<Integer, SinLFO> explosionModulators = new HashMap<Integer, SinLFO>(); 
+  private List<LEDomeFace> dome_faces;
 
   private final SinLFO saturationModulator = new SinLFO(40.0, 100.0, 20 * SECONDS);
 
@@ -476,15 +475,15 @@ class Life extends LXPattern {
   private BasicParameter neighborCountParameter = new BasicParameter("NEIG", 0.0, -2.0, 2.0);
 
   // Alive probability ranges for randomization
-  public final double MIN_ALIVE_PROBABILITY = 0.2;
-  public final double MAX_ALIVE_PROBABILITY = 0.9;
+  public final double MIN_ALIVE_PROBABILITY = 0.3;
+  public final double MAX_ALIVE_PROBABILITY = 0.5;
   
   // The maximum brightness for an alive cell.
   public final float MAX_ALIVE_BRIGHTNESS = 75.0;
 
   // Cube position oscillator used to select color. 
 //  private final SawLFO facePos = new SawLFO(0, ((LEDome)model).getFaces().size(), 4000);
-  private final SawLFO facePos = new SawLFO(0, model.yRange, 10 * SECONDS);
+  private final SinLFO facePos = new SinLFO(0, model.yRange, 10 * SECONDS);
   
   // Contains the state of all cubes by index.
   // See L8onUtil.pde for definition of L8onFaceLife.
@@ -517,26 +516,23 @@ class Life extends LXPattern {
 
      addModulator(facePos).trigger();
   }
-//  
+  
   public void run(double deltaMs) {        
     any_changes_this_run = false;        
     new_lives.clear();
     time_since_last_run += deltaMs;
     
-    for (L8onFaceLife face_life : this.face_lives) {
+    for (L8onFaceLife face_life : this.face_lives) {      
       LEDomeFace face = this.faces.get(face_life.index);
-      if (!face.has_lights) {
-        continue;
-      }
-
+      
       if(shouldLightFace(face_life)) {
         lightLiveFace(face, face_life, deltaMs);
-      } else {
+      } else if (face.has_lights) {
         lightDeadFace(face, face_life, deltaMs);
       } 
     }
     
-    // If we have landed in a static state, randomize cubes.
+    // If we have landed in a static state, randomize faces.
     if(!any_changes_this_run) {
       randomizeFaceStates();  
     } else {
@@ -607,7 +603,9 @@ class Life extends LXPattern {
         saturationParameter.getValuef(),        
         bv
       );     
-    }  
+    }
+    
+    println("bye: " + face_life.index);
   } 
     
   /**
@@ -650,7 +648,12 @@ class Life extends LXPattern {
     
     println("Randomizing faces p = " + prob);
      
-    for (L8onFaceLife face_life : this.face_lives) {   
+    for (L8onFaceLife face_life : this.face_lives) {
+      LEDomeFace face = this.faces.get(face_life.index);      
+      if (!face.has_lights) {
+        continue;
+      }
+      
       face_life.alive = (Math.random() <= prob);            
     }   
   }
@@ -681,24 +684,36 @@ class Life extends LXPattern {
    */
   private boolean cycleOfLife(L8onFaceLife face_life) {
     Integer index = face_life.index;
+    LEDomeFace face = this.faces.get(index);
+    
+    // If the face has no lights, it is always dead.
+    // Add to new_lives array to ensure cardinality of lists align.
+    if (!face.has_lights) {
+      new_lives.add(false);   
+      return false;
+    }
+    
     Integer alive_neighbor_count = countLiveNeighbors(face_life);               
     boolean before_alive = face_life.alive;
     boolean after_alive = before_alive;
     double mutation = Math.random();
-    int neighbor_count_delta = (int) neighborCountParameter.getValuef();       
+    int neighbor_count_delta = (int) neighborCountParameter.getValue();
+    int alive_min_neighbors = (2 + neighbor_count_delta);
+    int alive_max_neighbors = (3 + neighbor_count_delta);
+    int dead_to_alive_neighbors = (3 + neighbor_count_delta);
     
-    if (this.faces.get(face_life.index).getNeighbors().size() > 9) {
+    if (face.getNeighbors().size() > 9) {
       neighbor_count_delta++;  
     }
 
     if(face_life.alive) {
-      if(alive_neighbor_count < (2 + neighbor_count_delta) || alive_neighbor_count > (3 +  neighbor_count_delta)) {
+      if(alive_neighbor_count < alive_min_neighbors || alive_neighbor_count > alive_max_neighbors) {
         after_alive = false;
       } else {
         after_alive = true;
       }
     } else {
-      if(alive_neighbor_count == (3 + neighbor_count_delta)) {
+      if(alive_neighbor_count == dead_to_alive_neighbors) {
         after_alive = true;
       } else {
         after_alive = false;
@@ -707,10 +722,6 @@ class Life extends LXPattern {
 
     if(mutation <= mutationParameter.getValuef()) {
       after_alive = !after_alive;
-    }
-    
-    if(face_life.index == 51) {
-      after_alive = true;  
     }
 
     if(before_alive != after_alive) {

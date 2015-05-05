@@ -33,15 +33,13 @@ LEDomeOutputManager output_manager;
 void setup() {
   size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, OPENGL);
   frame.setResizable(true);
-  smooth(8);
+  noSmooth();
   textSize(6);
   
   // Create LEDome instance
-  model = new LEDome();
-  
+  model = new LEDome();  
   // Create the P2LX engine
-  lx = new P2LX(this, model);  
-  
+  lx = new P2LX(this, model);    
   // Create the NDB output manager
   output_manager = new LEDomeOutputManager(lx);
   
