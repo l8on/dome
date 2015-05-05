@@ -38,7 +38,7 @@ class Explosions extends LXPattern {
         continue;
       }
         
-      explosion.hue_value = base_hue;
+      explosion.hue_value = (float)(base_hue % 360.0);
       base_hue += wave_hue_diff;
       
       float dist_to_travel = rateParameter.getValuef() / ((float)deltaMs * 500);
@@ -46,8 +46,7 @@ class Explosions extends LXPattern {
       float dist_to_travel_perc = min(dist_to_travel / dist_to_max_radius, 1.0);
       float new_radius = explosion.radius + (dist_to_max_radius * dist_to_travel_perc);
       
-      if (explosion.radius >= model.xRange) {
-        println("assigning a new center");
+      if (explosion.radius >= model.xRange) {        
         assignNewCenter(explosion);
       } else {
         explosion.setRadius(new_radius);        
@@ -600,8 +599,6 @@ class Life extends LXPattern {
         bv
       );     
     }
-    
-    println("bye: " + face_life.index);
   } 
     
   /**
@@ -749,10 +746,27 @@ class Life extends LXPattern {
    * Apply the new states from the new_lives array.
    */
   private void applyNewLives() {    
+    if (this.new_lives.size() == 0) {
+      return;
+    }
     for(int index = 0; index < this.face_lives.size(); index++) {
       L8onFaceLife face_life = this.face_lives.get(index);
       face_life.alive = new_lives.get(index);
       index++;
     }
+  }
+}
+
+class ExplosionEffect extends LXEffect {
+  public ExplosionEffect(LX lx) {
+    super(lx);
+  }
+  
+  public void setup() {
+    
+  }
+  
+  public void run(double deltaMs) {
+    
   }
 }

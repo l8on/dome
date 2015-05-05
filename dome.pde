@@ -10,6 +10,7 @@ import wblut.geom.*;
 import heronarts.lx.*;
 import heronarts.lx.audio.*;
 import heronarts.lx.color.*;
+import heronarts.lx.effect.*;
 import heronarts.lx.model.*;
 import heronarts.lx.modulator.*;
 import heronarts.lx.output.*;
