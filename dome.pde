@@ -1,6 +1,6 @@
 /**
  *  Importing a bunch of stuff.
- *  Artists, keep scrolling to add your patterns.
+ *  Artists, keep scrolling to  add your patterns.
  */
 import wblut.math.*;
 import wblut.processing.*;
@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Iterator;
+import java.util.Random;
 
 /** 
  * This is the code to be thrown at LEDome! 

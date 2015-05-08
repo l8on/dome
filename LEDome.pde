@@ -56,6 +56,9 @@ static class LEDome extends LXModel {
   public static final ArrayList<Integer> FACE_LIST_7 = new ArrayList<Integer>(Arrays.asList(8, 9, 10, 41, 40, 39, 68, 69, 70, 91));
   public static final ArrayList<Integer> FACE_LIST_8 = new ArrayList<Integer>(Arrays.asList(13, 12, 11, 42, 43, 44, 73, 72, 71, 92));
   public static final ArrayList<Integer> FACE_LIST_9 = new ArrayList<Integer>(Arrays.asList(14, 15, 46, 45, 74, 94, 93, 103));
+  
+  
+  private Random randomFaceIndex = new Random();
 
   public LEDome() {
     super(new LEDomeLights());
@@ -70,6 +73,14 @@ static class LEDome extends LXModel {
   
   public List<LEDomeFace> getFaces() {
     return domelights.faces;
+  }
+  
+  public LEDomeFace randomFace() {    
+    return domelights.faces.get(randomFaceIndex.nextInt(domelights.faces.size()));  
+  }
+  
+  public WB_Point randomFaceCenter() {
+    return randomFace().he_face.getFaceCenter();  
   }
   
   public WB_Point projectToSphere(float x, float y, float z) {

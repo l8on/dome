@@ -1,3 +1,14 @@
+static class L8onUtil {
+  L8onUtil() {
+  }
+  
+  public static float decayed_brightness(color c, float delay,  double deltaMs) {
+    float bright_prop = min(((float)deltaMs / delay), 1.0);
+    float bright_diff = max((LXColor.b(c) * bright_prop), 1);
+    return max(LXColor.b(c) - bright_diff, 0.0);
+  }
+} 
+
 /*
  * A container to keep state of the different 3d waves in the color remix.
  */
@@ -137,16 +148,26 @@ class L8onExplosion {
   float chill_time;
   float time_chillin;
   
+  private LXModulator radius_modulator;
+  private boolean radius_modulator_triggered = false;  
+  
   private float _min_dist;
   private float _max_dist;
   
   public L8onExplosion(float radius, float stroke_width, float center_x, float center_y, float center_z) {    
-    this.setRadius(radius, stroke_width);    
+    this.setRadius(radius, stroke_width);
     this.center_x = center_x;
     this.center_y = center_y;
     this.center_z = center_z;
   }
   
+  public L8onExplosion(LXModulator radius_modulator, float stroke_width, float center_x, float center_y, float center_z) {    
+    this.setRadiusModulator(radius_modulator, stroke_width);
+    this.center_x = center_x;
+    this.center_y = center_y;
+    this.center_z = center_z;
+  }
+    
   public void setChillTime(float chill_time) {
     this.chill_time = chill_time;  
     this.time_chillin = 0;
@@ -172,6 +193,12 @@ class L8onExplosion {
     this.stroke_width = stroke_width;
     this.setRadius(new_radius);
   }
+  
+  public void setRadiusModulator(LXModulator radius_modulator, float stroke_width) {
+    this.radius_modulator = radius_modulator;
+    this.stroke_width = stroke_width;    
+    this.radius_modulator_triggered = false;
+  }
 
   public void setCenter(float x, float y, float z) {
     this.center_x = x;
@@ -179,9 +206,39 @@ class L8onExplosion {
     this.center_z = z;  
   }
   
-  public boolean onExplosion(float x, float y, float z) {
-    float point_dist = this.distanceFromCenter(x, y, z);
+  public void explode() {
+    this.radius_modulator_triggered = true;    
+    this.radius_modulator.trigger();
     
-    return (point_dist >= this._min_dist && point_dist <= this._max_dist);  
+    println("Explode! " + this.radius_modulator.isRunning());
+  }
+  
+  public boolean hasExploded() {
+    return this.radius_modulator_triggered;  
+  }
+  
+  public boolean isExploding() {
+    if (this.radius_modulator == null) {
+      return false;
+    }
+    
+    return this.radius_modulator.isRunning();    
+  }
+  
+  public boolean isFinished() {
+    if (this.radius_modulator == null) {
+      return true;
+    }
+    
+    return !this.radius_modulator.isRunning();    
+  }
+  
+  public boolean onExplosion(float x, float y, float z) {    
+    float current_radius = this.radius_modulator.getValuef();
+    float min_dist = max(0.0, current_radius - (stroke_width / 2.0));
+    float max_dist = current_radius + (stroke_width / 2.0);;
+    float point_dist = this.distanceFromCenter(x, y, z);
+        
+    return (point_dist >= min_dist && point_dist <= max_dist);  
   }
 }

@@ -4,11 +4,11 @@ class Explosions extends LXPattern {
   private List<L8onExplosion> explosions = new ArrayList<L8onExplosion>();
   private List<LEDomeFace> dome_faces;
 
-  private final SinLFO saturationModulator = new SinLFO(40.0, 100.0, 20 * SECONDS);
+  private final SinLFO saturationModulator = new SinLFO(70.0, 90.0, 20 * SECONDS);
   private BasicParameter numExplosionsParameter = new BasicParameter("NUM", 2.0, 1.0, 30.0);
   private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);
 
-  private BasicParameter rateParameter = new BasicParameter("RATE", 4000.0, 1.0, 20000.0);
+  private BasicParameter rateParameter = new BasicParameter("RATE", 4000.0, 500.0, 20000.0);
   private BasicParameter delayParameter = new BasicParameter("DELAY", 1000.0, 10.0, 3000.0);
   
   public Explosions(P2LX lx) {
@@ -34,24 +34,19 @@ class Explosions extends LXPattern {
     float wave_hue_diff = (float) (360.0 / this.explosions.size());    
     
     for(L8onExplosion explosion : this.explosions) {
-      if(explosion.isChillin((float)deltaMs)) {
+      if (explosion.isChillin((float)deltaMs)) {
         continue;
       }
         
       explosion.hue_value = (float)(base_hue % 360.0);
       base_hue += wave_hue_diff;
       
-      float dist_to_travel = rateParameter.getValuef() / ((float)deltaMs * 500);
-      float dist_to_max_radius = abs(model.xRange - explosion.radius);
-      float dist_to_travel_perc = min(dist_to_travel / dist_to_max_radius, 1.0);
-      float new_radius = explosion.radius + (dist_to_max_radius * dist_to_travel_perc);
-      
-      if (explosion.radius >= model.xRange) {        
+      if (!explosion.hasExploded()) {
+        explosion.explode();
+      } else if (explosion.isFinished()) {
         assignNewCenter(explosion);
-      } else {
-        explosion.setRadius(new_radius);        
-      }      
-    }  
+      }
+    }
     
     color c;    
     float hue_value = 0.0;
@@ -92,7 +87,7 @@ class Explosions extends LXPattern {
         c = LX.hsb(hue_value, sat_value, brightness_value);
       } else {
         c = colors[p.index];                       
-        c = LX.hsb(LXColor.h(c), LXColor.s(c), decayed_brightness(deltaMs, c));
+        c = LX.hsb(LXColor.h(c), LXColor.s(c), L8onUtil.decayed_brightness(c, delayParameter.getValuef(), deltaMs));
       }
 
       colors[p.index] = c;
@@ -108,10 +103,15 @@ class Explosions extends LXPattern {
     
     if (this.explosions.size() < num_explosions) {      
       for(int i = 0; i < (num_explosions - this.explosions.size()); i++) {
-        float stroke_width = (6 * INCHES) + random(2 * FEET);
-        LEDomeFace dome_face = dome_faces.get((int)random(dome_faces.size()));
+        float stroke_width = this.new_stroke_width();
+        println("Linear env:");
+        println("xRange: " + model.xRange);
+        println("rate: " + rateParameter.getValuef());
+        QuadraticEnvelope new_radius_env = new QuadraticEnvelope(0.0, model.xRange, rateParameter);
+        WB_Point new_center = ((LEDome)model).randomFaceCenter();
+        addModulator(new_radius_env);
         this.explosions.add(
-          new L8onExplosion(0, stroke_width, dome_face.he_face.getFaceCenter().xf(), dome_face.he_face.getFaceCenter().yf(), dome_face.he_face.getFaceCenter().zf())
+          new L8onExplosion(new_radius_env, stroke_width, new_center.xf(), new_center.yf(), new_center.zf())
         );
       }  
     } else {
@@ -122,20 +122,22 @@ class Explosions extends LXPattern {
   }
   
   private void assignNewCenter(L8onExplosion explosion) {
-//    float stroke_width = (6 * INCHES) + random(2 * FEET);
-    float stroke_width = 3 * INCHES;
-    WB_Point new_center = dome_faces.get((int)random(dome_faces.size())).he_face.getFaceCenter();
+    float stroke_width = this.new_stroke_width();
+    WB_Point new_center = ((LEDome)model).randomFaceCenter();
     float chill_time = (3.0 + random(7)) * SECONDS;
+    println("Assign Linear env:");
+    println("xRange: " + model.xRange);
+    println("rate: " + rateParameter.getValuef());
+    QuadraticEnvelope new_radius_env = new QuadraticEnvelope(0.0, model.xRange, rateParameter);
     
     explosion.setCenter(new_center.xf(), new_center.yf(), new_center.zf());
-    explosion.setRadius(0, stroke_width);
+    addModulator(new_radius_env);
+    explosion.setRadiusModulator(new_radius_env, stroke_width);
     explosion.setChillTime(chill_time);
   }
   
-  public float decayed_brightness(double deltaMs, color c) {
-    float bright_prop = min(((float)deltaMs / delayParameter.getValuef()), 1.0);
-    float bright_diff = max((LXColor.b(c) * bright_prop), 1);
-    return max(LXColor.b(c) - bright_diff, 0.0);
+  public float new_stroke_width() {
+    return 3 * INCHES + random(6 * INCHES);
   }
 }
 
@@ -238,18 +240,13 @@ class SpotLights extends LXPattern {
         c = LX.hsb(hue_value, sat_value, brightness_value);
       } else {
         c = colors[p.index];                       
-        c = LX.hsb(LXColor.h(c), LXColor.s(c), decayed_brightness(deltaMs, c));
+        c = LX.hsb(LXColor.h(c), LXColor.s(c), L8onUtil.decayed_brightness(c, delayParameter.getValuef(), deltaMs));
       }
 
       colors[p.index] = c;
     }     
   }
     
-  public float decayed_brightness(double deltaMs, color c) {
-    float bright_prop = min(((float)deltaMs / delayParameter.getValuef()), 1.0);
-    float bright_diff = max((LXColor.b(c) * bright_prop), 1);
-    return max(LXColor.b(c) - bright_diff, 0.0);
-  }
   /**
    * Initialize the waves.
    */
@@ -416,16 +413,11 @@ class L8onMixColor extends LXPattern {
         c = LX.hsb(hue_value, sat_value, brightness_value);
       } else {
         c = colors[p.index];                       
-        c = LX.hsb(LXColor.h(c), LXColor.s(c), decayed_brightness(deltaMs, c));
+        c = LX.hsb(LXColor.h(c), LXColor.s(c), L8onUtil.decayed_brightness(c, delayParameter.getValuef(), deltaMs));
       }
 
       colors[p.index] = c;
     }
-  }
-  
-  public float decayed_brightness(double deltaMs, color c) {
-    float bright_prop = min(((float)deltaMs / delayParameter.getValuef()), 1.0);
-    return max(LXColor.b(c) - (LXColor.b(c) * bright_prop), 0.0);
   }
   
   /**
@@ -757,16 +749,157 @@ class Life extends LXPattern {
   }
 }
 
+public class BoomEffect extends LXEffect {
+
+  final BasicParameter falloff = new BasicParameter("WIDTH", 0.5);
+  final BasicParameter speed = new BasicParameter("SPD", 0.5);
+  final BasicParameter bright = new BasicParameter("BRT", 1.0);
+  final BasicParameter sat = new BasicParameter("SAT", 0.2);
+  List<Layer> layers = new ArrayList<Layer>();
+  final float maxr = sqrt(model.xMax*model.xMax + model.yMax*model.yMax + model.zMax*model.zMax) + 10;
+
+  class Layer {
+    LinearEnvelope boom = new LinearEnvelope(-40, 500, 1300);
+
+    Layer() {
+      addModulator(boom);
+      trigger();
+    }
+
+    void trigger() {
+      float falloffv = falloffv();
+      boom.setRange(-100 / falloffv, maxr + 100/falloffv, 4000 - speed.getValuef() * 3300);
+      boom.trigger();
+    }
+  
+   public  void run(double deltaMs) {
+      //println("boom Envelop Valeue: " + boom.getValuef());
+      float brightv = 100 * bright.getValuef();
+      float falloffv = falloffv();
+      float satv = sat.getValuef() * 100;
+      float huev = lx.getBaseHuef();
+      for (LXPoint p : model.points) {
+        addColor(p.index, lx.hsb(
+          huev,
+          satv,
+          constrain(brightv - falloffv*abs(boom.getValuef() - dist(p.x, 2*p.y, 3*p.z, model.xMax/2, model.yMax, model.zMax*1.5)), 0, 100)) 
+        );
+      }
+    }
+  }
+
+  public BoomEffect(LX lx) {
+    super(lx, true);
+    addParameter(falloff);
+    addParameter(speed);
+    addParameter(bright);
+    addParameter(sat);
+  }
+
+  public void onEnable() {
+    for (Layer l : layers) {
+      if (!l.boom.isRunning()) {
+        l.trigger();
+        return;
+      }
+    }
+    layers.add(new Layer());
+  }
+
+  private float falloffv() {
+    return 20 - 19 * falloff.getValuef();
+  }
+
+  public void onTrigger() {
+    onEnable();
+  }
+
+  public void run(double deltaMs) {
+    for (Layer l : layers) {
+      if (l.boom.isRunning()) {
+        l.run(deltaMs);
+      }
+    }
+  }
+}
+
+
 class ExplosionEffect extends LXEffect {
-  public ExplosionEffect(LX lx) {
-    super(lx);
+  // Used to store info about each explosion.
+  // See L8onUtil.pde for the definition.  
+  private List<ExplosionLayer> explosion_layers = new ArrayList<ExplosionLayer>();
+  private List<LEDomeFace> dome_faces;
+   
+  private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);
+  private BasicParameter saturationParameter = new BasicParameter("SAT", 60, 0, 100);
+  private BasicParameter rateParameter = new BasicParameter("RATE", 4000.0, 500.0, 20000.0);
+  private BasicParameter delayParameter = new BasicParameter("DELAY", 1000.0, 10.0, 3000.0);  
+  final float maxr = sqrt(model.xMax*model.xMax + model.yMax*model.yMax + model.zMax*model.zMax) + 10;
+  private BasicParameter strokeParameter = new BasicParameter("STRK", 6.0, 3.0, maxr / 2.0);
+   
+  
+  class ExplosionLayer {
+    QuadraticEnvelope boom = new QuadraticEnvelope(0, maxr, rateParameter);
+    L8onExplosion explosion;
+
+    ExplosionLayer() {      
+      boom = new QuadraticEnvelope(0, maxr, rateParameter);
+      WB_Point new_center = ((LEDome)model).randomFaceCenter();
+      addModulator(boom);
+      explosion = new L8onExplosion(boom, strokeParameter.getValuef(), new_center.xf(), new_center.yf(), new_center.zf());      
+      trigger();
+    }
+
+    void trigger() {
+      WB_Point new_center = ((LEDome)model).randomFaceCenter();
+      explosion.setCenter(new_center.xf(), new_center.yf(), new_center.zf());
+      explosion.explode();
+    }
+  
+    public  void run(double deltaMs) {
+      //println("boom Envelop Valeue: " + boom.getValuef());
+      float brightv = brightnessParameter.getValuef();      
+      float satv = saturationParameter.getValuef();
+      float huev = lx.getBaseHuef();
+      for (LXPoint p : model.points) {
+        if (explosion.onExplosion(p.x, p.y, p.z)) {
+          addColor(p.index, LX.hsb(huev, satv, brightv)); 
+        } else {
+          color c = colors[p.index];
+          addColor(p.index, LX.hsb(LXColor.h(c), LXColor.s(c), L8onUtil.decayed_brightness(c, delayParameter.getValuef(), deltaMs)));
+        } 
+      }
+    }
   }
   
-  public void setup() {
+  public ExplosionEffect(LX lx) {
+    super(lx, true);
+
+    dome_faces = ((LEDome)model).faces;
     
+    addParameter(brightnessParameter);
+    addParameter(saturationParameter);
+    addParameter(rateParameter);
+    addParameter(delayParameter);
+    addParameter(strokeParameter);
+  }
+  
+  public void onEnable() {
+    for (ExplosionLayer l : explosion_layers) {
+      if (!l.explosion.isExploding()) {
+        l.trigger();
+        return;
+      }
+    }
+    
+    explosion_layers.add(new ExplosionLayer());
   }
   
   public void run(double deltaMs) {
-    
+    for (ExplosionLayer l : explosion_layers) {
+      if (l.explosion != null && l.explosion.isExploding()) {
+        l.run(deltaMs);
+      }
+    }
   }
 }
