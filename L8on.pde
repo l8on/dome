@@ -103,10 +103,7 @@ class Explosions extends LXPattern {
     
     if (this.explosions.size() < num_explosions) {      
       for(int i = 0; i < (num_explosions - this.explosions.size()); i++) {
-        float stroke_width = this.new_stroke_width();
-        println("Linear env:");
-        println("xRange: " + model.xRange);
-        println("rate: " + rateParameter.getValuef());
+        float stroke_width = this.new_stroke_width();       
         QuadraticEnvelope new_radius_env = new QuadraticEnvelope(0.0, model.xRange, rateParameter);
         WB_Point new_center = ((LEDome)model).randomFaceCenter();
         addModulator(new_radius_env);
@@ -124,10 +121,7 @@ class Explosions extends LXPattern {
   private void assignNewCenter(L8onExplosion explosion) {
     float stroke_width = this.new_stroke_width();
     WB_Point new_center = ((LEDome)model).randomFaceCenter();
-    float chill_time = (3.0 + random(7)) * SECONDS;
-    println("Assign Linear env:");
-    println("xRange: " + model.xRange);
-    println("rate: " + rateParameter.getValuef());
+    float chill_time = (3.0 + random(7)) * SECONDS;    
     QuadraticEnvelope new_radius_env = new QuadraticEnvelope(0.0, model.xRange, rateParameter);
     
     explosion.setCenter(new_center.xf(), new_center.yf(), new_center.zf());
@@ -146,7 +140,7 @@ class SpotLights extends LXPattern {
   // See L8onUtil.pde for the definition.
   private List<L8onSpotLight> spotlights = new ArrayList<L8onSpotLight>();  
 
-  private final SinLFO saturationModulator = new SinLFO(0.0, 100.0, 20 * SECONDS);  
+  private final SinLFO saturationModulator = new SinLFO(75.0, 95.0, 20 * SECONDS);  
   
   // Controls the radius of the spotlights.
   private BasicParameter radiusParameter = new BasicParameter("RAD", 2.5 * FEET, 1.0, model.xRange / 2.0);
@@ -455,7 +449,7 @@ class Life extends LXPattern {
   // Controls the rate of life algorithm ticks, in milliseconds
   private BasicParameter rateParameter = new BasicParameter("DELAY", 700, 0.0, 10 * SECONDS);
   // Controls the probability of a mutation in the cycleOfLife
-  private BasicParameter mutationParameter = new BasicParameter("MUT", 0.011, 0.0, 0.1);
+  private BasicParameter mutationParameter = new BasicParameter("MUT", 0.011, 0.0, 0.2);
   // Controls the saturation.
   private BasicParameter saturationParameter = new BasicParameter("SAT", 75.0, 0.0, 100.0);
   

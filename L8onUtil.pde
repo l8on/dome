@@ -209,8 +209,6 @@ class L8onExplosion {
   public void explode() {
     this.radius_modulator_triggered = true;    
     this.radius_modulator.trigger();
-    
-    println("Explode! " + this.radius_modulator.isRunning());
   }
   
   public boolean hasExploded() {

@@ -44,15 +44,19 @@ void setup() {
   output_manager = new LEDomeOutputManager(lx);
   
   setupPatterns();  
+  setupEffects();
   setupUI();  
   
   render = new WB_Render(this);  
 }
 
 void setupPatterns() {
-  lx.setPatterns(patterns(lx));  
+  lx.setPatterns(patterns(lx));
 }
 
+void setupEffects() {
+  lx.addEffects(effects(lx));  
+}
 
 void setupUI() {
   lx.ui.addLayer(
@@ -83,20 +87,19 @@ void setupUI() {
     .setTheta(PI/24)
     .setPhi(PI/24)
     
-    .setRotateVelocity(12*PI)
-    .setRotateAcceleration(3*PI)
+    .setRotationVelocity(12*PI)
+    .setRotationAcceleration(3*PI)
     
     // Let's add a point cloud of our animation points
-    .addComponent(new UIPointCloud(lx, model).setPointWeight(3))
+    .addComponent(new UIPointCloud(lx, model).setPointSize(3))
     
     .addComponent(new UIDome())
   );
   
   // A basic built-in 2-D control for a channel
-  lx.ui.addLayer(new UIChannelControl(lx.ui, lx.engine.getChannel(0), 4, 4));
-  lx.ui.addLayer(new UIEngineControl(lx.ui, 4, 326));
-  lx.ui.addLayer(new LEDomeNDBOutputControl(lx.ui, 4, 426));
-  lx.ui.addLayer(new LEDomeUIWindow(lx.ui, width-144, 4));    
+  lx.ui.addLayer(new UIChannelControl(lx.ui, lx.engine.getDefaultChannel(), 4, 4));  
+  lx.ui.addLayer(new LEDomeNDBOutputControl(lx.ui, 4, 326));
+  lx.ui.addLayer(new UIEffectsControl(lx.ui, lx, width-144, 4));
 }
 
 void draw() {

@@ -7,7 +7,7 @@
  * It knows what which lights are on it's face (LEDomeFace#points)
  * It knows which faces are nearby (LEDomeFace#neighbors)
  * It knows the 3 faces in which it shares an edge (LEDomeFace#next_door_neighbors)
- * It also has a reference to the face object from the 3d mesh model (LEDomeFace#he_face)  
+ * It also has a reference to the face object from the 3d mesh model (LEDomeFace#he_face)
  */
 public static class LEDomeFace {
   public boolean has_lights;  

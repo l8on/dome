@@ -60,3 +60,11 @@ LXPattern[] patterns(P2LX lx) {
     new IteratorTestPattern(lx).setTransition(new DissolveTransition(lx))
   };
 }
+
+LXEffect[] effects(P2LX lx) {
+  return new LXEffect[] {
+    new FlashEffect(lx),
+    new DesaturationEffect(lx), 
+    new BlurEffect(lx)
+  };
+}
