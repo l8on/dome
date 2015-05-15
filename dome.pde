@@ -62,7 +62,8 @@ LXPattern[] patterns(P2LX lx) {
 }
 
 LXEffect[] effects(P2LX lx) {
-  return new LXEffect[] {
+  return new LXEffect[] {    
+    new ExplosionEffect(lx),
     new FlashEffect(lx),
     new DesaturationEffect(lx), 
     new BlurEffect(lx)

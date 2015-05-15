@@ -743,93 +743,18 @@ class Life extends LXPattern {
   }
 }
 
-public class BoomEffect extends LXEffect {
-
-  final BasicParameter falloff = new BasicParameter("WIDTH", 0.5);
-  final BasicParameter speed = new BasicParameter("SPD", 0.5);
-  final BasicParameter bright = new BasicParameter("BRT", 1.0);
-  final BasicParameter sat = new BasicParameter("SAT", 0.2);
-  List<Layer> layers = new ArrayList<Layer>();
-  final float maxr = sqrt(model.xMax*model.xMax + model.yMax*model.yMax + model.zMax*model.zMax) + 10;
-
-  class Layer {
-    LinearEnvelope boom = new LinearEnvelope(-40, 500, 1300);
-
-    Layer() {
-      addModulator(boom);
-      trigger();
-    }
-
-    void trigger() {
-      float falloffv = falloffv();
-      boom.setRange(-100 / falloffv, maxr + 100/falloffv, 4000 - speed.getValuef() * 3300);
-      boom.trigger();
-    }
-  
-   public  void run(double deltaMs) {
-      //println("boom Envelop Valeue: " + boom.getValuef());
-      float brightv = 100 * bright.getValuef();
-      float falloffv = falloffv();
-      float satv = sat.getValuef() * 100;
-      float huev = lx.getBaseHuef();
-      for (LXPoint p : model.points) {
-        addColor(p.index, lx.hsb(
-          huev,
-          satv,
-          constrain(brightv - falloffv*abs(boom.getValuef() - dist(p.x, 2*p.y, 3*p.z, model.xMax/2, model.yMax, model.zMax*1.5)), 0, 100)) 
-        );
-      }
-    }
-  }
-
-  public BoomEffect(LX lx) {
-    super(lx, true);
-    addParameter(falloff);
-    addParameter(speed);
-    addParameter(bright);
-    addParameter(sat);
-  }
-
-  public void onEnable() {
-    for (Layer l : layers) {
-      if (!l.boom.isRunning()) {
-        l.trigger();
-        return;
-      }
-    }
-    layers.add(new Layer());
-  }
-
-  private float falloffv() {
-    return 20 - 19 * falloff.getValuef();
-  }
-
-  public void onTrigger() {
-    onEnable();
-  }
-
-  public void run(double deltaMs) {
-    for (Layer l : layers) {
-      if (l.boom.isRunning()) {
-        l.run(deltaMs);
-      }
-    }
-  }
-}
-
-
 class ExplosionEffect extends LXEffect {
   // Used to store info about each explosion.
   // See L8onUtil.pde for the definition.  
   private List<ExplosionLayer> explosion_layers = new ArrayList<ExplosionLayer>();
   private List<LEDomeFace> dome_faces;
    
-  private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);
+  private BasicParameter brightnessParameter = new BasicParameter("BRGT", 90, 10, 80);
   private BasicParameter saturationParameter = new BasicParameter("SAT", 60, 0, 100);
-  private BasicParameter rateParameter = new BasicParameter("RATE", 4000.0, 500.0, 20000.0);
+  private BasicParameter rateParameter = new BasicParameter("RATE", 400.0, 100.0, 20000.0);
   private BasicParameter delayParameter = new BasicParameter("DELAY", 1000.0, 10.0, 3000.0);  
   final float maxr = sqrt(model.xMax*model.xMax + model.yMax*model.yMax + model.zMax*model.zMax) + 10;
-  private BasicParameter strokeParameter = new BasicParameter("STRK", 6.0, 3.0, maxr / 2.0);
+  private BasicParameter strokeParameter = new BasicParameter("STRK", 15.0, 3.0, maxr / 2.0);
    
   
   class ExplosionLayer {
@@ -868,7 +793,7 @@ class ExplosionEffect extends LXEffect {
   
   public ExplosionEffect(LX lx) {
     super(lx, true);
-
+  
     dome_faces = ((LEDome)model).faces;
     
     addParameter(brightnessParameter);
