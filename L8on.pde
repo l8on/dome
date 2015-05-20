@@ -639,7 +639,7 @@ class Life extends LXPattern {
       
       if(shouldLightFace(face_life)) {
         lightLiveFace(face, face_life, deltaMs);
-      } else if (face.has_lights) {
+      } else if (face.hasLights()) {
         lightDeadFace(face, face_life, deltaMs);
       } 
     }
@@ -758,7 +758,7 @@ class Life extends LXPattern {
      
     for (L8onFaceLife face_life : this.face_lives) {
       LEDomeFace face = this.faces.get(face_life.index);      
-      if (!face.has_lights) {
+      if (!face.hasLights()) {
         continue;
       }
       
@@ -796,7 +796,7 @@ class Life extends LXPattern {
     
     // If the face has no lights, it is always dead.
     // Add to new_lives array to ensure cardinality of lists align.
-    if (!face.has_lights) {
+    if (!face.hasLights()) {
       new_lives.add(false);   
       return false;
     }
@@ -862,7 +862,7 @@ class Life extends LXPattern {
   /**
    * Apply the new states from the new_lives array.
    */
-  private void applyNewLives() {    
+  private void applyNewLives() {
     if (this.new_lives.size() == 0) {
       return;
     }

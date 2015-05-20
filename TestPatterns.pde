@@ -101,3 +101,49 @@ class LayerDemoPattern extends LXPattern {
     }
   }
 }
+
+class FaceIteratorTest extends LXPattern {
+  private final SawLFO currIndex = new SawLFO(0, ((LEDome)model).faces.size(), ((LEDome)model).faces.size() * 300);
+  public FaceIteratorTest(LX lx) {
+    super(lx);     
+    
+    addModulator(currIndex).start();     
+  }
+  
+  public void run(double deltaMs) {
+    int index = (int) currIndex.getValuef();
+    
+    for(int i = 0; i < ((LEDome)model).faces.size(); i++) {
+      LEDomeFace face = ((LEDome)model).faces.get(i);
+      if(!face.hasLights()) {
+        continue;  
+      }
+      
+      float bv = (i == index) ? 100.0 : 0.0;
+     
+      for(LXPoint p : face.points) {
+        colors[p.index] = LX.hsb(120, 90, bv);    
+      }
+    }
+  }
+}
+
+class EdgeIteratorTest extends LXPattern {
+  private final SawLFO currIndex = new SawLFO(0, ((LEDome)model).edges.size(), ((LEDome)model).edges.size() * 200);
+  
+  public EdgeIteratorTest(LX lx) {
+    super(lx);
+    
+    addModulator(currIndex).start();     
+  }
+  
+  public void run(double deltaMs) {
+    int index = (int) currIndex.getValuef();
+    LEDomeEdge edge = ((LEDome)model).edges.get(index);
+    
+    for(LXPoint p : model.points) {
+      float bv = edge.onEdge(p) ? 100.0 : 0.0;
+      colors[p.index] = LX.hsb(120, 90, bv);  
+    }
+  }
+}

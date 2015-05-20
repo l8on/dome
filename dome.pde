@@ -57,7 +57,9 @@ LXPattern[] patterns(P2LX lx) {
 
     // Test Patterns
     new LayerDemoPattern(lx),
-    new IteratorTestPattern(lx).setTransition(new DissolveTransition(lx))
+    new FaceIteratorTest(lx),
+    new EdgeIteratorTest(lx), 
+    new IteratorTestPattern(lx).setTransition(new DissolveTransition(lx))    
   };
 }
 

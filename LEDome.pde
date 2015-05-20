@@ -31,6 +31,7 @@ final static String NDB_IP_ADDRESS = "10.0.0.116";
  */
 static class LEDome extends LXModel {
   public List<LEDomeFace> faces;
+  public List<LEDomeEdge> edges;
   public WB_Sphere sphere;  
   
   private LEDomeLights domelights;
@@ -65,6 +66,7 @@ static class LEDome extends LXModel {
     domelights = ((LEDomeLights)fixtures.get(0));
     sphere = new WB_Sphere(domelights.geodome.getCenter(), DOME_RADIUS);
     faces = this.getFaces();
+    edges = this.getEdges();
   }
  
   public HE_Mesh getLEDomeMesh() {
@@ -73,6 +75,10 @@ static class LEDome extends LXModel {
   
   public List<LEDomeFace> getFaces() {
     return domelights.faces;
+  }
+  
+  public List<LEDomeEdge> getEdges() {
+    return domelights.edges;
   }
   
   public LEDomeFace randomFace() {    
@@ -96,6 +102,7 @@ static class LEDome extends LXModel {
     public HE_Mesh geodome;
     public ArrayList<List<Integer>> lightStringFaceLists = new ArrayList<List<Integer>>();
     public List<LEDomeFace> faces = new ArrayList<LEDomeFace>();
+    public List<LEDomeEdge> edges = new ArrayList<LEDomeEdge>();
         
     public static final double LIGHT_OFFSET_PROP = 0.3;
     
@@ -294,35 +301,67 @@ static class LEDome extends LXModel {
     
     private void plotLightsOnFace(LEDomeFace face) {
       ArrayList<LXPoint> points = new ArrayList<LXPoint>();
-      LXPoint lx_point;
+      ArrayList<LEDomeEdge> faceEdges = new ArrayList<LEDomeEdge>();
+      
       HE_Face he_face = face.he_face;
       WB_Point faceCenter = he_face.getFaceCenter();          
       HE_Vertex isocVertex = findIsocVertex(he_face);
       HE_Vertex currVertex = isocVertex;
       WB_Transform moveTowardCenter = new WB_Transform();
       HE_Halfedge currHalfedge = isocVertex.getHalfedge(he_face);
+      
+      LEDomeEdge currDomeEdge = null;
+      LEDomeEdge prevDomeEdge = null;      
+      LXPoint lx_point;
                            
-      do {                       
-        moveTowardCenter.clear();        
+      do {             
+        // Create LEDomeEdge model for the first edge.         
+        currDomeEdge = new LEDomeEdge(face, currHalfedge);
+        faceEdges.add(currDomeEdge);
+        this.edges.add(currDomeEdge);
+                
+        // Create vertex point by translating toward the center from the face.
+        moveTowardCenter.clear();
         moveTowardCenter.addTranslate(LIGHT_OFFSET_PROP, new WB_Vector(currVertex.getPoint(), faceCenter));         
         WB_Point vertexPoint = currVertex.getPoint().apply(moveTowardCenter);   
         lx_point = new LXPoint(vertexPoint.xf(), vertexPoint.yf(), vertexPoint.zf());
-        points.add(lx_point);
-        addPoint(lx_point);                
         
+        // Add point to model and to points array.
+        points.add(lx_point);
+        addPoint(lx_point);
+        
+        // Add point to current edge
+        currDomeEdge.addPoint(lx_point);
+        if (prevDomeEdge != null) { // Also add point to previous edge if not null.
+          prevDomeEdge.addPoint(lx_point);
+        }
+        
+        // Create edge point by translating toward the center of the face.
         moveTowardCenter.clear();
         moveTowardCenter.addTranslate(LIGHT_OFFSET_PROP, new WB_Vector(currHalfedge.getEdgeCenter(), faceCenter));
         WB_Point edgeCenterPoint = currHalfedge.getEdgeCenter().apply(moveTowardCenter);
         lx_point = new LXPoint(edgeCenterPoint.xf(), edgeCenterPoint.yf(), edgeCenterPoint.zf());
-        points.add(lx_point);
-        addPoint(lx_point);        
-
-        currHalfedge = currHalfedge.getPrevInFace().getPrevInFace();      
-        currVertex = currHalfedge.getVertex();
         
+        // Add point to model and to points array
+        points.add(lx_point);
+        addPoint(lx_point);  
+        
+        // Add point to current edge and cache for next iteration.
+        currDomeEdge.addPoint(lx_point);
+        prevDomeEdge = currDomeEdge;
+        
+        // Get next halfedge. 
+        // It seems going backwards gives us the direct we want (clockwise)
+        currHalfedge = currHalfedge.getPrevInFace().getPrevInFace();                
+        currVertex = currHalfedge.getVertex();
       } while(currVertex != isocVertex);
 
-      face.setPoints(points);      
+      // Add very first vertex point to final edge.
+      prevDomeEdge.addPoint(points.get(0));
+      
+      // Set points and edeges on the face.
+      face.setPoints(points);
+      face.setEdges(faceEdges);
     }
         
     private HE_Vertex findIsocVertex(HE_Face face) {

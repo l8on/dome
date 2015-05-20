@@ -10,21 +10,19 @@
  * It also has a reference to the face object from the 3d mesh model (LEDomeFace#he_face)
  */
 public static class LEDomeFace {
-  public boolean has_lights;  
   public HE_Face he_face;
   public List<LXPoint> points;
+  public List<LEDomeEdge> edges;
   public List<Integer> neighbors;
   public List<Integer> next_door_neighbors;
 
   public LEDomeFace(HE_Face face) {
-    he_face = face;
-    has_lights = false;
+    he_face = face;    
   }
 
   public LEDomeFace(HE_Face face, List<LXPoint> lxPoints) {
     he_face = face;
-    points = lxPoints;
-    has_lights = (lxPoints != null && lxPoints.size() > 0);
+    points = lxPoints;    
   }
   
   public float xf() {
@@ -52,8 +50,11 @@ public static class LEDomeFace {
   }
 
   public void setPoints(List<LXPoint> lxPoints) {
-    points = lxPoints;
-    has_lights = (lxPoints != null && lxPoints.size() > 0);
+    this.points = lxPoints;    
+  }
+  
+  public void setEdges(List<LEDomeEdge> edges) {
+    this.edges = edges;  
   }
   
   public List<Integer> getNeighbors() {
@@ -86,5 +87,74 @@ public static class LEDomeFace {
     }
     
     return this.next_door_neighbors;
+  }
+  
+  public boolean hasLights() {
+    return this.points != null && this.points.size() > 0;    
+  }
+  
+  public boolean onFace(LXPoint point) {
+    return this.points != null && this.points.contains(point);
+  }
+}
+
+public static class LEDomeEdge {  
+  public HE_Halfedge he_halfedge;
+  public LEDomeFace ledome_face;
+  public List<LXPoint> points;
+  
+  public LEDomeEdge(LEDomeFace face, HE_Halfedge edge) {
+    ledome_face = face;
+    he_halfedge = edge;
+  }
+  
+  public LEDomeEdge(LEDomeFace face, HE_Halfedge edge, List<LXPoint> lxPoints) {
+    ledome_face = face;
+    he_halfedge = edge;
+    points = lxPoints;
+  }
+  
+  public void setPoints(List<LXPoint> lxPoints) {
+    points = lxPoints;
+  }
+  
+  public void addPoint(LXPoint lxPoint) {
+    if(this.points == null) {
+      this.points = new ArrayList<LXPoint>();
+    }
+    
+    points.add(lxPoint);
+  }
+  
+  public float xf() {
+    return he_halfedge.getEdgeCenter().xf();  
+  }
+  
+  public float yf() {
+    return he_halfedge.getEdgeCenter().yf();  
+  }
+  
+  public float zf() {
+    return he_halfedge.getEdgeCenter().zf();  
+  }
+  
+  public double xd() {
+    return he_halfedge.getEdgeCenter().xd();  
+  }
+  
+  public double yd() {
+    return he_halfedge.getEdgeCenter().yd();  
+  }
+  
+  public double zd() {
+    return he_halfedge.getEdgeCenter().zd();  
+  }
+   
+  public boolean hasLights() {
+   return this.points != null && this.points.size() > 0;    
+  }
+  
+  public boolean onEdge(LXPoint point) {
+    return this.points != null && this.points.contains(point);
   }
 }
