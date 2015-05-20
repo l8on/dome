@@ -49,7 +49,7 @@ LXPattern[] patterns(P2LX lx) {
   return new LXPattern[] {
     // Create New Pattern Instances Below HERE
 
-    // L8on
+    // L8on    
     new Explosions(lx),
     new SpotLights(lx),
     new Life(lx),

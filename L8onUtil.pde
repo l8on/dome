@@ -7,7 +7,41 @@ static class L8onUtil {
     float bright_diff = max((LXColor.b(c) * bright_prop), 1);
     return max(LXColor.b(c) - bright_diff, 0.0);
   }
-} 
+}
+
+
+public class BlurLayer extends LXLayer {
+  public final BasicParameter amount;
+  private final int[] blurBuffer;
+
+  public BlurLayer(LX lx, LXBufferedComponent pattern) {
+    this(lx, pattern, new BasicParameter("BLUR", 0));
+  }
+
+  public BlurLayer(LX lx, LXBufferedComponent pattern, BasicParameter amount) {    
+    super(lx, pattern);     //<>//
+    this.amount = amount;
+    this.blurBuffer = new int[lx.total];
+    
+    for (int i = 0; i < blurBuffer.length; ++i) {
+      this.blurBuffer[i] = 0xff000000;
+    }
+  }
+  
+  public void run(double deltaMs) {
+    float blurf = this.amount.getValuef();
+    if (blurf > 0) {
+      blurf = 1 - (1 - blurf) * (1 - blurf) * (1 - blurf);
+      for (int i = 0; i < this.colors.length; ++i) {
+        int blend = LXColor.screen(this.colors[i], this.blurBuffer[i]);
+        this.colors[i] = LXColor.lerp(this.colors[i], blend, blurf);
+      }
+    }
+    for (int i = 0; i < this.colors.length; ++i) {
+      this.blurBuffer[i] = this.colors[i];
+    }
+  }
+}
 
 /*
  * A container to keep state of the different 3d waves in the color remix.
@@ -238,5 +272,102 @@ class L8onExplosion {
     float point_dist = this.distanceFromCenter(x, y, z);
         
     return (point_dist >= min_dist && point_dist <= max_dist);  
+  }
+}
+
+/**
+ * Contains the current state of an explosion.
+ */
+class L8onRipple {
+  float radius;
+  float center_x;
+  float center_y;
+  float center_z;
+  float hue_value;
+  float chill_time;
+  float time_chillin;
+  float decay;
+  
+  private LXModulator radius_modulator;
+  private LXModulator decay_modulator;
+  private boolean radius_modulator_triggered = false;
+  
+  public L8onRipple(LXModulator radius_modulator, LXModulator decay_modulator, float center_x, float center_y, float center_z) {    
+    this.setRadiusModulator(radius_modulator, decay_modulator);
+    this.center_x = center_x;
+    this.center_y = center_y;
+    this.center_z = center_z;
+  }
+    
+  public void setChillTime(float chill_time) {
+    this.chill_time = chill_time;  
+    this.time_chillin = 0;
+  }
+  
+  public boolean isChillin(float deltaMs) {
+    this.time_chillin += deltaMs;
+    return time_chillin < this.chill_time;  
+  }
+  
+  public float distanceFromCenter(float x, float y, float z) {
+    return dist(this.center_x, this.center_y, this.center_z, x, y, z);
+  }
+    
+  public void setRadiusModulator(LXModulator radius_modulator, LXModulator decay_modulator) {    
+    this.decay_modulator = decay_modulator;
+    this.radius_modulator = radius_modulator;
+    this.radius_modulator_triggered = false;
+  }
+
+  public void setCenter(float x, float y, float z) {
+    this.center_x = x;
+    this.center_y = y;
+    this.center_z = z;
+  }
+
+  public void explode() {
+    this.radius_modulator_triggered = true;    
+    this.radius_modulator.trigger();
+    this.decay_modulator.trigger();
+  }
+  
+  public boolean hasExploded() {
+    return this.radius_modulator_triggered;
+  }
+
+  public boolean isExploding() {
+    if (this.decay_modulator == null) {
+      return false;
+    }
+
+    return this.decay_modulator.isRunning();    
+  }
+  
+  public boolean isFinished() {
+    if (this.decay_modulator == null) {
+      return true;
+    }
+    
+    return !this.decay_modulator.isRunning();    
+  }
+
+  public float amplitude(float x, float y, float z) {    
+    float current_radius = this.radius_modulator.getValuef();
+    float decay_perc = this.decay_modulator.getValuef();    
+    float point_dist = this.distanceFromCenter(x, y, z);
+    float offset = current_radius - point_dist;
+   
+    // The point is beyond the event horizon. 
+    if (offset < 0) { return 0.0; }
+    
+    float point_perc = point_dist / current_radius;
+    float period = min(current_radius, 10);
+    float period_dist = offset / period;    
+    float raw_amplitude = (sin(period_dist * PI) + 1.0) / 2.0;
+     
+     
+    return raw_amplitude * (1.0 - point_perc) * decay_perc;
+//    return raw_amplitude;
+//    return raw_amplitude * (this.decay * point_perc);
   }
 }
