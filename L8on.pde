@@ -283,8 +283,12 @@ class SpotLights extends LXPattern {
   private BasicParameter delayParameter = new BasicParameter("DELAY", 0, 0.0, 2000.0);
   private BasicParameter minDistParameter = new BasicParameter("DIST", 100.0, 10.0, model.xRange);
   
+  private BasicParameter blurParameter = new BasicParameter("BLUR", 0.69);
+  
+  private BlurLayer blurLayer;
+  
   public SpotLights(P2LX lx) {
-    super(lx);        
+    super(lx);
     
     addParameter(radiusParameter);
     addParameter(numLightsParameter);
@@ -293,7 +297,11 @@ class SpotLights extends LXPattern {
     addParameter(rateParameter);
     addParameter(restParameter);
     addParameter(delayParameter);
-    addParameter(minDistParameter);
+    addParameter(minDistParameter);    
+    addParameter(blurParameter);
+
+    blurLayer = new BlurLayer(lx, this, blurParameter);
+    addLayer(blurLayer);
     
     addModulator(saturationModulator).start();
         
@@ -434,7 +442,7 @@ class L8onMixColor extends LXPattern {
   // Controls brightness of on lights
   private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);
   private BasicParameter saturationParameter = new BasicParameter("SAT", 65, 0, 100);
-  // Controls the rate of life algorithm ticks, in milliseconds
+  // Controls the the amount of delay until a light is completely off.
   private BasicParameter delayParameter = new BasicParameter("DELAY", 500, 0.0, 2000.0);
   
   public L8onMixColor(P2LX lx) {
@@ -613,8 +621,8 @@ class Life extends LXPattern {
      super(lx);
      this.faces = ((LEDome)model).faces;
      
-     //Print debug info about the cubes.
-     //outputFaceInfo();
+     //Print debug info about the faces/edges.
+     // outputFaceInfo();
 
      initFaceStates();
      time_since_last_run = 0;
@@ -719,15 +727,16 @@ class Life extends LXPattern {
   } 
     
   /**
-   * Output debug info about the cubes.
+   * Output debug info about the dome.
    */
-//  private void outputFaceInfo() {
-//    int i = 0;      
-//    for (LEDomeFace face : this.faces) {
-//      print("LEDomeFace " + i + ": " + face.xf() + "," + face.yf() + "," + face.zf() + "\n");
-//      ++i;
-//    }    
-//  }
+  private void outputFaceInfo() {
+    int i = 0;      
+    for (LEDomeEdge edge : ((LEDome)model).edges) {
+      println("LEDomeEdge " + i + ": " + edge.xf() + "," + edge.yf() + "," + edge.zf());
+      println("LEDomeEdge label: " + edge.he_halfedge.getLabel());
+      ++i;
+    }
+  }
   
   /**
    * Initialize the list of face states.

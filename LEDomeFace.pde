@@ -13,8 +13,8 @@ public static class LEDomeFace {
   public HE_Face he_face;
   public List<LXPoint> points;
   public List<LEDomeEdge> edges;
-  public List<Integer> neighbors;
-  public List<Integer> next_door_neighbors;
+  private List<Integer> neighbors;
+  private List<Integer> next_door_neighbors;
 
   public LEDomeFace(HE_Face face) {
     he_face = face;    

@@ -291,10 +291,10 @@ static class LEDome extends LXModel {
     private void plotLightsOnDome() {          
       for (int i = 0; i < lightStringFaceLists.size(); i++) {
         List<Integer> faceList = lightStringFaceLists.get(i);
-        
+                
         for(int j = 0; j < faceList.size(); j++) {
-          int index = faceList.get(j);
-          plotLightsOnFace(faces.get(index));   
+          int index = faceList.get(j);          
+          plotLightsOnFace(faces.get(index));
         }
       }
     }
@@ -302,7 +302,7 @@ static class LEDome extends LXModel {
     private void plotLightsOnFace(LEDomeFace face) {
       ArrayList<LXPoint> points = new ArrayList<LXPoint>();
       ArrayList<LEDomeEdge> faceEdges = new ArrayList<LEDomeEdge>();
-      
+            
       HE_Face he_face = face.he_face;
       WB_Point faceCenter = he_face.getFaceCenter();          
       HE_Vertex isocVertex = findIsocVertex(he_face);
@@ -315,67 +315,68 @@ static class LEDome extends LXModel {
       LXPoint lx_point;
                            
       do {             
-        // Create LEDomeEdge model for the first edge.         
+        // Create LEDomeEdge model for the first edge.   
+        currHalfedge.setLabel(this.edges.size());        
         currDomeEdge = new LEDomeEdge(face, currHalfedge);
         faceEdges.add(currDomeEdge);
         this.edges.add(currDomeEdge);
-                
-        // Create vertex point by translating toward the center from the face.
+
+        // Create vertex point by translating toward the center of the face from the vertex.
         moveTowardCenter.clear();
-        moveTowardCenter.addTranslate(LIGHT_OFFSET_PROP, new WB_Vector(currVertex.getPoint(), faceCenter));         
-        WB_Point vertexPoint = currVertex.getPoint().apply(moveTowardCenter);   
+        moveTowardCenter.addTranslate(LIGHT_OFFSET_PROP, new WB_Vector(currVertex.getPoint(), faceCenter));
+        WB_Point vertexPoint = currVertex.getPoint().apply(moveTowardCenter);
         lx_point = new LXPoint(vertexPoint.xf(), vertexPoint.yf(), vertexPoint.zf());
-        
+
         // Add point to model and to points array.
         points.add(lx_point);
         addPoint(lx_point);
-        
+
         // Add point to current edge
         currDomeEdge.addPoint(lx_point);
         if (prevDomeEdge != null) { // Also add point to previous edge if not null.
           prevDomeEdge.addPoint(lx_point);
         }
-        
+
         // Create edge point by translating toward the center of the face.
         moveTowardCenter.clear();
         moveTowardCenter.addTranslate(LIGHT_OFFSET_PROP, new WB_Vector(currHalfedge.getEdgeCenter(), faceCenter));
         WB_Point edgeCenterPoint = currHalfedge.getEdgeCenter().apply(moveTowardCenter);
         lx_point = new LXPoint(edgeCenterPoint.xf(), edgeCenterPoint.yf(), edgeCenterPoint.zf());
-        
+
         // Add point to model and to points array
         points.add(lx_point);
-        addPoint(lx_point);  
-        
+        addPoint(lx_point);
+
         // Add point to current edge and cache for next iteration.
         currDomeEdge.addPoint(lx_point);
         prevDomeEdge = currDomeEdge;
-        
-        // Get next halfedge. 
+
+        // Get next halfedge.
         // It seems going backwards gives us the direct we want (clockwise)
-        currHalfedge = currHalfedge.getPrevInFace().getPrevInFace();                
+        currHalfedge = currHalfedge.getPrevInFace().getPrevInFace();
         currVertex = currHalfedge.getVertex();
       } while(currVertex != isocVertex);
 
       // Add very first vertex point to final edge.
       prevDomeEdge.addPoint(points.get(0));
-      
+
       // Set points and edeges on the face.
       face.setPoints(points);
       face.setEdges(faceEdges);
     }
-        
+
     private HE_Vertex findIsocVertex(HE_Face face) {
-      List<HE_Vertex> vertices = face.getFaceVertices();            
+      List<HE_Vertex> vertices = face.getFaceVertices();
       HE_Vertex currVertex = vertices.get(0);
-      HE_Vertex otherVertex;      
-      HE_Vertex isocVertex = null;     
+      HE_Vertex otherVertex;
+      HE_Vertex isocVertex = null;
       WB_Point currPoint;
       WB_Point otherPoint;
       float dist1;
-      float dist2;      
+      float dist2;
       float distanceDiff;
       float minDistanceDiff = DOME_RADIUS;
-            
+
       for(int i = 0; i < vertices.size(); i++) {       
         currVertex = vertices.get(i);
         currPoint = currVertex.getPoint();        
@@ -402,42 +403,42 @@ static class LEDome extends LXModel {
           if (distanceDiff == 0.0) { break; }
         }
       }
-      
+
       return isocVertex;
-    }       
+    }
   }
 }
 
 static class LEDomeOutputManager {
-  private P2LX lx;  
-  private boolean ndb_output_enabled;  
-  private LXDatagramOutput ndb_output; 
-  
-  public LEDomeOutputManager(P2LX lx) {    
+  private P2LX lx;
+  private boolean ndb_output_enabled;
+  private LXDatagramOutput ndb_output;
+
+  public LEDomeOutputManager(P2LX lx) {
     this.lx = lx;
     this.ndb_output_enabled = false;
-  }  
-  
-  public void toggleNDBOutput() {
-    this.toggleNDBOutput(!this.ndb_output_enabled); 
   }
-  
-  public void toggleNDBOutput(boolean enable) {    
+
+  public void toggleNDBOutput() {
+    this.toggleNDBOutput(!this.ndb_output_enabled);
+  }
+
+  public void toggleNDBOutput(boolean enable) {
     if (enable) {
       this.addLXOutputForNDB();
     } else {
-      this.removeLXOutputForNDB();  
+      this.removeLXOutputForNDB();
     }
-    
+
     this.ndb_output_enabled = enable;
   }
- 
-  private void addLXOutputForNDB() {    
+
+  private void addLXOutputForNDB() {
     int[] points = new int[NUM_CONNECTED_LIGHTS];
     for (int i = 0; i < points.length; ++i) {
       points[i] = i;
     }
-    
+
     try {
       this.ndb_output = new LXDatagramOutput(this.lx);
       DDPDatagram datagram = (DDPDatagram)new DDPDatagram(points).setAddress(NDB_IP_ADDRESS); // whatever the IP is
@@ -445,12 +446,12 @@ static class LEDomeOutputManager {
       this.lx.addOutput(this.ndb_output);
     } catch (Exception x) {
       x.printStackTrace();
-    }  
-  } 
-  
+    }
+  }
+
   private void removeLXOutputForNDB() {
     if (this.ndb_output != null) {
-      this.lx.removeOutput(this.ndb_output);  
+      this.lx.removeOutput(this.ndb_output);
     }
   }
 }
