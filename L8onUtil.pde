@@ -9,6 +9,7 @@ static class L8onUtil {
   }
 }
 
+
 public class BlurLayer extends LXLayer {
   public final BasicParameter amount;
   private final int[] blurBuffer;
