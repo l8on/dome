@@ -48,15 +48,14 @@ import java.util.Random;
 LXPattern[] patterns(P2LX lx) {
   return new LXPattern[] {
     // Create New Pattern Instances Below HERE
+    // BKudria
+    new Beachball(lx),
 
     // L8on    
     new Explosions(lx),
     new SpotLights(lx),
     new Life(lx),
     new L8onMixColor(lx),
-
-    // BKudria
-    new Beachball(lx),
 
     // Test Patterns
     new LayerDemoPattern(lx),

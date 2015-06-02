@@ -1,15 +1,14 @@
 class Beachball extends LXPattern {
-  private BasicParameter rateParameter = new BasicParameter("RATE", 3000.0, 500.0, 20000.0); // Number of ms to make a full revolution
+  private final int stripeSize = 360 / 10;
+  private final int maxTwist   = 24;
+  private final int spinRate   = 2600;
 
-  private final SawLFO hueAngle = new SawLFO(0, 360, rateParameter);
+  private final SawLFO angle   = new SawLFO(0, 360, spinRate);
 
   public String getName() { return "Beachball"; }
   public Beachball(P2LX lx) {
     super(lx);
-
-    addParameter(rateParameter);
-    addModulator(hueAngle).start();
-
+    addModulator(angle).start();
     drawBeachball();
   }
 
@@ -19,14 +18,21 @@ class Beachball extends LXPattern {
 
   public void drawBeachball() {
     for (LXPoint p : model.points) {
-      double hue = (hueAngle.getValue() + cartesianToDegrees(p.x, p.z)) % 360;
-      colors[p.index] = LXColor.hsb(hue, 100, 100);
+      float dist       = dist(model.cx, model.cz, p.x, p.z);
+      float radius     = map(dist, 0, LEDome.DOME_RADIUS, 0, 1);
+
+      float twistAngle = LXUtils.lerpf(0.0, maxTwist, radius);
+      float pixelAngle     = (p.ztheta * (180.0/PI));
+      float sweepingAngle  = pixelAngle + twistAngle - angle.getValuef();
+
+      double stripe = floor( (sweepingAngle % 360) / stripeSize);
+
+      double hue        = (pixelAngle) % 360;
+      double saturation = (stripe % 2 == 0) ? 75  : 100;
+      double brightness = (stripe % 2 == 0) ? 100 : 75;
+
+      colors[p.index] = LXColor.hsb(hue, saturation, brightness);
     }
   }
-
-  private float cartesianToDegrees(float x, float y) {
-    return atan2(y, x) * (180/PI) + 180;
-  }
-
 }
 
