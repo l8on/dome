@@ -1,125 +1,27 @@
-class Ripples extends LXPattern {
-  // Used to store info about each ripple.
+class Worms extends LXPattern {
+  // Used to store info about each explosion.
   // See L8onUtil.pde for the definition.
-  private List<L8onRipple> ripples = new ArrayList<L8onRipple>();
-
-  private final SinLFO saturationModulator = new SinLFO(70.0, 90.0, 20 * SECONDS);
-
-  private BasicParameter numRipplesParameter = new BasicParameter("NUM", 2.0, 1.0, 30.0);
-  private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);
-  private BasicParameter rateParameter = new BasicParameter("RATE", 4000.0, 500.0, 20000.0);
-  private BasicParameter blurParameter = new BasicParameter("BLUR", 0.69, 0.0, 1.0);
-
+  private List<L8onExplosion> explosions = new ArrayList<L8onExplosion>();
+  private BasicParameter numWormsParameter = new BasicParameter("NUM", 2.0, 1.0, 30.0);  
+  private BasicParameter blurParameter = new BasicParameter("BLUR", 0.69);
   private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
-
-  public Ripples(P2LX lx) {
+  
+  public Worms(LX lx) {
     super(lx);
 
-    addParameter(numRipplesParameter);
-    addParameter(brightnessParameter);
-    addParameter(rateParameter);
-    addParameter(blurParameter);
-
+    addParameter(numWormsParameter);
+    addParameter(blurParameter);  
     addLayer(blurLayer);
-    addModulator(saturationModulator).start();
 
-    initRipples();
+    initWorms();
   }
 
   public void run(double deltaMs) {
-    initRipples();
 
-    float base_hue = lx.getBaseHuef();
-    float wave_hue_diff = (float) (360.0 / this.ripples.size());
-
-    for(L8onRipple ripple : this.ripples) {
-      if (ripple.isChillin((float)deltaMs)) {
-        continue;
-      }
-
-      ripple.hue_value = (float)(base_hue % 360.0);
-      base_hue += wave_hue_diff;
-
-      if (!ripple.hasExploded()) {
-        ripple.explode();
-      } else if (ripple.isFinished()) {
-        assignNewCenter(ripple);
-      }
-    }
-   
-    float sat_value = saturationModulator.getValuef();
-    float brightness_value = brightnessParameter.getValuef();
-
-    for (LXPoint p : model.points) {
-      int num_ripples_in = 0;
-
-      for(L8onRipple ripple : this.ripples) {
-        if(ripple.isChillin(0)) {
-          continue;
-        }
-
-        float point_amplitude = ripple.amplitude(p.x, p.y, p.z);
-
-        if (point_amplitude <= 0.01) {
-          continue;    
-        }
-
-        num_ripples_in++;
-
-        if (num_ripples_in == 1) {
-          setColor(p.index, LXColor.hsb(ripple.hue_value, sat_value, (point_amplitude * brightness_value)));
-//          setColor(p.index, LXColor.hsb(ripple.hue_value, point_amplitude * sat_value, brightness_value));
-        } else {
-          blendColor(p.index, LXColor.hsb(ripple.hue_value, sat_value, (point_amplitude * brightness_value)), LXColor.Blend.SCREEN);
-//          blendColor(p.index, LXColor.hsb(ripple.hue_value, point_amplitude * sat_value, brightness_value), LXColor.Blend.LERP);
-        }
-      }
-
-      if (num_ripples_in == 0) {
-        color old_color = colors[p.index];
-        color new_color = LX.hsb(LXColor.h(old_color), LXColor.s(old_color), 0.0);
-//        setColor(p.index, new_color);
-        colors[p.index] = new_color;
-      }
-    }   
   }
 
-  private void initRipples() {
-    int num_ripples = (int) numRipplesParameter.getValue();
+  public void initWorms() {
 
-    if (this.ripples.size() == num_ripples) {
-      return;
-    }
-
-    if (this.ripples.size() < num_ripples) {
-      for(int i = 0; i < (num_ripples - this.ripples.size()); i++) {
-        QuadraticEnvelope new_radius_env = new QuadraticEnvelope(0.0, model.xRange * 3.0, rateParameter);
-        QuadraticEnvelope new_decay_env = new QuadraticEnvelope(1.0, 0.0, rateParameter);
-        WB_Point new_center = ((LEDome)model).randomFaceCenter();
-        addModulator(new_radius_env);
-        addModulator(new_decay_env);
-        this.ripples.add(
-          new L8onRipple(new_radius_env, new_decay_env, new_center.xf(), new_center.yf(), new_center.zf())
-        );
-      }
-    } else {
-      for(int i = (this.ripples.size() - 1); i >= num_ripples; i--) {
-        this.ripples.remove(i);
-      }
-    }
-  }
-
-  private void assignNewCenter(L8onRipple ripple) {
-    WB_Point new_center = ((LEDome)model).randomFaceCenter();
-    float chill_time = (3.0 + random(7)) * SECONDS;    
-    QuadraticEnvelope new_radius_env = new QuadraticEnvelope(0.0, model.xRange * 5.0, rateParameter);
-    LinearEnvelope new_decay_env = new LinearEnvelope(1.0, 0.0, rateParameter);
-    
-    ripple.setCenter(new_center.xf(), new_center.yf(), new_center.zf());
-    addModulator(new_radius_env);
-    addModulator(new_decay_env);
-    ripple.setRadiusModulator(new_radius_env, new_decay_env);
-    ripple.setChillTime(chill_time);
   }
 }
 
@@ -137,7 +39,7 @@ class Explosions extends LXPattern {
 
   private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
 
-  public Explosions(P2LX lx) {
+  public Explosions(LX lx) {
     super(lx);
 
     addParameter(numExplosionsParameter);
@@ -954,3 +856,128 @@ class ExplosionEffect extends LXEffect {
     }
   }
 }
+
+//class Ripples extends LXPattern {
+//  // Used to store info about each ripple.
+//  // See L8onUtil.pde for the definition.
+//  private List<L8onRipple> ripples = new ArrayList<L8onRipple>();
+//
+//  private final SinLFO saturationModulator = new SinLFO(70.0, 90.0, 20 * SECONDS);
+//
+//  private BasicParameter numRipplesParameter = new BasicParameter("NUM", 2.0, 1.0, 30.0);
+//  private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);
+//  private BasicParameter rateParameter = new BasicParameter("RATE", 4000.0, 500.0, 20000.0);
+//  private BasicParameter blurParameter = new BasicParameter("BLUR", 0.69, 0.0, 1.0);
+//
+//  private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
+//
+//  public Ripples(P2LX lx) {
+//    super(lx);
+//
+//    addParameter(numRipplesParameter);
+//    addParameter(brightnessParameter);
+//    addParameter(rateParameter);
+//    addParameter(blurParameter);
+//
+//    addLayer(blurLayer);
+//    addModulator(saturationModulator).start();
+//
+//    initRipples();
+//  }
+//
+//  public void run(double deltaMs) {
+//    initRipples();
+//
+//    float base_hue = lx.getBaseHuef();
+//    float wave_hue_diff = (float) (360.0 / this.ripples.size());
+//
+//    for(L8onRipple ripple : this.ripples) {
+//      if (ripple.isChillin((float)deltaMs)) {
+//        continue;
+//      }
+//
+//      ripple.hue_value = (float)(base_hue % 360.0);
+//      base_hue += wave_hue_diff;
+//
+//      if (!ripple.hasExploded()) {
+//        ripple.explode();
+//      } else if (ripple.isFinished()) {
+//        assignNewCenter(ripple);
+//      }
+//    }
+//   
+//    float sat_value = saturationModulator.getValuef();
+//    float brightness_value = brightnessParameter.getValuef();
+//
+//    for (LXPoint p : model.points) {
+//      int num_ripples_in = 0;
+//
+//      for(L8onRipple ripple : this.ripples) {
+//        if(ripple.isChillin(0)) {
+//          continue;
+//        }
+//
+//        float point_amplitude = ripple.amplitude(p.x, p.y, p.z);
+//
+//        if (point_amplitude <= 0.01) {
+//          continue;    
+//        }
+//
+//        num_ripples_in++;
+//
+//        if (num_ripples_in == 1) {
+//          setColor(p.index, LXColor.hsb(ripple.hue_value, sat_value, (point_amplitude * brightness_value)));
+////          setColor(p.index, LXColor.hsb(ripple.hue_value, point_amplitude * sat_value, brightness_value));
+//        } else {
+//          blendColor(p.index, LXColor.hsb(ripple.hue_value, sat_value, (point_amplitude * brightness_value)), LXColor.Blend.SCREEN);
+////          blendColor(p.index, LXColor.hsb(ripple.hue_value, point_amplitude * sat_value, brightness_value), LXColor.Blend.LERP);
+//        }
+//      }
+//
+//      if (num_ripples_in == 0) {
+//        color old_color = colors[p.index];
+//        color new_color = LX.hsb(LXColor.h(old_color), LXColor.s(old_color), 0.0);
+////        setColor(p.index, new_color);
+//        colors[p.index] = new_color;
+//      }
+//    }   
+//  }
+//
+//  private void initRipples() {
+//    int num_ripples = (int) numRipplesParameter.getValue();
+//
+//    if (this.ripples.size() == num_ripples) {
+//      return;
+//    }
+//
+//    if (this.ripples.size() < num_ripples) {
+//      for(int i = 0; i < (num_ripples - this.ripples.size()); i++) {
+//        QuadraticEnvelope new_radius_env = new QuadraticEnvelope(0.0, model.xRange * 3.0, rateParameter);
+//        QuadraticEnvelope new_decay_env = new QuadraticEnvelope(1.0, 0.0, rateParameter);
+//        WB_Point new_center = ((LEDome)model).randomFaceCenter();
+//        addModulator(new_radius_env);
+//        addModulator(new_decay_env);
+//        this.ripples.add(
+//          new L8onRipple(new_radius_env, new_decay_env, new_center.xf(), new_center.yf(), new_center.zf())
+//        );
+//      }
+//    } else {
+//      for(int i = (this.ripples.size() - 1); i >= num_ripples; i--) {
+//        this.ripples.remove(i);
+//      }
+//    }
+//  }
+//
+//  private void assignNewCenter(L8onRipple ripple) {
+//    WB_Point new_center = ((LEDome)model).randomFaceCenter();
+//    float chill_time = (3.0 + random(7)) * SECONDS;    
+//    QuadraticEnvelope new_radius_env = new QuadraticEnvelope(0.0, model.xRange * 5.0, rateParameter);
+//    LinearEnvelope new_decay_env = new LinearEnvelope(1.0, 0.0, rateParameter);
+//    
+//    ripple.setCenter(new_center.xf(), new_center.yf(), new_center.zf());
+//    addModulator(new_radius_env);
+//    addModulator(new_decay_env);
+//    ripple.setRadiusModulator(new_radius_env, new_decay_env);
+//    ripple.setChillTime(chill_time);
+//  }
+//}

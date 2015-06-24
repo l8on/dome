@@ -3,7 +3,7 @@
  * Use xf(), yf(), and zf() to get the coordinates of the center of the face.
  *
  * Furthermore:
- * It knows if it has any lights on it at all (LEDomeFace#has_lights)
+ * It knows if it has any lights on it at all (LEDomeFace#hasLights())
  * It knows what which lights are on it's face (LEDomeFace#points)
  * It knows which faces are nearby (LEDomeFace#neighbors)
  * It knows the 3 faces in which it shares an edge (LEDomeFace#next_door_neighbors)
@@ -101,29 +101,53 @@ public static class LEDomeFace {
 public static class LEDomeEdge {  
   public HE_Halfedge he_halfedge;
   public LEDomeFace ledome_face;
-  public List<LXPoint> points;
+  public List<LXPoint> points;  
   
   public LEDomeEdge(LEDomeFace face, HE_Halfedge edge) {
-    ledome_face = face;
-    he_halfedge = edge;
+    setFace(face);
+    setHalfedge(edge);        
   }
   
-  public LEDomeEdge(LEDomeFace face, HE_Halfedge edge, List<LXPoint> lxPoints) {
-    ledome_face = face;
-    he_halfedge = edge;
-    points = lxPoints;
+  public LEDomeEdge(LEDomeFace face, HE_Halfedge edge, List<LXPoint> points) {
+    setFace(face);
+    setHalfedge(edge);
+    setPoints(points);
   }
   
-  public void setPoints(List<LXPoint> lxPoints) {
-    points = lxPoints;
+  public void setFace(LEDomeFace face) {
+    this.ledome_face = face;
   }
   
-  public void addPoint(LXPoint lxPoint) {
+  public void setHalfedge(HE_Halfedge edge) {    
+    this.he_halfedge = edge;
+  }
+  
+  public void setPoints(List<LXPoint> points) {
+    this.points = points;
+  }
+  
+  public void addPoint(LXPoint point) {
     if(this.points == null) {
       this.points = new ArrayList<LXPoint>();
     }
     
-    points.add(lxPoint);
+    points.add(point);
+  }
+  
+  public LXPoint closestPoint(float x, float y, float z) {
+    float min_dist = 1000 * FEET;
+    LXPoint retPoint = this.points.get(0);
+    
+    for(LXPoint p : this.points) {
+      float curr_dist = dist(p.x, p.y, p.z, x, y, z);
+      
+      if(curr_dist < min_dist) {
+        min_dist = curr_dist;
+        retPoint = p;
+      }
+    }
+    
+    return retPoint;
   }
   
   public float xf() {

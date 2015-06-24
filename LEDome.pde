@@ -22,7 +22,7 @@ final static int SECONDS = 1000;
 final static int MINUTES = 60 * SECONDS;
 
 // Configure the NDB and the number of connected lights.
-final static int NUM_CONNECTED_LIGHTS = 48;
+final static int NUM_CONNECTED_LIGHTS = 108;
 final static String NDB_IP_ADDRESS = "10.0.0.116";
 
 /**
@@ -32,10 +32,10 @@ final static String NDB_IP_ADDRESS = "10.0.0.116";
 static class LEDome extends LXModel {
   public List<LEDomeFace> faces;
   public List<LEDomeEdge> edges;
-  public WB_Sphere sphere;  
-  
+  public WB_Sphere sphere;
+
   private LEDomeLights domelights;
-  
+
   public static final float DOME_RADIUS = 5.5 * FEET;  
   
   public static final int DIRECTION_RIGHT = 0;
@@ -281,7 +281,7 @@ static class LEDome extends LXModel {
         
         if (faceCenter.xf() < minX) {
           minX = faceCenter.xf();
-          firstFace = faces.get(i);  
+          firstFace = faces.get(i);
         }        
       }
 
