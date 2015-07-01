@@ -57,8 +57,7 @@ static class LEDome extends LXModel {
   public static final ArrayList<Integer> FACE_LIST_7 = new ArrayList<Integer>(Arrays.asList(8, 9, 10, 41, 40, 39, 68, 69, 70, 91));
   public static final ArrayList<Integer> FACE_LIST_8 = new ArrayList<Integer>(Arrays.asList(13, 12, 11, 42, 43, 44, 73, 72, 71, 92));
   public static final ArrayList<Integer> FACE_LIST_9 = new ArrayList<Integer>(Arrays.asList(14, 15, 46, 45, 74, 94, 93, 103));
-  
-  
+    
   private Random randomFaceIndex = new Random();
 
   public LEDome() {
@@ -98,19 +97,23 @@ static class LEDome extends LXModel {
   }
   
   
-  private static class LEDomeLights extends LXAbstractFixture {    
+  private static class LEDomeLights extends LXAbstractFixture {
     public HE_Mesh geodome;
     public ArrayList<List<Integer>> lightStringFaceLists = new ArrayList<List<Integer>>();
     public List<LEDomeFace> faces = new ArrayList<LEDomeFace>();
     public List<LEDomeEdge> edges = new ArrayList<LEDomeEdge>();
-        
+
     public static final double LIGHT_OFFSET_PROP = 0.3;
+    public static final boolean DEBUG = true;
     
     private LEDomeLights() {
        buildGeodome();
        createLEDFaces();
        initializeLightStringFaceLists();       
        plotLightsOnDome();
+       if (DEBUG) {
+         outputDebugInfo();
+       }
     }
     
     private void buildGeodome() {    
@@ -405,6 +408,37 @@ static class LEDome extends LXModel {
       }
 
       return isocVertex;
+    }
+    
+    public void outputDebugInfo() {
+      HashMap<Integer, Integer> sizeCounts = new HashMap<Integer, Integer>();      
+      sizeCounts.put(12, 0);
+      sizeCounts.put(24, 0);
+      sizeCounts.put(36, 0);
+      sizeCounts.put(48, 0);
+      
+      for(int i = 0; i < this.lightStringFaceLists.size(); i++) {
+        List<Integer> faceList = this.lightStringFaceLists.get(i);
+        
+        for(int j = 0; j < faceList.size() - 1; j++) {
+          int currentFaceIndex = faceList.get(j);
+          int nextFaceIndex = faceList.get(j + 1);
+          LEDomeFace currFace = faces.get(currentFaceIndex);
+          LEDomeFace nextFace = faces.get(nextFaceIndex);
+          LXPoint currFacePoint = currFace.points.get(5);
+          LXPoint nextFacePoint = nextFace.points.get(0);
+          float connectionDistance = dist(currFacePoint.x, currFacePoint.y, currFacePoint.z, nextFacePoint.x, nextFacePoint.y, nextFacePoint.z);
+          println("Face " + currentFaceIndex + " -> Face " + nextFaceIndex + ": " + connectionDistance);          
+                    
+          if (connectionDistance < 12.0) {
+            sizeCounts.put(12, sizeCounts.get(12) + 1); 
+          } else if(connectionDistance < 24.0) {
+            sizeCounts.put(24, sizeCounts.get(24) + 1);
+          } else if(connectionDistance < 36.0) {
+            sizeCounts.put(36, sizeCounts.get(36) + 1);
+          }          
+        }
+      }  
     }
   }
 }
