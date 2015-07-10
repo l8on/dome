@@ -414,8 +414,7 @@ static class LEDome extends LXModel {
       HashMap<Integer, Integer> sizeCounts = new HashMap<Integer, Integer>();      
       sizeCounts.put(12, 0);
       sizeCounts.put(24, 0);
-      sizeCounts.put(36, 0);
-      sizeCounts.put(48, 0);
+      sizeCounts.put(36, 0);      
       
       for(int i = 0; i < this.lightStringFaceLists.size(); i++) {
         List<Integer> faceList = this.lightStringFaceLists.get(i);
@@ -436,9 +435,13 @@ static class LEDome extends LXModel {
             sizeCounts.put(24, sizeCounts.get(24) + 1);
           } else if(connectionDistance < 36.0) {
             sizeCounts.put(36, sizeCounts.get(36) + 1);
-          }          
+          }
         }
-      }  
+      }
+      
+      for(Integer size : sizeCounts.keySet()) {
+        println("Num under " + size + ": " + sizeCounts.get(size));
+      }
     }
   }
 }

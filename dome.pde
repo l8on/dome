@@ -51,8 +51,8 @@ LXPattern[] patterns(P2LX lx) {
     // BKudria
     new Beachball(lx),
 
-    // L8on    
-    new Explosions(lx),
+    // L8on
+    new Explosions(lx),  
     new SpotLights(lx),
     new Life(lx),
     new L8onMixColor(lx),
@@ -61,7 +61,7 @@ LXPattern[] patterns(P2LX lx) {
     new LayerDemoPattern(lx),
     new FaceIteratorTest(lx),
     new EdgeIteratorTest(lx), 
-    new IteratorTestPattern(lx).setTransition(new DissolveTransition(lx))    
+    new IteratorTestPattern(lx).setTransition(new DissolveTransition(lx))
   };
 }
 
