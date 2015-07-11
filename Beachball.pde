@@ -35,4 +35,3 @@ class Beachball extends LXPattern {
     }
   }
 }
-

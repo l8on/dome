@@ -2,8 +2,8 @@
 `dome` is a processing sketch that controls the lights on the LEDome.
 
 It runs in [Processing 2](https://processing.org/). 
-The model of the dome is generated using [HE_Mesh](https://github.com/wblut/HE_Mesh2014). 
-The Lights are driven with Mark Slee's wonderful [LX](https://github.com/heronarts/LX) library.
+The model of the dome is generated using [HE_Mesh](https://github.com/wblut/HE_Mesh2014) ([docs](http://hemesh.wblut.com/doxygen/annotated.html)).
+The Lights are driven with Mark Slee's wonderful [LX](https://github.com/heronarts/LX) ([docs](http://heronarts.com/lx/api/index.html)) library.
 
 # contributing
 Contributions are hella encouraged.
