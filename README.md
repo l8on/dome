@@ -25,4 +25,6 @@ To contribute your own light animations to this repo, you will need to:
 * Rejoice!
 
 # tools
-For more advanced IDE features check out [PDE X](https://github.com/processing/processing-experimental)
+* [HE_Mesh Docs](http://hemesh.wblut.com/doxygen/annotated.html) - Dome rendering library that enables traversal of edges/vertices/faces.
+* [LX Docs](https://github.com/heronarts/LX) - Docs for the lighting engine. If you want the lights to do something cool, there's probably a tool in here to help you. 
+* [PDE X](https://github.com/processing/processing-experimental) - More IDE like features for the default Processing IDE.
