@@ -57,6 +57,9 @@ LXPattern[] patterns(P2LX lx) {
     new Life(lx),
     new L8onMixColor(lx),
 
+    // pld
+    new Spiral(lx),
+
     // Test Patterns
     new LayerDemoPattern(lx),
     new FaceIteratorTest(lx),
