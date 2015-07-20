@@ -3,8 +3,8 @@ class Spiral extends LXPattern {
   private final BasicParameter tail = new BasicParameter("Tail", 4, 1, numFaces / 3);
   private final BasicParameter offset = new BasicParameter("Offset", 15, 1, numFaces / 2);
   private final BasicParameter faceVariation = new BasicParameter("Face", 0, 0, 2);
-  private final BasicParameter numTrails = new BasicParameter("Trails", 2, 1, 4);
-  private final BasicParameter solidFaces = new BasicParameter("Solid", 1, 0, 1);
+  private final BasicParameter numTrails = new BasicParameter("Trails", 4, 1, 4);
+  private final BasicParameter solidFaces = new BasicParameter("Solid", 0, 0, 1);
 
   public Spiral(LX lx) {
     super(lx); 
@@ -23,6 +23,7 @@ class Spiral extends LXPattern {
   private class SpiralLayer extends LXLayer {
     private final TriangleLFO currIndex = new TriangleLFO(0, numFaces, numFaces * 100);
     private final TriangleLFO minBright = new TriangleLFO(10, 25, numFaces * 25);
+    private HashMap<Integer, Float> trailToHue = new HashMap();
 
     private SpiralLayer(LX lx) {
       super(lx);
@@ -32,7 +33,6 @@ class Spiral extends LXPattern {
 
     public void run(double deltaMs) {  
       int index = (int) currIndex.getValuef();
-      HashMap<Integer, Float> trailToHue = new HashMap();
 
       for(int i = 0; i < numFaces; i++) {
         LEDomeFace face = ((LEDome)model).faces.get(i);
@@ -70,14 +70,14 @@ class Spiral extends LXPattern {
           }
 
           for (LXPoint p : edge.points) {
-            hue = getHue(p, active, solidFacesValue, currTrail, trailToHue);
+            hue = getHue(p, active, solidFacesValue, currTrail);
             colors[p.index] = LX.hsb(hue, saturation, brightness);    
           }
         }
       }
     }
 
-    private float getHue(LXPoint p, boolean active, boolean isSolid, int currTrail, HashMap<Integer, Float> trailToHue) {
+    private float getHue(LXPoint p, boolean active, boolean isSolid, int currTrail) {
         float hue = 0;
 
         // Ty BK!
@@ -89,6 +89,13 @@ class Spiral extends LXPattern {
         }
 
         if (isSolid) {
+          // avoid black
+          if (hue > 210 & hue < 240) {
+            hue = 210;
+          } else if (hue >= 240 && hue < 270) {
+            hue = 270;
+          }
+
           if (trailToHue.containsKey(currTrail)) {
             hue = trailToHue.get(currTrail);
           } else {
