@@ -4,6 +4,7 @@ class Spiral extends LXPattern {
   private final BasicParameter offset = new BasicParameter("Offset", 15, 1, numFaces / 2);
   private final BasicParameter faceVariation = new BasicParameter("Face", 0, 0, 2);
   private final BasicParameter numTrails = new BasicParameter("Trails", 2, 1, 4);
+  private final BasicParameter solidFaces = new BasicParameter("Solid", 1, 0, 1);
 
   public Spiral(LX lx) {
     super(lx); 
@@ -11,6 +12,7 @@ class Spiral extends LXPattern {
     addParameter(offset);
     addParameter(faceVariation);
     addParameter(numTrails);
+    addParameter(solidFaces);
     addLayer(new SpiralLayer(lx));    
   }
 
@@ -29,7 +31,8 @@ class Spiral extends LXPattern {
     }
 
     public void run(double deltaMs) {  
-      int index = (int) currIndex.getValuef();        
+      int index = (int) currIndex.getValuef();
+      HashMap<Integer, Float> trailToHue = new HashMap();
 
       for(int i = 0; i < numFaces; i++) {
         LEDomeFace face = ((LEDome)model).faces.get(i);
@@ -39,15 +42,17 @@ class Spiral extends LXPattern {
 
         int tailValue = (int) tail.getValue();
         int offsetValue = (int) offset.getValue();
-        int numTrailsValue = (int) numTrails.getValue();
+        int numTrailsValue = Math.round(numTrails.getValuef());
+        boolean solidFacesValue = Math.round(solidFaces.getValuef()) != 0;
+        int currTrail = 0;
 
-        float hue = 0;
         float saturation = 100;
         float brightness = 0;
+        float hue = 0;
         boolean active = false;
 
-        for (int j = 0; j < numTrailsValue; j++) {
-          if (abs(i - index + j * (offsetValue + tailValue)) < tailValue) {
+        for (; currTrail < numTrailsValue; currTrail++) {
+          if (abs(i - index + currTrail * (offsetValue + tailValue)) < tailValue) {
             active = true;
             break;
           }
@@ -65,16 +70,33 @@ class Spiral extends LXPattern {
           }
 
           for (LXPoint p : edge.points) {
-            // Ty BK!
-            float pixelAngle = (p.ztheta * (180.0/PI));
-            hue = pixelAngle % 360;
-            if (!active) {
-              hue = 360 - hue;
-            }
+            hue = getHue(p, active, solidFacesValue, currTrail, trailToHue);
             colors[p.index] = LX.hsb(hue, saturation, brightness);    
           }
         }
       }
+    }
+
+    private float getHue(LXPoint p, boolean active, boolean isSolid, int currTrail, HashMap<Integer, Float> trailToHue) {
+        float hue = 0;
+
+        // Ty BK!
+        float pixelAngle = (p.ztheta * (180.0/PI));
+        hue = pixelAngle % 360;
+
+        if (!active) {
+          return 360 - hue;
+        }
+
+        if (isSolid) {
+          if (trailToHue.containsKey(currTrail)) {
+            hue = trailToHue.get(currTrail);
+          } else {
+            trailToHue.put(currTrail, hue);
+          }
+        }
+
+        return hue;
     }
   } 
 }
