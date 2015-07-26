@@ -45,7 +45,7 @@ static class LEDome extends LXModel {
     
   public static final ArrayList<Integer> NO_LIGHT_FACES = new ArrayList<Integer>(Arrays.asList(16, 17, 18, 47, 48, 49, 75, 76));
     
-  public static final ArrayList<Integer> TEST_LIST = new ArrayList<Integer>(Arrays.asList(20, 19, 50, 51, 78, 77, 95, 96));
+  public static final ArrayList<Integer> TEST_LIST = new ArrayList<Integer>(Arrays.asList(100, 101, 102, 103, 104));
   
   public static final ArrayList<Integer> FACE_LIST_0 = new ArrayList<Integer>(Arrays.asList(20, 19, 50, 51, 78, 77, 95, 96, 104));  
   public static final ArrayList<Integer> FACE_LIST_1 = new ArrayList<Integer>(Arrays.asList(21, 22, 23, 54, 53, 52, 80, 79, 97, 98));
