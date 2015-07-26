@@ -51,6 +51,9 @@ LXPattern[] patterns(P2LX lx) {
     // BKudria
     new Beachball(lx),
 
+    // Kristján
+    new Disco(lx),
+
     // L8on
     new Explosions(lx),  
     new SpotLights(lx),
