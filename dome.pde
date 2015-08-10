@@ -25,6 +25,7 @@ import ddf.minim.*;
 import processing.opengl.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Iterator;
@@ -47,18 +48,19 @@ import java.util.Random;
 
 LXPattern[] patterns(P2LX lx) {
   return new LXPattern[] {
+    // L8on
+    new Snakes(lx),
+    new Explosions(lx),  
+    new SpotLights(lx),
+    new Life(lx),
+    new L8onMixColor(lx),
+    
     // Create New Pattern Instances Below HERE
     // BKudria
     new Beachball(lx),
 
     // Kristján
-    new Disco(lx),
-
-    // L8on
-    new Explosions(lx),  
-    new SpotLights(lx),
-    new Life(lx),
-    new L8onMixColor(lx),
+    new Disco(lx),    
 
     // pld
     new Spiral(lx),

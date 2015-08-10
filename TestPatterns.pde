@@ -117,7 +117,7 @@ class LayerDemoPattern extends LXPattern {
   }
   
   private class RodLayer extends LXLayer {
-    
+
     private final SinLFO zPeriod = new SinLFO(2000, 5000, 9000);
     private final SinLFO zPos = new SinLFO(model.zMin, model.zMax, zPeriod);
     
