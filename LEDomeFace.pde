@@ -150,6 +150,23 @@ public static class LEDomeEdge {
     return retPoint;
   }
   
+  public LXPoint closestVertexPoint(float x, float y, float z) {
+    float min_dist = 1000 * FEET;
+    LXPoint retPoint = this.points.get(0);    
+    LXPoint[] vertexPoints = new LXPoint[] { this.points.get(0), this.points.get(2) };  
+
+    for(LXPoint p : vertexPoints) {
+      float curr_dist = dist(p.x, p.y, p.z, x, y, z);
+      
+      if(curr_dist < min_dist) {
+        min_dist = curr_dist;
+        retPoint = p;
+      }
+    }
+    
+    return retPoint;
+  }
+  
   public float xf() {
     return he_halfedge.getEdgeCenter().xf();  
   }
