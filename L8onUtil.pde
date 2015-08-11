@@ -20,6 +20,8 @@ public class SnakeLayer extends LXLayer {
   private List<LXPoint> snakePoints = new ArrayList<LXPoint>();  
   private List<LXPoint> pointQueue = new ArrayList<LXPoint>();
   
+  public float hue = -1.0;
+  
   private LXRangeModulator xMod = new LinearEnvelope(0);
   private LXRangeModulator yMod = new LinearEnvelope(0);
   private LXRangeModulator zMod = new LinearEnvelope(0);
@@ -84,7 +86,7 @@ public class SnakeLayer extends LXLayer {
   }
   
   public float hueValue() {
-    return lx.getBaseHuef();
+    return (this.hue >= 0.0) ? this.hue : lx.getBaseHuef();
   }
   
   public boolean hasPoint(LXPoint point) {

@@ -10,6 +10,8 @@ class Snakes extends LXPattern {
   public Snakes(LX lx) {
     this(lx, 0.0);
   }
+  
+  public String getName() { return "Snakes"; }
 
   public Snakes(LX lx, float hueDelta) {
     super(lx);
@@ -21,9 +23,15 @@ class Snakes extends LXPattern {
 
     initSnakes();
   }
-  
-  public void run(double deltaMs) {   
+
+  public void run(double deltaMs) {
     calibrateSnakes();
+    
+    float hueStep = 0;   
+    for(SnakeLayer snake: this.snakes) {
+      snake.hue = LXUtils.wrapdistf(lx.getBaseHuef(), lx.getBaseHuef() + hueStep, 360);
+      hueStep += 360.0 / (float)this.snakes.size();
+    }
     
     for (LXPoint p : model.points) {
       int numSnakes = 0;
@@ -31,7 +39,7 @@ class Snakes extends LXPattern {
       for(SnakeLayer snake: this.snakes) {
         if (!snake.hasPoint(p)) { continue; }
         
-        numSnakes++;        
+        numSnakes++;
         
         if (numSnakes == 1) {
           colors[p.index] = snake.colorOf(p.index);        
@@ -52,11 +60,7 @@ class Snakes extends LXPattern {
         
     float h, s, b, minHue, maxHue;
     float startHue = LXColor.h(startColor);
-    
-    if (numSnakes > 2) {
-      startHue = LXUtils.wrapdistf(0, startHue + 180, 360);
-    } 
-        
+            
     minHue = min(startHue, LXColor.h(nextColor));
     maxHue = max(startHue, LXColor.h(nextColor));
     h = (minHue * 2.0 + maxHue / 2.0) / 2.0;
