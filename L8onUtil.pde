@@ -9,6 +9,234 @@ static class L8onUtil {
   }
 }
 
+public class SnakeLayer extends LXLayer {
+  private static final float BRIGHTNESS = 80.0;
+  private static final int NUM_EDGES = 2;
+  private static final int NUM_POINTS = (NUM_EDGES * 3) + 3;
+  private static final float SNAKE_SPEED = 36.0;
+  
+  private int[] snakeColors = new int[model.points.size()];
+  private List<LEDomeEdge> snakeEdges = new ArrayList<LEDomeEdge>();
+  private List<LXPoint> snakePoints = new ArrayList<LXPoint>();  
+  private List<LXPoint> pointQueue = new ArrayList<LXPoint>();
+  
+  private LXRangeModulator xMod = new LinearEnvelope(0);
+  private LXRangeModulator yMod = new LinearEnvelope(0);
+  private LXRangeModulator zMod = new LinearEnvelope(0);
+
+  private BasicParameter brightness;  
+  private BasicParameter numPoints;
+  private BasicParameter snakeSpeed;
+  
+  public SnakeLayer(LX lx) {
+    this(lx, new BasicParameter("EDG", NUM_POINTS), new BasicParameter("SPD", SNAKE_SPEED), new BasicParameter("BRIT", BRIGHTNESS));  
+  }
+  
+  public SnakeLayer(LX lx, BasicParameter numPoints, BasicParameter snakeSpeed, BasicParameter brightness) {
+    super(lx);    
+    this.numPoints = numPoints;
+    this.snakeSpeed = snakeSpeed;
+    this.brightness = brightness;
+    this.restartSnake();
+    
+    addModulator(this.xMod);
+    addModulator(this.yMod);
+    addModulator(this.zMod);
+  }
+
+  public void run(double deltaMs) {      
+    if (this.reachedTarget()) {
+      if (this.pointQueue.size() > 1) {
+        this.addPointToSnake(this.pointQueue.get(1));
+      }
+      
+      this.pickNextTarget();
+      this.startMovement();
+      return;
+    }
+    
+    float modBasis = (this.xMod.getBasisf() + this.yMod.getBasisf() + this.zMod.getBasisf()) / 3.0;
+    float brightnessProp = 1.0;      
+     
+    for (LXPoint p : model.points) {
+      int snakeIndex = this.snakePoints.indexOf(p);
+      
+      if (snakeIndex >= 0) {
+        if (snakeIndex == 0) {
+          brightnessProp = max(1.0 - modBasis, 0.0);
+          
+          snakeColors[p.index] = LX.hsb(this.hueValue(), 80, brightnessProp * brightness.getValuef());          
+          continue;
+        }
+        
+        if (snakeIndex == (this.snakePoints.size() - 1)) {
+          brightnessProp = min(modBasis, 1.0);
+          snakeColors[p.index] = LX.hsb(this.hueValue(), 80, brightnessProp * brightness.getValuef());          
+          continue;    
+        }
+
+        snakeColors[p.index] = LX.hsb(this.hueValue(), 80, brightness.getValuef());
+        continue;
+      }
+      
+      snakeColors[p.index] = LX.hsb(0, 0, 0);
+    }
+  }
+  
+  public float hueValue() {
+    return lx.getBaseHuef();
+  }
+  
+  public boolean hasPoint(LXPoint point) {
+    return this.snakePoints.contains(point);  
+  }
+  
+  public int colorOf(int index) {
+    return this.snakeColors[index];  
+  }
+
+  private void addPointToSnake(LXPoint point) {
+    this.snakePoints.add(point);      
+    
+    while (this.snakePoints.size() > this.maxSnakePoints()) {              
+      this.snakePoints.remove(0);
+    }      
+  }
+  
+  private int maxSnakePoints() {
+    return (int)this.numPoints.getValue();  
+  }
+  
+  private boolean reachedTarget() {
+    return !this.xMod.isRunning() && !this.yMod.isRunning() && !this.zMod.isRunning();   
+  }
+  
+  private void restartSnake() {      
+    this.snakePoints.clear();      
+    this.snakeEdges.clear();      
+    this.pointQueue.clear();
+    LEDomeEdge firstEdge = ((LEDome)model).randomEdge();
+    
+    this.snakeEdges.add(firstEdge);    
+    
+    this.pointQueue.add(firstEdge.points.get(0));
+    this.pointQueue.add(firstEdge.points.get(1));
+    this.pointQueue.add(firstEdge.points.get(2));
+  }
+  
+  private void startMovement() {
+    if (this.pointQueue.size() < 2) { return; }
+
+    LXPoint origin = this.pointQueue.get(0);
+    LXPoint target = this.pointQueue.get(1);
+    double travelTime = this.timeToTravel(origin, target);
+    this.xMod.setRange((double)origin.x, (double)target.x, travelTime).start();
+    this.yMod.setRange((double)origin.y, (double)target.y, travelTime).start();
+    this.zMod.setRange((double)origin.z, (double)target.z, travelTime).start();
+  }
+  
+  private void pickNextTarget() {      
+    // Remove old origin.
+    if (this.pointQueue.size() > 1) {
+      this.pointQueue.remove(0);
+    }
+    
+    // We still have 2+ points to hit, do nothing. 
+    if (this.pointQueue.size() > 1) { return; }
+          
+    this.findNextEdge();
+    
+    // If the queue somehow stays empty, restart it yo.
+    if (this.pointQueue.size() == 0) {
+      this.restartSnake();
+    }
+  }
+  
+  private void findNextEdge() {
+    LXPoint origin = this.pointQueue.get(0);
+    HE_Vertex originVertex = ((LEDome)model).closestVertex(origin);
+    List<HE_Halfedge> neighbors = originVertex.getHalfedgeStar();
+    Collections.shuffle(neighbors);
+    boolean foundEdge = false;
+
+    for(HE_Halfedge he_edge : neighbors) {
+      // Skip edges without labels
+      if (he_edge.getLabel() < 0) { continue; }
+
+      // Find the LEDomeEdge with the correct label. 
+      LEDomeEdge edge = ((LEDome)model).edges.get(he_edge.getLabel());
+
+      // Continue if the edge doesn't have lights or if the edge is already in the snake.
+      if (edge == null || this.snakeEdges.contains(edge)) { continue; }
+
+      // Hey we found an edge!
+      foundEdge = true;
+           
+      this.queueEdgePoints(origin, edge);      
+
+      if (this.shouldRemoveTail()) {
+        this.removeTail();
+      }
+
+      this.snakeEdges.add(edge);
+      break;
+    }
+    
+    // Clear the pointQueue if we couldn't find another edge.
+    if (!foundEdge) {
+      this.restartSnake();
+    }
+  }
+  
+  private void queueEdgePoints(LXPoint origin, LEDomeEdge edge) {
+    // Get the next vertex
+    LXPoint closestPoint = edge.closestVertexPoint(origin.x, origin.y, origin.z);
+    
+    if (closestPoint != origin) {
+      this.pointQueue.add(closestPoint);
+    }
+
+    this.pointQueue.add(edge.points.get(1));
+
+    if (closestPoint == edge.points.get(0)) {
+      this.pointQueue.add(edge.points.get(2));      
+    } else {
+      this.pointQueue.add(edge.points.get(0));
+    }
+  }
+
+  private boolean shouldRemoveTail() {
+    return this.snakeEdges.size() >= this.maxSnakeEdges();
+  }
+  
+  private int maxSnakeEdges() {
+    return ceil(this.maxSnakePoints() / 3.0);  
+  }
+
+  private void removeTail() {
+    this.snakeEdges.remove(0);
+  }
+
+  private double timeToTravel(LXPoint firstHeadPoint, LXPoint secondHeadPoint) {
+    float distToTravel = dist(firstHeadPoint.x, firstHeadPoint.y, firstHeadPoint.z, secondHeadPoint.x, secondHeadPoint.y, secondHeadPoint.z);
+    return max(distToTravel / (snakeSpeed.getValuef() / SECONDS), 0.0);      
+  }
+}
+
+public class OffLayer extends LXLayer {
+  private color black = LX.hsb(0, 0, 0);
+  
+  public OffLayer(LX lx, LXBufferedComponent pattern) {
+    super(lx, pattern);
+  }
+  
+  public void run(double deltaMs) {  
+    for (LXPoint p : model.points) {
+      setColor(p.index, black);  
+    }
+  }
+}
+
 
 public class BlurLayer extends LXLayer {
   public final BasicParameter amount;

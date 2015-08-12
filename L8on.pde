@@ -1,27 +1,95 @@
-class Worms extends LXPattern {
+class Snakes extends LXPattern {
   // Used to store info about each explosion.
   // See L8onUtil.pde for the definition.
-  private List<L8onExplosion> explosions = new ArrayList<L8onExplosion>();
-  private BasicParameter numWormsParameter = new BasicParameter("NUM", 2.0, 1.0, 30.0);  
-  private BasicParameter blurParameter = new BasicParameter("BLUR", 0.69);
-  private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
+  private List<SnakeLayer> snakes = new ArrayList<SnakeLayer>();
+  private BasicParameter numSnakes = new BasicParameter("NUM", 2.0, 1.0, 30.0);  
+  private BasicParameter snakeSpeed = new BasicParameter("SPD", 64.0, 6.0, 480.0);
+  private BasicParameter brightnessParameter = new BasicParameter("BRGT", 60.0, 10.0, 80.0);
+  private BasicParameter lengthParameter = new BasicParameter("LNGT", 8.0, 3.0, 48.0);  
   
-  public Worms(LX lx) {
+  public Snakes(LX lx) {
+    this(lx, 0.0);
+  }
+
+  public Snakes(LX lx, float hueDelta) {
     super(lx);
 
-    addParameter(numWormsParameter);
-    addParameter(blurParameter);  
-    addLayer(blurLayer);
+    addParameter(numSnakes);
+    addParameter(snakeSpeed);
+    addParameter(brightnessParameter);
+    addParameter(lengthParameter);
 
-    initWorms();
+    initSnakes();
+  }
+  
+  public void run(double deltaMs) {   
+    calibrateSnakes();
+    
+    for (LXPoint p : model.points) {
+      int numSnakes = 0;
+      
+      for(SnakeLayer snake: this.snakes) {
+        if (!snake.hasPoint(p)) { continue; }
+        
+        numSnakes++;        
+        
+        if (numSnakes == 1) {
+          colors[p.index] = snake.colorOf(p.index);        
+        } else {
+          colors[p.index] = this.blendSnakes(colors[p.index], snake.colorOf(p.index), numSnakes);
+        }
+        
+      }
+      
+      if (numSnakes == 0) {        
+        colors[p.index] = LX.hsb(LXColor.h(colors[p.index]), LXColor.s(colors[p.index]), 0.0);
+      }
+    }
+  }
+  
+  public color blendSnakes(int startColor, int nextColor, int numSnakes) {
+    if (numSnakes == 1) { return nextColor; }
+        
+    float h, s, b, minHue, maxHue;
+    float startHue = LXColor.h(startColor);
+    
+    if (numSnakes > 2) {
+      startHue = LXUtils.wrapdistf(0, startHue + 180, 360);
+    } 
+        
+    minHue = min(startHue, LXColor.h(nextColor));
+    maxHue = max(startHue, LXColor.h(nextColor));
+    h = (minHue * 2.0 + maxHue / 2.0) / 2.0;
+    s = (LXColor.s(startColor) + LXColor.s(nextColor)) / 2.0;
+    b = (LXColor.b(startColor) + LXColor.b(nextColor)) / 2.0;
+    
+    return LXColor.hsb(h, s, b);
   }
 
-  public void run(double deltaMs) {
-
+  public void initSnakes() {
+    snakes.clear();
+    
+    for(int i = 0; i < (int)this.numSnakes.getValuef(); i++) {
+      SnakeLayer snake = new SnakeLayer(lx, lengthParameter, snakeSpeed, brightnessParameter);
+      snakes.add(snake);
+      addLayer(snake);
+    }
   }
-
-  public void initWorms() {
-
+  
+  public void calibrateSnakes() {
+    if ((int)this.numSnakes.getValue() == this.snakes.size()) { return; }
+  
+    if ((int)this.numSnakes.getValue() < this.snakes.size()) {
+      for(int i = (this.snakes.size() - 1); i >= (int)this.numSnakes.getValue(); i--) {
+        this.snakes.remove(i);
+      }
+    } else {
+      for(int i = 0; i < ((int)this.numSnakes.getValuef() - this.snakes.size()); i++) {
+        SnakeLayer snake = new SnakeLayer(lx, lengthParameter, snakeSpeed, brightnessParameter);
+        snakes.add(snake);
+        addLayer(snake);
+      }
+    }
   }
 }
 
@@ -29,7 +97,6 @@ class Explosions extends LXPattern {
   // Used to store info about each explosion.
   // See L8onUtil.pde for the definition.
   private List<L8onExplosion> explosions = new ArrayList<L8onExplosion>();
-
   private final SinLFO saturationModulator = new SinLFO(70.0, 90.0, 20 * SECONDS);
   private BasicParameter numExplosionsParameter = new BasicParameter("NUM", 2.0, 1.0, 30.0);
   private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);
@@ -812,8 +879,7 @@ class ExplosionEffect extends LXEffect {
       explosion.explode();
     }
 
-    public void run(double deltaMs) {
-      //println("boom Envelop Valeue: " + boom.getValuef());
+    public void run(double deltaMs) {      
       float brightv = brightnessParameter.getValuef();
       float satv = saturationParameter.getValuef();
       float huev = lx.getBaseHuef();

@@ -2,6 +2,27 @@
  * This file has a bunch of example patterns, each illustrating the key
  * concepts and tools of the LX framework.
  */
+ 
+class HueTestPattern extends LXPattern {
+  private final BasicParameter colorChangeSpeed = new BasicParameter("SPD",  5000, 0, 10000);
+  private final SinLFO whatColor = new SinLFO(0, 360, colorChangeSpeed);
+  
+  public HueTestPattern(LX lx) {
+    super(lx);
+    addParameter(colorChangeSpeed);
+    addModulator(whatColor).trigger();
+  }
+
+  public void run(double deltaMs){
+    for (LXPoint p : model.points) {
+      float h = whatColor.getValuef();
+      int s = 100;
+      int b = 70;
+      colors[p.index] = LX.hsb(h,s,b);
+    }
+  }
+}
+
 
 class FaceIteratorTest extends LXPattern {
   private final SawLFO currIndex = new SawLFO(0, ((LEDome)model).faces.size(), ((LEDome)model).faces.size() * 300);
@@ -96,7 +117,7 @@ class LayerDemoPattern extends LXPattern {
   }
   
   private class RodLayer extends LXLayer {
-    
+
     private final SinLFO zPeriod = new SinLFO(2000, 5000, 9000);
     private final SinLFO zPos = new SinLFO(model.zMin, model.zMax, zPeriod);
     

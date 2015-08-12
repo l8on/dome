@@ -22,7 +22,7 @@ final static int SECONDS = 1000;
 final static int MINUTES = 60 * SECONDS;
 
 // Configure the NDB and the number of connected lights.
-final static int NUM_CONNECTED_LIGHTS = 108;
+final static int NUM_CONNECTED_LIGHTS = 30;
 final static String NDB_IP_ADDRESS = "10.0.0.116";
 
 /**
@@ -42,10 +42,14 @@ static class LEDome extends LXModel {
   public static final int DIRECTION_FORWARD = 1;
   public static final int DIRECTION_LEFT = 2;
   public static final int DIRECTION_BACK = 3;
+  
+  public static final int CLOCKWISE = 0;
+  public static final int COUNTER_CLOCKWISE = 1;
+  public static final int LIGHT_DIRECTION = COUNTER_CLOCKWISE;
     
   public static final ArrayList<Integer> NO_LIGHT_FACES = new ArrayList<Integer>(Arrays.asList(16, 17, 18, 47, 48, 49, 75, 76));
     
-  public static final ArrayList<Integer> TEST_LIST = new ArrayList<Integer>(Arrays.asList(20, 19, 50, 51, 78, 77, 95, 96));
+  public static final ArrayList<Integer> TEST_LIST = new ArrayList<Integer>(Arrays.asList(100, 101, 102, 103, 104));
   
   public static final ArrayList<Integer> FACE_LIST_0 = new ArrayList<Integer>(Arrays.asList(20, 19, 50, 51, 78, 77, 95, 96, 104));  
   public static final ArrayList<Integer> FACE_LIST_1 = new ArrayList<Integer>(Arrays.asList(21, 22, 23, 54, 53, 52, 80, 79, 97, 98));
@@ -62,55 +66,73 @@ static class LEDome extends LXModel {
 
   public LEDome() {
     super(new LEDomeLights());
-    domelights = ((LEDomeLights)fixtures.get(0));
-    sphere = new WB_Sphere(domelights.geodome.getCenter(), DOME_RADIUS);
-    faces = this.getFaces();
-    edges = this.getEdges();
+    this.domelights = ((LEDomeLights)fixtures.get(0));
+    this.sphere = new WB_Sphere(domelights.geodome.getCenter(), DOME_RADIUS);
+    this.faces = this.getFaces();
+    this.edges = this.getEdges();
   }
  
   public HE_Mesh getLEDomeMesh() {
-    return domelights.geodome;
+    return this.domelights.geodome;
   }
   
   public List<LEDomeFace> getFaces() {
-    return domelights.faces;
+    return this.domelights.faces;
   }
   
   public List<LEDomeEdge> getEdges() {
-    return domelights.edges;
+    return this.domelights.edges;
   }
   
   public LEDomeFace randomFace() {    
-    return domelights.faces.get(randomFaceIndex.nextInt(domelights.faces.size()));  
+    return this.domelights.faces.get(randomFaceIndex.nextInt(domelights.faces.size()));  
   }
   
   public WB_Point randomFaceCenter() {
-    return randomFace().he_face.getFaceCenter();  
+    return this.randomFace().he_face.getFaceCenter();  
+  }
+    
+  public HE_Vertex randomVertex() {
+    return this.domelights.geodome.getVertexByIndex(randomFaceIndex.nextInt(domelights.geodome.getNumberOfVertices()));  
+  }
+   
+   public HE_Vertex closestVertex(LXPoint p) {
+    return this.closestVertex(p.x, p.y, p.z);
   }
   
+  public HE_Vertex closestVertex(float x, float y, float z) {
+    return this.domelights.geodome.getClosestVertex(new WB_Point(x, y, z), this.domelights.vertexTree);
+  }
+    
+  public LEDomeEdge randomEdge() {
+    return this.domelights.edges.get(randomFaceIndex.nextInt(domelights.edges.size()));  
+  }
+
   public WB_Point projectToSphere(float x, float y, float z) {
-    return projectToSphere(new WB_Point(x, y, z));
+    return this.projectToSphere(new WB_Point(x, y, z));
   }
   
   public WB_Point projectToSphere(WB_Point point) {
-    return sphere.projectToSphere(point); 
+    return this.sphere.projectToSphere(point); 
   }
-  
-  
+    
+ 
   private static class LEDomeLights extends LXAbstractFixture {
     public HE_Mesh geodome;
+    public WB_KDTree<WB_Point, Long> vertexTree;
     public ArrayList<List<Integer>> lightStringFaceLists = new ArrayList<List<Integer>>();
     public List<LEDomeFace> faces = new ArrayList<LEDomeFace>();
     public List<LEDomeEdge> edges = new ArrayList<LEDomeEdge>();
 
     public static final double LIGHT_OFFSET_PROP = 0.3;
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = false;
     
     private LEDomeLights() {
        buildGeodome();
        createLEDFaces();
        initializeLightStringFaceLists();       
        plotLightsOnDome();
+       
        if (DEBUG) {
          outputDebugInfo();
        }
@@ -147,8 +169,8 @@ static class LEDome extends LXModel {
         }
       }
       
-      geodome = selection.getAsMesh();
-      println("numFaces: " + geodome.getNumberOfFaces());     
+      this.geodome = selection.getAsMesh();
+      this.vertexTree = (WB_KDTree<WB_Point, Long>)(WB_KDTree<?, Long>)geodome.getVertexTree();
     }
              
     private void initializeLightStringFaceLists() {      
@@ -272,7 +294,7 @@ static class LEDome extends LXModel {
     
     private HE_Face getFirstFace() {
       WB_Point farLeft = new WB_Point(0, -1000, -1000);
-      HE_Vertex firstVertex = geodome.getClosestVertex(farLeft, (WB_KDTree<WB_Point, Long>)(WB_KDTree<?, Long>)geodome.getVertexTree());
+      HE_Vertex firstVertex = geodome.getClosestVertex(farLeft, this.vertexTree);
       HE_Face firstFace = null;
       float minX = 1000;
       println("FirstVertex: " + firstVertex);
@@ -296,7 +318,7 @@ static class LEDome extends LXModel {
         List<Integer> faceList = lightStringFaceLists.get(i);
                 
         for(int j = 0; j < faceList.size(); j++) {
-          int index = faceList.get(j);          
+          int index = faceList.get(j);   
           plotLightsOnFace(faces.get(index));
         }
       }
@@ -319,7 +341,7 @@ static class LEDome extends LXModel {
                            
       do {             
         // Create LEDomeEdge model for the first edge.   
-        currHalfedge.setLabel(this.edges.size());        
+        currHalfedge.setLabel(this.edges.size());
         currDomeEdge = new LEDomeEdge(face, currHalfedge);
         faceEdges.add(currDomeEdge);
         this.edges.add(currDomeEdge);
@@ -333,6 +355,10 @@ static class LEDome extends LXModel {
         // Add point to model and to points array.
         points.add(lx_point);
         addPoint(lx_point);
+
+        if (LIGHT_DIRECTION == COUNTER_CLOCKWISE) {
+          currHalfedge = currHalfedge.getNextInFace().getNextInFace();
+        }
 
         // Add point to current edge
         currDomeEdge.addPoint(lx_point);
@@ -348,7 +374,7 @@ static class LEDome extends LXModel {
 
         // Add point to model and to points array
         points.add(lx_point);
-        addPoint(lx_point);
+        addPoint(lx_point);        
 
         // Add point to current edge and cache for next iteration.
         currDomeEdge.addPoint(lx_point);
@@ -356,13 +382,16 @@ static class LEDome extends LXModel {
 
         // Get next halfedge.
         // It seems going backwards gives us the direct we want (clockwise)
-        currHalfedge = currHalfedge.getPrevInFace().getPrevInFace();
+        if (LIGHT_DIRECTION == CLOCKWISE) {
+          currHalfedge = currHalfedge.getPrevInFace().getPrevInFace();
+        } 
+        
         currVertex = currHalfedge.getVertex();
       } while(currVertex != isocVertex);
 
       // Add very first vertex point to final edge.
-      prevDomeEdge.addPoint(points.get(0));
-
+      prevDomeEdge.addPoint(points.get(0));      
+        
       // Set points and edeges on the face.
       face.setPoints(points);
       face.setEdges(faceEdges);
