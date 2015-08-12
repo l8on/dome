@@ -50,6 +50,7 @@ LXPattern[] patterns(P2LX lx) {
     // Create New Pattern Instances Below HERE
     // BKudria
     new Beachball(lx),
+    new Breather(lx),
 
     // L8on
     new Explosions(lx),  
