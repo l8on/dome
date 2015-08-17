@@ -445,6 +445,9 @@ static class LEDome extends LXModel {
       sizeCounts.put(24, 0);
       sizeCounts.put(36, 0);      
       
+      
+      println("Number of vertices: " + this.geodome.getNumberOfVertices());
+      
       for(int i = 0; i < this.lightStringFaceLists.size(); i++) {
         List<Integer> faceList = this.lightStringFaceLists.get(i);
         
