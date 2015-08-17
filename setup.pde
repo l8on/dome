@@ -19,7 +19,7 @@ import java.awt.Toolkit;
 
 // The raspberry pi can't render 3d out of the box.
 // Set RENDER_3D to false to avoid using OpenGL.
-final boolean RENDER_3D = true;
+final boolean RENDER_3D = false;
 
 Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 final int VIEWPORT_WIDTH = (int)screenSize.getWidth();;
