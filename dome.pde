@@ -11,6 +11,8 @@ import heronarts.lx.*;
 import heronarts.lx.audio.*;
 import heronarts.lx.color.*;
 import heronarts.lx.effect.*;
+import heronarts.lx.midi.*;
+import heronarts.lx.midi.device.*;
 import heronarts.lx.model.*;
 import heronarts.lx.modulator.*;
 import heronarts.lx.output.*;
@@ -30,6 +32,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.Random;
+import javax.sound.midi.ShortMessage;
+import javax.sound.midi.MidiDevice;
+import javax.sound.midi.MidiUnavailableException;
 
 /** 
  * This is the code to be thrown at LEDome! 
