@@ -28,7 +28,9 @@ final int VIEWPORT_HEIGHT = (int)screenSize.getHeight();
 LEDome model;
 P2LX lx;
 WB_Render render;
-LEDomeOutputManager output_manager;
+LEDomeOutputManager outputManager;
+BooleanParameter ndbOutputParameter;
+KorgNanoKontrol2 nanoKontrol2 = null;
 
 /*
  * Setup methods. Sets stuff up.
@@ -37,23 +39,26 @@ void setup() {
   if (RENDER_3D) {
     size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, OPENGL);
   } else {
-    size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
+    size(400, VIEWPORT_HEIGHT);
   }
+
   frame.setResizable(true);
   noSmooth();
   textSize(6);
-  
+
   // Create LEDome instance
   model = new LEDome();  
   // Create the P2LX engine
   lx = new P2LX(this, model);    
   // Create the NDB output manager
-  output_manager = new LEDomeOutputManager(lx);
-  
-  setupPatterns();  
+  ndbOutputParameter = new BooleanParameter("NDB", false);
+  outputManager = new LEDomeOutputManager(lx, ndbOutputParameter);
+
+  setupPatterns();
   setupEffects();
-  setupUI();  
-  
+  setupUI();
+  setupMidiDevices();
+
   if (RENDER_3D) {
     render = new WB_Render(this);
   }  
@@ -71,7 +76,7 @@ void setupUI() {
   if (RENDER_3D) {
     lx.ui.addLayer(
       // A camera layer makes an OpenGL layer that we can easily 
-      // pivot around with the mouse
+      // pivot around with the mousee
       new UI3dContext(lx.ui) {
         protected void beforeDraw(UI ui, PGraphics pg) {
           // Let's add lighting and depth-testing to our 3-D simulation
@@ -112,6 +117,39 @@ void setupUI() {
   lx.ui.addLayer(new LEDomeNDBOutputControl(lx.ui, 4, 326));
   lx.ui.addLayer(new UIEffectsControl(lx.ui, lx, width-144, 4));
 }
+
+List<String> NANO_NAMES = new ArrayList<String>();
+void initNanoNames() {
+  NANO_NAMES.add("SLIDER/KNOB");  
+}
+
+void setupMidiDevices() {
+  initNanoNames();
+  
+  try {    
+    for (MidiDevice device : LXMidiSystem.getInputs()) {      
+      LXMidiInput lxMidiInput = new LXMidiInput(lx, device);
+      
+      if (KorgNanoKontrol2.hasName(device.getDeviceInfo().getName())) {
+        nanoKontrol2 = new KorgNanoKontrol2(lxMidiInput);
+        lxMidiInput.addListener(new KorgNanoKontrol2MidiListener(lx));
+        lx.engine.getDefaultChannel().addListener(new KorgNanoKontrol2MidiListener(lx));
+      }
+      
+      lx.engine.midiEngine.addInput(lxMidiInput);
+    }
+  
+    // Stop no control is connected.
+    if (nanoKontrol2 == null) { return; }
+    
+    for (LXEffect effect: lx.engine.getEffects()) {
+      effect.enabled.addListener(new KorgNanoKontrol2EffectParameterListener(effect));  
+    }
+  } catch (MidiUnavailableException mux) {
+    mux.printStackTrace();  
+  }
+}
+
 
 void draw() {
   background(#292929);  

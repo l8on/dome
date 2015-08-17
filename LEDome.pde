@@ -478,28 +478,39 @@ static class LEDome extends LXModel {
   }
 }
 
-static class LEDomeOutputManager {
-  private P2LX lx;
-  private boolean ndb_output_enabled;
-  private LXDatagramOutput ndb_output;
+static class LEDomeOutputManager implements LXParameterListener {
+  private LX lx;
+  private BooleanParameter ndbOutputEnabled;  
+  private LXDatagramOutput ndbOutput;
 
-  public LEDomeOutputManager(P2LX lx) {
+  public LEDomeOutputManager(LX lx) {
+    this(lx, new BooleanParameter("NDB", false));
+  }
+  
+  public LEDomeOutputManager(LX lx, BooleanParameter ndbOutputEnabled) {
     this.lx = lx;
-    this.ndb_output_enabled = false;
+    this.ndbOutputEnabled = ndbOutputEnabled;
+    this.ndbOutputEnabled.addListener(this);
   }
-
-  public void toggleNDBOutput() {
-    this.toggleNDBOutput(!this.ndb_output_enabled);
-  }
-
-  public void toggleNDBOutput(boolean enable) {
-    if (enable) {
+  
+  public void onParameterChanged(LXParameter parameter) {
+    if (parameter == this.ndbOutputEnabled) {
+      println("parameter and ndbOutputEnabled are equal");  
+    }
+    
+    if (((BooleanParameter)parameter).getValueb()) {
       this.addLXOutputForNDB();
     } else {
       this.removeLXOutputForNDB();
-    }
+    }      
+  }
 
-    this.ndb_output_enabled = enable;
+  public void toggleNDBOutput() {
+    this.toggleNDBOutput(!this.ndbOutputEnabled.getValueb());    
+  }  
+
+  public void toggleNDBOutput(boolean enable) {
+    this.ndbOutputEnabled.setValue(enable);    
   }
 
   private void addLXOutputForNDB() {
@@ -509,18 +520,18 @@ static class LEDomeOutputManager {
     }
 
     try {
-      this.ndb_output = new LXDatagramOutput(this.lx);
-      DDPDatagram datagram = (DDPDatagram)new DDPDatagram(points).setAddress(NDB_IP_ADDRESS); // whatever the IP is
-      this.ndb_output.addDatagram(datagram);
-      this.lx.addOutput(this.ndb_output);
+      this.ndbOutput = new LXDatagramOutput(this.lx);
+      DDPDatagram datagram = (DDPDatagram)new DDPDatagram(points).setAddress(NDB_IP_ADDRESS); 
+      this.ndbOutput.addDatagram(datagram);
+      this.lx.addOutput(this.ndbOutput);
     } catch (Exception x) {
       x.printStackTrace();
     }
   }
 
   private void removeLXOutputForNDB() {
-    if (this.ndb_output != null) {
-      this.lx.removeOutput(this.ndb_output);
+    if (this.ndbOutput != null) {
+      this.lx.removeOutput(this.ndbOutput);
     }
   }
 }

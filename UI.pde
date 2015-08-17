@@ -88,11 +88,12 @@ class LEDomeNDBOutputControl extends UIWindow {
     new UIButton(4, y, width-8, 20) {
       protected void onToggle(boolean enabled) {
         println("Toggle NDB output: " + enabled);
-        output_manager.toggleNDBOutput(enabled);
+        outputManager.toggleNDBOutput(enabled);
       }  
     }
     .setInactiveLabel("Output to NDB")
-    .setActiveLabel("Disconnect NDB")    
+    .setActiveLabel("Disconnect NDB")
+    .setParameter(ndbOutputParameter)    
     .addToContainer(this);
   }
 }
