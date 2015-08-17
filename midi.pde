@@ -87,7 +87,7 @@ public static class KorgNanoKontrol2 extends LXMidiDevice {
   
   public static boolean hasName(String name) {    
     for(String deviceName: DEVICE_NAMES) {
-      if (name.equals(deviceName)) {        
+      if (name.contains(deviceName)) {        
         return true;
       }
     }
