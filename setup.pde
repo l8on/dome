@@ -16,11 +16,14 @@
  
 import java.awt.Dimension;
 import java.awt.Toolkit;
- 
+
+// The raspberry pi can't render 3d out of the box.
+// Set RENDER_3D to false to avoid using OpenGL.
+final boolean RENDER_3D = true;
+
 Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 final int VIEWPORT_WIDTH = (int)screenSize.getWidth();;
 final int VIEWPORT_HEIGHT = (int)screenSize.getHeight();
-
 
 LEDome model;
 P2LX lx;
@@ -31,7 +34,11 @@ LEDomeOutputManager output_manager;
  * Setup methods. Sets stuff up.
  */
 void setup() {
-  size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, OPENGL);
+  if (RENDER_3D) {
+    size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, OPENGL);
+  } else {
+    size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
+  }
   frame.setResizable(true);
   noSmooth();
   textSize(6);
@@ -47,7 +54,9 @@ void setup() {
   setupEffects();
   setupUI();  
   
-  render = new WB_Render(this);  
+  if (RENDER_3D) {
+    render = new WB_Render(this);
+  }  
 }
 
 void setupPatterns() {
@@ -59,42 +68,44 @@ void setupEffects() {
 }
 
 void setupUI() {
-  lx.ui.addLayer(
-    // A camera layer makes an OpenGL layer that we can easily 
-    // pivot around with the mouse
-    new UI3dContext(lx.ui) {
-      protected void beforeDraw(UI ui, PGraphics pg) {
-        // Let's add lighting and depth-testing to our 3-D simulation
-        pointLight(0, 0, 40, model.cx, model.cy, -20*FEET);
-        pointLight(0, 0, 50, model.cx, model.yMax + 10*FEET, model.cz);
-        pointLight(0, 0, 20, model.cx, model.yMin - 10*FEET, model.cz);
-        hint(ENABLE_DEPTH_TEST);
+  if (RENDER_3D) {
+    lx.ui.addLayer(
+      // A camera layer makes an OpenGL layer that we can easily 
+      // pivot around with the mouse
+      new UI3dContext(lx.ui) {
+        protected void beforeDraw(UI ui, PGraphics pg) {
+          // Let's add lighting and depth-testing to our 3-D simulation
+          pointLight(0, 0, 40, model.cx, model.cy, -20*FEET);
+          pointLight(0, 0, 50, model.cx, model.yMax + 10*FEET, model.cz);
+          pointLight(0, 0, 20, model.cx, model.yMin - 10*FEET, model.cz);
+          hint(ENABLE_DEPTH_TEST);
+        }
+        protected void afterDraw(UI ui, PGraphics pg) {
+          // Turn off the lights and kill depth testing before the 2D layers
+          noLights();
+          hint(DISABLE_DEPTH_TEST);
+        } 
       }
-      protected void afterDraw(UI ui, PGraphics pg) {
-        // Turn off the lights and kill depth testing before the 2D layers
-        noLights();
-        hint(DISABLE_DEPTH_TEST);
-      } 
-    }
-  
-    // Let's look at the center of our model
-    .setCenter(model.cx, model.cy, model.cz)
-  
-    // Let's position our eye some distance away
-    .setRadius(22*FEET)
     
-    // And look at it from a bit of an angle
-    .setTheta(PI/24)
-    .setPhi(PI/24)
+      // Let's look at the center of our model
+      .setCenter(model.cx, model.cy, model.cz)
     
-    .setRotationVelocity(12*PI)
-    .setRotationAcceleration(3*PI)
-    
-    // Let's add a point cloud of our animation points
-    .addComponent(new UIPointCloud(lx, model).setPointSize(3))
-    
-    .addComponent(new UIDome())
-  );
+      // Let's position our eye some distance away
+      .setRadius(22*FEET)
+      
+      // And look at it from a bit of an angle
+      .setTheta(PI/24)
+      .setPhi(PI/24)
+      
+      .setRotationVelocity(12*PI)
+      .setRotationAcceleration(3*PI)
+      
+      // Let's add a point cloud of our animation points
+      .addComponent(new UIPointCloud(lx, model).setPointSize(3))
+      
+      .addComponent(new UIDome())
+    );
+  }
   
   // A basic built-in 2-D control for a channel
   lx.ui.addLayer(new UIChannelControl(lx.ui, lx.engine.getDefaultChannel(), 4, 4));  

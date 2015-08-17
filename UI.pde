@@ -24,10 +24,12 @@ class UIDome extends UI3dComponent {
   protected void onDraw(UI ui, PGraphics pg) {
     HE_Mesh geodome = model.getLEDomeMesh();        
     
-    stroke(5);
-    render.drawEdges(geodome);
+    if (RENDER_3D) {
+      stroke(5);
+      render.drawEdges(geodome);
+    }
     
-    if (LABEL_FACES) {
+    if (RENDER_3D && LABEL_FACES) {
       stroke(1);
       labelFaces(geodome);
     }    
