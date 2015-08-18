@@ -357,16 +357,17 @@ public class KorgNanoKontrol2ChannelListener implements LXChannel.Listener {
  * The LEDomeMidiListener connects the midi controller to the interface.
  */
 public class KorgNanoKontrol2EffectParameterListener implements LXParameterListener { 
- private LXEffect effect; 
+  private LXEffect effect; 
 
- public KorgNanoKontrol2EffectParameterListener(LXEffect effect) {   
-   this.effect = effect;
- }
+  public KorgNanoKontrol2EffectParameterListener(LXEffect effect) {   
+    this.effect = effect;
+  }
  
- public void onParameterChanged(LXParameter parameter) {      
-   if (((BooleanParameter)parameter).getValueb()) {
-     nanoKontrol2.unbindSliders();
-     nanoKontrol2.bindSlidersToEffect(this.effect);
-   }
- }
+  public void onParameterChanged(LXParameter parameter) {
+    // Expecting the boolean parameter that returns true if the effect is on.   
+    if (((BooleanParameter)parameter).getValueb()) {
+      nanoKontrol2.unbindSliders();
+      nanoKontrol2.bindSlidersToEffect(this.effect);
+    }
+  }
 }

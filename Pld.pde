@@ -1,5 +1,5 @@
-class Spiral extends LXPattern {
-  private final int numFaces = ((LEDome)model).faces.size();
+class Spiral extends LEDomePattern {
+  private final int numFaces = model.faces.size();
   private final BasicParameter tail = new BasicParameter("Tail", 4, 1, numFaces / 3);
   private final BasicParameter offset = new BasicParameter("Offset", 15, 1, numFaces / 2);
   private final BasicParameter faceVariation = new BasicParameter("Face", 0, 0, 2);
