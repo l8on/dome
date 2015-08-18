@@ -1,4 +1,4 @@
-class Beachball extends LXPattern {
+class Beachball extends LEDomePattern {
   private final int stripeSize = 360 / 10;
   private final int maxTwist   = 24;
   private final int spinRate   = 2600;

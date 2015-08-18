@@ -1,6 +1,6 @@
 import java.util.Collections;
 
-class Disco extends LXPattern {
+class Disco extends LEDomePattern {
   public static final int SET_COUNT = 3;
   public static final float HUE_SEPARATION = 360 / SET_COUNT;
 
@@ -20,7 +20,7 @@ class Disco extends LXPattern {
     super(lx);
     addParameter(tempo);
     addModulator(beat).start();
-    this.dome = (LEDome) model;
+    this.dome = this.model;
     this.litFaces = litFaces();
 
     this.faceSets = new ArrayList<List<LEDomeFace>>();

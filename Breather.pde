@@ -1,4 +1,4 @@
-class Breather extends LXPattern {
+class Breather extends LEDomePattern {
   private final float E = exp(1);
   private final float RATE = 6;
   private final float SECOND = 1000;

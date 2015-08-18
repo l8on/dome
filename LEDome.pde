@@ -36,7 +36,7 @@ static class LEDome extends LXModel {
 
   private LEDomeLights domelights;
 
-  public static final float DOME_RADIUS = 5.5 * FEET;  
+  public static final float DOME_RADIUS = 5.5 * FEET;
   
   public static final int DIRECTION_RIGHT = 0;
   public static final int DIRECTION_FORWARD = 1;

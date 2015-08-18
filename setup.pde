@@ -113,38 +113,45 @@ void setupUI() {
   }
   
   // A basic built-in 2-D control for a channel
-  lx.ui.addLayer(new UIChannelControl(lx.ui, lx.engine.getDefaultChannel(), 4, 4));  
+  lx.ui.addLayer(new UIChannelControl(lx.ui, lx.engine.getDefaultChannel(), 4, 4));
   lx.ui.addLayer(new LEDomeNDBOutputControl(lx.ui, 4, 326));
   lx.ui.addLayer(new UIEffectsControl(lx.ui, lx, width-144, 4));
 }
 
 List<String> NANO_NAMES = new ArrayList<String>();
 void initNanoNames() {
-  NANO_NAMES.add("SLIDER/KNOB");  
+  NANO_NAMES.add("SLIDER/KNOB");
 }
 
 void setupMidiDevices() {
   initNanoNames();
   
   try {    
-    for (MidiDevice device : LXMidiSystem.getInputs()) {      
+    // Loop through inputs and find one we recognize.
+    for (MidiDevice device : LXMidiSystem.getInputs()) {
       LXMidiInput lxMidiInput = new LXMidiInput(lx, device);
+      // Add all inputs to engine to ensure proper functionality.
+      lx.engine.midiEngine.addInput(lxMidiInput);      
       
+      // Is it the Korg nanoKontrol2 ?
       if (KorgNanoKontrol2.hasName(device.getDeviceInfo().getName())) {
         nanoKontrol2 = new KorgNanoKontrol2(lxMidiInput);
+        // Connect knobs to midi device events
         lxMidiInput.addListener(new KorgNanoKontrol2MidiListener(lx));
+        // Listen to pattern so knobs can be connected to pattern parameters.
         lx.engine.getDefaultChannel().addListener(new KorgNanoKontrol2MidiListener(lx));
       }
-      
-      lx.engine.midiEngine.addInput(lxMidiInput);
+            
     }
   
-    // Stop no control is connected.
+    // No nanoKontrol is connected, return
     if (nanoKontrol2 == null) { return; }
     
+    // Listen to each effect to connect the last 4 sliders to the latest effect.
     for (LXEffect effect: lx.engine.getEffects()) {
       effect.enabled.addListener(new KorgNanoKontrol2EffectParameterListener(effect));  
     }
+    
   } catch (MidiUnavailableException mux) {
     mux.printStackTrace();  
   }
