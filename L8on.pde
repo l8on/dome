@@ -363,7 +363,7 @@ class SpotLights extends LEDomePattern {
 
       for(int i = 0; i < (num_spotlights - this.spotlights.size()); i++) {
         this.spotlights.add(
-          new L8onSpotLight(model.sphere,LEDomePattern
+          new L8onSpotLight(model.sphere,
                             model.xMin + random(model.xRange), model.yMin + random(model.yRange), model.zMin + random(model.zRange),
                             model.yMin + random(model.yRange), model.yMin + random(model.yRange), model.zMin + random(model.zRange),
                             min_dist)
@@ -851,7 +851,7 @@ class Life extends LEDomePattern {
   }
 }
 
-class ExplosionEffect extends LXEffect {
+class ExplosionEffect extends LEDomeEffect {
   // Used to store info about each explosion.
   // See L8onUtil.pde for the definition.
   private List<ExplosionLayer> explosion_layers = new ArrayList<ExplosionLayer>();
