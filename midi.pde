@@ -257,7 +257,12 @@ public class KorgNanoKontrol2MidiListener implements LXMidiListener, LXChannel.L
        if (cc.getValue() > 0) { lx.engine.getDefaultChannel().autoTransitionEnabled.toggle(); }
        break;
      case KorgNanoKontrol2.R_BUTTON_8:
-       if (cc.getValue() > 0) { lx.setPatterns(patterns((P2LX)lx)); }
+       if (cc.getValue() > 0) {
+         for(LXPattern pattern: lx.getPatterns()) {  
+           if (!(pattern instanceof LEDomePattern)) { continue; }
+           ((LEDomePattern)pattern).reset(); 
+         }
+       }
        break;      
    }
 

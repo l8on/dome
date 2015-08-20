@@ -39,7 +39,7 @@ void setup() {
   if (RENDER_3D) {
     size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, OPENGL);
   } else {
-    size(400, VIEWPORT_HEIGHT);
+    size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
   }
 
   frame.setResizable(true);
@@ -61,7 +61,10 @@ void setup() {
 
   if (RENDER_3D) {
     render = new WB_Render(this);
-  }  
+  } else { 
+    // Start up network output immediately if no 3d
+    ndbOutputParameter.setValue(true);
+  }
 }
 
 void setupPatterns() {
