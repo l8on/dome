@@ -68,9 +68,9 @@ LXPattern[] patterns(P2LX lx) {
     new Life(lx),
     new L8onMixColor(lx),
     
-    // Create New Pattern Instances Below HERE
-    // BKudria
-    new Beachball(lx),
+    // Cackler
+    new ColorSpiral(lx),
+    new Snowfall(lx),
 
     // Kristján
     new Disco(lx),    
@@ -81,7 +81,7 @@ LXPattern[] patterns(P2LX lx) {
     // Test Patterns
     new LayerDemoPattern(lx),
     new FaceIteratorTest(lx),
-    new EdgeIteratorTest(lx),
+    new EdgeIteratorTest(lx), 
     new HueTestPattern(lx),
     new IteratorTestPattern(lx)
   };
