@@ -53,14 +53,6 @@ import javax.sound.midi.MidiUnavailableException;
 
 LXPattern[] patterns(P2LX lx) {
   return new LXPattern[] {
-    // Create New Pattern Instances Below HERE
-    // BKudria
-    new Beachball(lx),
-    new Breather(lx),
-
-    // Cackler
-    new ColorSpiral(lx),
-
     // L8on
     new Snakes(lx),
     new Explosions(lx),  
@@ -69,8 +61,13 @@ LXPattern[] patterns(P2LX lx) {
     new L8onMixColor(lx),
     
     // Create New Pattern Instances Below HERE
+
     // BKudria
     new Beachball(lx),
+    new Breather(lx),
+
+    // Cackler
+    new ColorSpiral(lx),
 
     // Kristján
     new Disco(lx),    
