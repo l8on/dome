@@ -156,6 +156,7 @@ public class SnakeLayer extends LXLayer {
   
   private void findNextEdge() {
     LXPoint origin = this.pointQueue.get(0);
+    LEDomeEdge currEdge = this.snakeEdges.get(this.snakeEdges.size() - 1);
     HE_Vertex originVertex = ((LEDome)model).closestVertex(origin);
     List<HE_Halfedge> neighbors = originVertex.getHalfedgeStar();
     Collections.shuffle(neighbors);
@@ -170,10 +171,14 @@ public class SnakeLayer extends LXLayer {
 
       // Continue if the edge doesn't have lights or if the edge is already in the snake.
       if (edge == null || this.snakeEdges.contains(edge)) { continue; }
+      
+      // Continue if the angle is too steep
+      float angleBetweenEdges = ((LEDome)model).angleBetweenEdges(currEdge, edge);
+      if (angleBetweenEdges < (PI/4.0) || angleBetweenEdges > 2.5) { continue; }
 
       // Hey we found an edge!
       foundEdge = true;
-           
+
       this.queueEdgePoints(origin, edge);      
 
       if (this.shouldRemoveTail()) {
