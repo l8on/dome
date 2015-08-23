@@ -64,11 +64,16 @@ void setup() {
   } else { 
     // Start up network output immediately if no 3d
     ndbOutputParameter.setValue(true);
+    lx.engine.getDefaultChannel().autoTransitionEnabled.setValue(true);
   }
 }
 
 void setupPatterns() {
-  lx.setPatterns(patterns(lx));
+  LXPattern[] domePatterns = patterns(lx);
+  for (LXPattern pattern: domePatterns) {
+    pattern.setTransition(new DissolveTransition(lx));
+  }  
+  lx.setPatterns(domePatterns);
 }
 
 void setupEffects() {
