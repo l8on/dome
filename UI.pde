@@ -40,15 +40,19 @@ class UIDome extends UI3dComponent {
     HE_Face currentFace;
     WB_Point faceCenter;  
     
+    scale(1, -1);
     for(int i = 0; i < numFaces; i++) {    
       currentFace = geodome.getFaceByIndex(i);
       faceCenter = currentFace.getFaceCenter();
       if (currentFace.getLabel() != -1) {
+        
         pushMatrix();
-        text(currentFace.getLabel(), faceCenter.xf(), faceCenter.yf(), faceCenter.zf());
+        text(currentFace.getLabel(), faceCenter.xf(), -1 * faceCenter.yf(), faceCenter.zf());
         popMatrix();
       }
-    }      
+    }
+
+    scale(1, 1);
   }
 }
 
