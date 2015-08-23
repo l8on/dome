@@ -68,6 +68,7 @@ LXPattern[] patterns(P2LX lx) {
 
     // Cackler
     new ColorSpiral(lx),
+    new Snowfall(lx),
 
     // Kristján
     new Disco(lx),    
