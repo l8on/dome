@@ -24,12 +24,10 @@ class UIDome extends UI3dComponent {
   protected void onDraw(UI ui, PGraphics pg) {
     HE_Mesh geodome = model.getLEDomeMesh();        
     
-    if (RENDER_3D) {
-      stroke(5);
-      render.drawEdges(geodome);
-    }
+    stroke(5);
+    render.drawEdges(geodome);
     
-    if (RENDER_3D && LABEL_FACES) {
+    if (LABEL_FACES) {
       stroke(1);
       labelFaces(geodome);
     }    
@@ -40,19 +38,15 @@ class UIDome extends UI3dComponent {
     HE_Face currentFace;
     WB_Point faceCenter;  
     
-    scale(1, -1);
     for(int i = 0; i < numFaces; i++) {    
       currentFace = geodome.getFaceByIndex(i);
       faceCenter = currentFace.getFaceCenter();
       if (currentFace.getLabel() != -1) {
-        
         pushMatrix();
-        text(currentFace.getLabel(), faceCenter.xf(), -1 * faceCenter.yf(), faceCenter.zf());
+        text(currentFace.getLabel(), faceCenter.xf(), faceCenter.yf(), faceCenter.zf());
         popMatrix();
       }
-    }
-
-    scale(1, 1);
+    }      
   }
 }
 
@@ -92,12 +86,11 @@ class LEDomeNDBOutputControl extends UIWindow {
     new UIButton(4, y, width-8, 20) {
       protected void onToggle(boolean enabled) {
         println("Toggle NDB output: " + enabled);
-        outputManager.toggleNDBOutput(enabled);
+        output_manager.toggleNDBOutput(enabled);
       }  
     }
     .setInactiveLabel("Output to NDB")
-    .setActiveLabel("Disconnect NDB")
-    .setParameter(ndbOutputParameter)    
+    .setActiveLabel("Disconnect NDB")    
     .addToContainer(this);
   }
 }

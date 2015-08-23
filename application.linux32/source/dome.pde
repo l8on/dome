@@ -11,8 +11,6 @@ import heronarts.lx.*;
 import heronarts.lx.audio.*;
 import heronarts.lx.color.*;
 import heronarts.lx.effect.*;
-import heronarts.lx.midi.*;
-import heronarts.lx.midi.device.*;
 import heronarts.lx.model.*;
 import heronarts.lx.modulator.*;
 import heronarts.lx.output.*;
@@ -32,9 +30,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.Random;
-import javax.sound.midi.ShortMessage;
-import javax.sound.midi.MidiDevice;
-import javax.sound.midi.MidiUnavailableException;
 
 /** 
  * This is the code to be thrown at LEDome! 
@@ -53,14 +48,6 @@ import javax.sound.midi.MidiUnavailableException;
 
 LXPattern[] patterns(P2LX lx) {
   return new LXPattern[] {
-    // Create New Pattern Instances Below HERE
-    // BKudria
-    new Beachball(lx),
-    new Breather(lx),
-
-    // Cackler
-    new ColorSpiral(lx),
-
     // L8on
     new Snakes(lx),
     new Explosions(lx),  
@@ -73,7 +60,7 @@ LXPattern[] patterns(P2LX lx) {
     new Beachball(lx),
 
     // Kristján
-    new Disco(lx),    
+    new Disco(lx),
 
     // pld
     new Spiral(lx),
@@ -81,7 +68,7 @@ LXPattern[] patterns(P2LX lx) {
     // Test Patterns
     new LayerDemoPattern(lx),
     new FaceIteratorTest(lx),
-    new EdgeIteratorTest(lx), 
+    new EdgeIteratorTest(lx),
     new HueTestPattern(lx),
     new IteratorTestPattern(lx).setTransition(new DissolveTransition(lx))
   };

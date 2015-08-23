@@ -249,7 +249,7 @@ public class BlurLayer extends LXLayer {
   }
 
   public BlurLayer(LX lx, LXBufferedComponent pattern, BasicParameter amount) {    
-    super(lx, pattern);     //<>//
+    super(lx, pattern);    
     this.amount = amount;
     this.blurBuffer = new int[lx.total];
     
