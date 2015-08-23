@@ -49,6 +49,9 @@ LXPattern[] patterns(P2LX lx) {
   return new LXPattern[] {
     // Create New Pattern Instances Below HERE
 
+    // Cackler
+    new ColorSpiral(lx),
+
     // L8on    
     new Explosions(lx),
     new SpotLights(lx),
@@ -59,7 +62,7 @@ LXPattern[] patterns(P2LX lx) {
     new LayerDemoPattern(lx),
     new FaceIteratorTest(lx),
     new EdgeIteratorTest(lx), 
-    new IteratorTestPattern(lx).setTransition(new DissolveTransition(lx))    
+    new IteratorTestPattern(lx).setTransition(new DissolveTransition(lx))
   };
 }
 
