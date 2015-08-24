@@ -3,7 +3,7 @@ class Beachball extends LEDomePattern {
   private final int maxTwist   = 24;
 
   private BasicParameter rateParam = new BasicParameter("RATE", 3600, 1800, 6000);
-  private BasicParameter blurParam = new BasicParameter("BLUR", 0.01, 0.01, 1.0);
+  private BasicParameter blurParam = new BasicParameter("BLUR", 0.1, 0.01, 1.0);
 
   private final SawLFO angle   = new SawLFO(0, 360, rateParam);
 

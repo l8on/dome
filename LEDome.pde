@@ -88,6 +88,14 @@ static class LEDome extends LXModel {
     return this.domelights.faces.get(randomFaceIndex.nextInt(domelights.faces.size()));  
   }
   
+  public LEDomeFace randomLitFace() {    
+    LEDomeFace face = null;
+    while(face == null || !face.hasLights()) {
+      face = this.domelights.faces.get(randomFaceIndex.nextInt(domelights.faces.size()));
+    }
+    return face;
+  }
+  
   public WB_Point randomFaceCenter() {
     return this.randomFace().he_face.getFaceCenter();  
   }
@@ -201,7 +209,7 @@ static class LEDome extends LXModel {
       HE_Face nextFace;
 
       for (int i = 0; i < geodome.getNumberOfFaces(); i++) {
-        faces.add(new LEDomeFace(currFace));
+        faces.add(new LEDomeFace(currFace, i));
         currFace.setLabel(i);            
         nextFace = getNextFaceInDirection(currFace, currDirection);
         

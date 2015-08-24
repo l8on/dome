@@ -6,18 +6,20 @@
  * It knows if it has any lights on it at all (LEDomeFace#hasLights())
  * It knows what which lights are on it's face (LEDomeFace#points)
  * It knows which faces are nearby (LEDomeFace#neighbors)
- * It knows the 3 faces in which it shares an edge (LEDomeFace#next_door_neighbors)
+ * It knows the 3 faces in which it shares an edge (LEDomeFace#nextDoorNeighbors)
  * It also has a reference to the face object from the 3d mesh model (LEDomeFace#he_face)
  */
 public static class LEDomeFace {
   public HE_Face he_face;
+  public int index;
   public List<LXPoint> points;
   public List<LEDomeEdge> edges;
   private List<Integer> neighbors;
-  private List<Integer> next_door_neighbors;
+  private List<Integer> nextDoorNeighbors;
 
-  public LEDomeFace(HE_Face face) {
-    he_face = face;    
+  public LEDomeFace(HE_Face face, int index) {
+    this.he_face = face;
+    this.index = index;
   }
 
   public LEDomeFace(HE_Face face, List<LXPoint> lxPoints) {
@@ -77,16 +79,16 @@ public static class LEDomeFace {
   }    
   
   public List<Integer> getNextDoorNeighbors() {
-    if (this.next_door_neighbors == null) {
-      this.next_door_neighbors = new ArrayList<Integer>();      
+    if (this.nextDoorNeighbors == null) {
+      this.nextDoorNeighbors = new ArrayList<Integer>();      
       for(HE_Face he_neighbor : this.he_face.getNeighborFaces()) {                
-        if (!this.next_door_neighbors.contains(he_neighbor.getLabel())) {
-          this.next_door_neighbors.add(he_neighbor.getLabel());  
+        if (!this.nextDoorNeighbors.contains(he_neighbor.getLabel())) {
+          this.nextDoorNeighbors.add(he_neighbor.getLabel());  
         }
       }
     }
     
-    return this.next_door_neighbors;
+    return this.nextDoorNeighbors;
   }
   
   public boolean hasLights() {
