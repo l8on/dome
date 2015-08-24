@@ -77,6 +77,10 @@ LXPattern[] patterns(P2LX lx) {
 
     // pld
     new Spiral(lx),
+    
+    // rohan
+    new Sunshine(lx),
+    new SunshineHalf(lx),
 
     // Test Patterns
     new LayerDemoPattern(lx),
