@@ -2,10 +2,10 @@ class Snakes extends LEDomePattern {
   // Used to store info about each explosion.
   // See L8onUtil.pde for the definition.
   private List<SnakeLayer> snakes = new ArrayList<SnakeLayer>();
-  private BasicParameter numSnakes = new BasicParameter("NUM", 2.0, 1.0, 30.0);
-  private BasicParameter snakeSpeed = new BasicParameter("SPD", 64.0, 6.0, 480.0);
+  private BasicParameter numSnakes = new BasicParameter("NUM", 3.0, 1.0, 30.0);
+  private BasicParameter snakeSpeed = new BasicParameter("SPD", 86.0, 6.0, 480.0);
   private BasicParameter brightnessParameter = new BasicParameter("BRGT", 60.0, 10.0, 80.0);
-  private BasicParameter lengthParameter = new BasicParameter("LNGT", 8.0, 3.0, 48.0);  
+  private BasicParameter lengthParameter = new BasicParameter("LNGT", 11.0, 3.0, 48.0);  
   
   public Snakes(LX lx) {
     this(lx, 0.0);
@@ -27,7 +27,7 @@ class Snakes extends LEDomePattern {
   public void run(double deltaMs) {
     calibrateSnakes();
     
-    float hueStep = 0;   
+    float hueStep = 0;
     for(SnakeLayer snake: this.snakes) {
       snake.hue = LXUtils.wrapdistf(lx.getBaseHuef(), lx.getBaseHuef() + hueStep, 360);
       hueStep += 360.0 / (float)this.snakes.size();
