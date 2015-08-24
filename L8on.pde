@@ -8,7 +8,7 @@ class SnakeApple extends LEDomePattern {
    
   private BasicParameter snakeSpeed = new BasicParameter("SPD", 86.0, 6.0, 640.0);  
   private BasicParameter lengthParameter = new BasicParameter("LNGT", 5.0, 5.0, 48.0);
-  private BasicParameter numApples = new BasicParameter("APL", 14.0, 2.0, 100.0);
+  private BasicParameter numApples = new BasicParameter("APL", 25.0, 10.0, 100.0);
   
   public SnakeApple(LX lx) {
     super(lx);
