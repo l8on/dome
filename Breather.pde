@@ -59,26 +59,18 @@ class Breather extends LEDomePattern {
   }
 
   public void breathe() {
-    double[] breaths = new double[lx.total];
     double maxBreath = 0;
+    for (LXPoint p : model.points) {
+      double breath = norm(-exp(breathers[p.index].getValuef()), -1/E, -E);
+      if (breath > maxBreath) { maxBreath = breath; }
 
-    for (int p = 0; p < lx.total; p++) {
-      breaths[p] = norm(-exp(breathers[p].getValuef()), -1/E, -E);
-
-      if (Double.compare(maxBreath, breaths[p]) < 0) {
-        maxBreath = breaths[p];
-      }
+      double brightness = breath * 80;
+      colors[p.index] = LXColor.hsb(hues[p.index], satParam.getValue(), brightness);
     }
 
     if (maxBreath <= 0.001) {
       resetHues();
       resetBreathers();
-    }
-
-    for (LXPoint p : model.points) {
-      double breath = norm(-exp(breathers[p.index].getValuef()), -1/E, -E);
-      double brightness = breath * 80;
-      colors[p.index] = LXColor.hsb(hues[p.index], satParam.getValue(), brightness);
     }
   }
 }
