@@ -1,24 +1,109 @@
+class SnakeApple extends LEDomePattern {
+  // Used to store info about each explosion.
+  // See L8onUtil.pde for the definition.
+  private SnakeLayer snake = null;
+  private List<Apple> apples = new ArrayList<Apple>();
+  private List<Integer> appleIndices = new ArrayList<Integer>();
+  private Random appleRandom = new Random();
+   
+  private BasicParameter snakeSpeed = new BasicParameter("SPD", 86.0, 6.0, 640.0);  
+  private BasicParameter lengthParameter = new BasicParameter("LNGT", 5.0, 5.0, 48.0);
+  private BasicParameter numApples = new BasicParameter("APL", 25.0, 10.0, 100.0);
+  
+  public SnakeApple(LX lx) {
+    super(lx);
+    
+    addParameter(snakeSpeed);
+    addParameter(numApples);
+    
+    resetSnakeApple();
+  }
+  
+  public void run(double deltaMs) {  
+    boolean onSnake = false;
+    
+    for(LXPoint p : model.points) {
+      onSnake = false;
+      Apple currApple = null;
+      
+      for(Apple apple : this.apples) {
+        if (apple.index == p.index) {
+          currApple = apple;
+          break;
+        }
+      }
+
+      if(this.snake.hasPoint(p)) {
+        onSnake = true;
+      }
+      
+      if(onSnake && currApple != null) {
+        this.snake.hue = currApple.hue;
+        this.apples.remove(currApple);
+        lengthParameter.setValue(lengthParameter.getValue() + 3.0);
+        
+        colors[p.index] = snake.colorOf(p.index);
+      } if(onSnake) {
+        colors[p.index] = snake.colorOf(p.index);
+      } else if(currApple != null) {
+        colors[p.index] = LX.hsb(currApple.hue, 100.0, 80.0);
+      } else {
+        colors[p.index] = LX.hsb(0, 0, 0);
+      }
+    }
+    
+    if(this.apples.size() == 0) {
+      this.resetSnakeApple();
+    }
+  }
+ 
+  private void resetSnakeApple() {
+    placeApples();
+    startSnake();
+  }
+  
+  private void placeApples() {
+    this.apples.clear();
+    this.appleIndices.clear();
+    int totalApples = (int) this.numApples.getValue();
+    
+    while(this.apples.size() < totalApples) {
+      LXPoint point = model.points.get(this.appleRandom.nextInt(model.points.size()));
+      if (appleIndices.contains(point.index)) { continue; }
+
+      float hueValue = this.appleRandom.nextFloat() * 360;
+      this.apples.add(new Apple(point.index, hueValue));
+      this.appleIndices.add(point.index);
+    }
+  }
+  
+  private void startSnake() {
+    if(this.snake == null) {
+      this.snake = new SnakeLayer(lx, lengthParameter, snakeSpeed);
+      addLayer(this.snake);
+    }
+    
+    lengthParameter.reset();
+    this.snake.restartSnake();
+  } 
+}
+
 class Snakes extends LEDomePattern {
   // Used to store info about each explosion.
   // See L8onUtil.pde for the definition.
   private List<SnakeLayer> snakes = new ArrayList<SnakeLayer>();
-  private BasicParameter numSnakes = new BasicParameter("NUM", 2.0, 1.0, 30.0);
-  private BasicParameter snakeSpeed = new BasicParameter("SPD", 64.0, 6.0, 480.0);
-  private BasicParameter brightnessParameter = new BasicParameter("BRGT", 60.0, 10.0, 80.0);
-  private BasicParameter lengthParameter = new BasicParameter("LNGT", 8.0, 3.0, 48.0);  
-  
-  public Snakes(LX lx) {
-    this(lx, 0.0);
-  }
+  private BasicParameter numSnakes = new BasicParameter("NUM", 3.0, 1.0, 30.0);
+  private BasicParameter snakeSpeed = new BasicParameter("SPD", 86.0, 6.0, 640.0);
+  private BasicParameter brightnessParameter = new BasicParameter("BRGT", 95.0, 10.0, 100.0);
+  private BasicParameter lengthParameter = new BasicParameter("LNGT", 11.0, 3.0, 48.0);  
   
   public String getName() { return "Snakes"; }
 
-  public Snakes(LX lx, float hueDelta) {
+  public Snakes(LX lx) {
     super(lx);
 
     addParameter(numSnakes);
-    addParameter(snakeSpeed);
-    addParameter(brightnessParameter);
+    addParameter(snakeSpeed);    
     addParameter(lengthParameter);
 
     initSnakes();
@@ -27,7 +112,7 @@ class Snakes extends LEDomePattern {
   public void run(double deltaMs) {
     calibrateSnakes();
     
-    float hueStep = 0;   
+    float hueStep = 0;
     for(SnakeLayer snake: this.snakes) {
       snake.hue = LXUtils.wrapdistf(lx.getBaseHuef(), lx.getBaseHuef() + hueStep, 360);
       hueStep += 360.0 / (float)this.snakes.size();
@@ -244,7 +329,7 @@ class SpotLights extends LEDomePattern {
   private final SinLFO saturationModulator = new SinLFO(75.0, 95.0, 20 * SECONDS);
 
   // Controls the radius of the spotlights.
-  private BasicParameter radiusParameter = new BasicParameter("RAD", 2.5 * FEET, 1.0, model.xRange / 2.0);
+  private BasicParameter radiusParameter = new BasicParameter("RAD", 2.0 * FEET, 1.0, model.xRange / 2.0);
   private BasicParameter numLightsParameter = new BasicParameter("NUM", 3.0, 1.0, 30.0);
   private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);
 
@@ -622,6 +707,7 @@ class Life extends LEDomePattern {
     // If we have landed in a static state, randomize faces.
     if(!any_changes_this_run) {
       randomizeFaceStates();
+      time_since_last_run = 0;
     } else {
       // Apply new states AFTER ALL new states are decided.
       applyNewLives();
@@ -727,18 +813,35 @@ class Life extends LEDomePattern {
   * Each cube then has that probability of living.
   */
   private void randomizeFaceStates() {
-    double prob_range = (1.0 - MIN_ALIVE_PROBABILITY) - (1.0 - MAX_ALIVE_PROBABILITY);
-    double prob = MIN_ALIVE_PROBABILITY + (prob_range * Math.random());
-
-    println("Randomizing faces p = " + prob);
-
+    println("Randomizing start face and neighbors");  
+    // First turn off all faces.
     for (L8onFaceLife face_life : this.face_lives) {
       LEDomeFace face = this.faces.get(face_life.index);
       if (!face.hasLights()) {
         continue;
       }
 
-      face_life.alive = (Math.random() <= prob);
+      face_life.alive = false;
+    }
+    
+    // Pick a random face to start and 3 random neighbors to live with.
+    LEDomeFace startFace = model.randomLitFace();
+    L8onFaceLife startFaceLife = this.face_lives.get(startFace.index);
+    startFaceLife.alive = true;
+    
+    List<Integer> neighbors = startFace.getNeighbors();
+    Collections.shuffle(neighbors);
+    int neighborCountDelta = (int) neighborCountParameter.getValue();
+    int aliveMaxNeighbors = 3 + neighborCountDelta;
+    
+    for(int i = 0; i < min(aliveMaxNeighbors, neighbors.size()); i++) {
+      LEDomeFace face = this.faces.get(neighbors.get(i));
+      if (!face.hasLights()) {
+        continue;
+      }
+      
+      println("random alive face: " + face.index);
+      this.face_lives.get(face.index).alive = true;
     }
   }
 

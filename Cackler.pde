@@ -27,7 +27,7 @@ class ColorSpiral extends LXPattern {
 }
 
 
-// TODO: better snowflake
+//# TODO: better snowflake
 
 
 class SnowflakeLayer extends LXLayer {

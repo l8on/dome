@@ -11,8 +11,8 @@ class Disco extends LEDomePattern {
 
   private Random random = new Random();
 
-  public BasicParameter tempo = new BasicParameter("TPO", 500, 250, 3000);
-  private SawLFO beat = new SawLFO(0.0, 1.0, tempo);
+  public BasicParameter tempo = new BasicParameter("TPO", 1000, 500, 10000);
+  private TriangleLFO beat = new TriangleLFO(0.0, 1.0, tempo);
 
   public String getName() { return "Disco"; }
 

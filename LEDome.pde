@@ -88,6 +88,14 @@ static class LEDome extends LXModel {
     return this.domelights.faces.get(randomFaceIndex.nextInt(domelights.faces.size()));  
   }
   
+  public LEDomeFace randomLitFace() {    
+    LEDomeFace face = null;
+    while(face == null || !face.hasLights()) {
+      face = this.domelights.faces.get(randomFaceIndex.nextInt(domelights.faces.size()));
+    }
+    return face;
+  }
+  
   public WB_Point randomFaceCenter() {
     return this.randomFace().he_face.getFaceCenter();  
   }
@@ -107,6 +115,15 @@ static class LEDome extends LXModel {
   public LEDomeEdge randomEdge() {
     return this.domelights.edges.get(randomFaceIndex.nextInt(domelights.edges.size()));  
   }
+  
+  public float angleBetweenEdges(LEDomeEdge edge1, LEDomeEdge edge2) {
+    WB_Vector wbVector1 = edge1.he_halfedge.getHalfedgeTangent();
+    WB_Vector wbVector2 = edge2.he_halfedge.getHalfedgeTangent();
+    PVector pv1 = new PVector(wbVector1.xf(), wbVector1.yf(), wbVector1.zf());
+    PVector pv2 = new PVector(wbVector2.xf(), wbVector2.yf(), wbVector2.zf());
+    
+    return PVector.angleBetween(pv1, pv2);
+  }
 
   public WB_Point projectToSphere(float x, float y, float z) {
     return this.projectToSphere(new WB_Point(x, y, z));
@@ -115,7 +132,6 @@ static class LEDome extends LXModel {
   public WB_Point projectToSphere(WB_Point point) {
     return this.sphere.projectToSphere(point); 
   }
-    
  
   private static class LEDomeLights extends LXAbstractFixture {
     public HE_Mesh geodome;
@@ -193,7 +209,7 @@ static class LEDome extends LXModel {
       HE_Face nextFace;
 
       for (int i = 0; i < geodome.getNumberOfFaces(); i++) {
-        faces.add(new LEDomeFace(currFace));
+        faces.add(new LEDomeFace(currFace, i));
         currFace.setLabel(i);            
         nextFace = getNextFaceInDirection(currFace, currDirection);
         
