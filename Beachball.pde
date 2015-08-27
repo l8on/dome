@@ -1,13 +1,17 @@
 class Beachball extends LEDomePattern {
   private final int stripeSize = 360 / 10;
   private final int maxTwist   = 24;
-  private final int spinRate   = 2600;
 
-  private final SawLFO angle   = new SawLFO(0, 360, spinRate);
+  private BasicParameter rateParam = new BasicParameter("RATE", 3600, 1800, 6000);
+  private BasicParameter blurParam = new BasicParameter("BLUR", 0.1, 0.01, 1.0);
+
+  private final SawLFO angle   = new SawLFO(0, 360, rateParam);
 
   public String getName() { return "Beachball"; }
   public Beachball(P2LX lx) {
     super(lx);
+    addParameter(rateParam);
+    addParameter(blurParam);
     addModulator(angle).start();
     drawBeachball();
   }
@@ -31,7 +35,8 @@ class Beachball extends LEDomePattern {
       double saturation = (stripe % 2 == 0) ? 75  : 100;
       double brightness = (stripe % 2 == 0) ? 100 : 75;
 
-      colors[p.index] = LXColor.hsb(hue, saturation, brightness);
+      int newColor = LXColor.hsb(hue, saturation, brightness);
+      colors[p.index] = LXColor.lerp(colors[p.index], newColor, blurParam.getValue());
     }
   }
 }

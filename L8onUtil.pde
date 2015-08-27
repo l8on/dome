@@ -9,16 +9,35 @@ static class L8onUtil {
   }
 }
 
+public class Apple {
+  public int index;
+  public float hue;
+  
+  public Apple(int index, float hue) {
+    this.index = index;
+    this.hue = hue;
+  }
+}
+
+
+// TODO: Use modulator to change hue;
+// 
 public class SnakeLayer extends LXLayer {
-  private static final float BRIGHTNESS = 80.0;
+  private static final float BRIGHTNESS = 95.0;
   private static final int NUM_EDGES = 2;
   private static final int NUM_POINTS = (NUM_EDGES * 3) + 3;
   private static final float SNAKE_SPEED = 36.0;
+  
+  // Radians
+  private static final float MAX_ANGLE = 2.5;
+  private static final float MIN_ANGLE = PI / 4.0;
   
   private int[] snakeColors = new int[model.points.size()];
   private List<LEDomeEdge> snakeEdges = new ArrayList<LEDomeEdge>();
   private List<LXPoint> snakePoints = new ArrayList<LXPoint>();  
   private List<LXPoint> pointQueue = new ArrayList<LXPoint>();
+  private List<Float> pointDistances = new ArrayList<Float>();
+  private float totalDistance = 0.0;
   
   public float hue = -1.0;
   
@@ -31,7 +50,15 @@ public class SnakeLayer extends LXLayer {
   private BasicParameter snakeSpeed;
   
   public SnakeLayer(LX lx) {
-    this(lx, new BasicParameter("EDG", NUM_POINTS), new BasicParameter("SPD", SNAKE_SPEED), new BasicParameter("BRIT", BRIGHTNESS));  
+    this(lx, new BasicParameter("EDG", NUM_POINTS));  
+  }
+  
+  public SnakeLayer(LX lx, BasicParameter numPoints) {
+    this(lx, numPoints, new BasicParameter("SPD", SNAKE_SPEED));
+  }
+  
+  public SnakeLayer(LX lx, BasicParameter numPoints, BasicParameter snakeSpeed) {
+    this(lx, numPoints, snakeSpeed, new BasicParameter("BRIT", BRIGHTNESS, 0, 100));
   }
   
   public SnakeLayer(LX lx, BasicParameter numPoints, BasicParameter snakeSpeed, BasicParameter brightness) {
@@ -56,32 +83,27 @@ public class SnakeLayer extends LXLayer {
       this.startMovement();
       return;
     }
-    
-    float modBasis = (this.xMod.getBasisf() + this.yMod.getBasisf() + this.zMod.getBasisf()) / 3.0;
-    float brightnessProp = 1.0;      
-     
+        
+    float modBasis = max(this.xMod.getBasisf(), this.yMod.getBasisf(), this.zMod.getBasisf());
+   
     for (LXPoint p : model.points) {
       int snakeIndex = this.snakePoints.indexOf(p);
       
-      if (snakeIndex >= 0) {
-        if (snakeIndex == 0) {
-          brightnessProp = max(1.0 - modBasis, 0.0);
-          
-          snakeColors[p.index] = LX.hsb(this.hueValue(), 80, brightnessProp * brightness.getValuef());          
-          continue;
-        }
-        
-        if (snakeIndex == (this.snakePoints.size() - 1)) {
-          brightnessProp = min(modBasis, 1.0);
-          snakeColors[p.index] = LX.hsb(this.hueValue(), 80, brightnessProp * brightness.getValuef());          
-          continue;    
-        }
-
-        snakeColors[p.index] = LX.hsb(this.hueValue(), 80, brightness.getValuef());
-        continue;
+      if (snakeIndex < 0 ) {
+        snakeColors[p.index] = LX.hsb(0, 0, 0);
+        continue;  
       }
       
-      snakeColors[p.index] = LX.hsb(0, 0, 0);
+      // Fade in Head point
+      if (snakeIndex == this.snakePoints.size() - 1) {
+        snakeColors[p.index] = LX.hsb(this.hueValue(), 100, modBasis * brightness.getValuef());
+        continue;
+      }
+
+      // Logarithmic decay
+      float b = constrain((1.0 * (log(snakeIndex - modBasis)/ log(this.snakePoints.size()))) * brightness.getValuef(), 0.0, 100.0);      
+      snakeColors[p.index] = LX.hsb(this.hueValue(), 100, b);
+      continue;
     }
   }
   
@@ -90,7 +112,7 @@ public class SnakeLayer extends LXLayer {
   }
   
   public boolean hasPoint(LXPoint point) {
-    return this.snakePoints.contains(point);  
+    return this.snakePoints.contains(point);
   }
   
   public int colorOf(int index) {
@@ -98,11 +120,11 @@ public class SnakeLayer extends LXLayer {
   }
 
   private void addPointToSnake(LXPoint point) {
-    this.snakePoints.add(point);      
+    this.snakePoints.add(point);
     
     while (this.snakePoints.size() > this.maxSnakePoints()) {              
-      this.snakePoints.remove(0);
-    }      
+      this.snakePoints.remove(0);      
+    }
   }
   
   private int maxSnakePoints() {
@@ -156,6 +178,7 @@ public class SnakeLayer extends LXLayer {
   
   private void findNextEdge() {
     LXPoint origin = this.pointQueue.get(0);
+    LEDomeEdge currEdge = this.snakeEdges.get(this.snakeEdges.size() - 1);
     HE_Vertex originVertex = ((LEDome)model).closestVertex(origin);
     List<HE_Halfedge> neighbors = originVertex.getHalfedgeStar();
     Collections.shuffle(neighbors);
@@ -170,10 +193,14 @@ public class SnakeLayer extends LXLayer {
 
       // Continue if the edge doesn't have lights or if the edge is already in the snake.
       if (edge == null || this.snakeEdges.contains(edge)) { continue; }
+      
+      // Continue if the angle is too steep
+      float angleBetweenEdges = ((LEDome)model).angleBetweenEdges(currEdge, edge);
+      if (angleBetweenEdges < MIN_ANGLE || angleBetweenEdges > MAX_ANGLE) { continue; }
 
       // Hey we found an edge!
       foundEdge = true;
-           
+
       this.queueEdgePoints(origin, edge);      
 
       if (this.shouldRemoveTail()) {
