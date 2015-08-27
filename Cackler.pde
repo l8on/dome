@@ -27,53 +27,96 @@ class ColorSpiral extends LXPattern {
 }
 
 
-//# TODO: better snowflake
-
+// TODO: parameterize brightness and speed; add full restart switch
 
 class SnowflakeLayer extends LXLayer {
+  private LEDome dome = (LEDome)model;
   private LXPoint point;
-  private final SawLFO heightMod;
+  private LXRangeModulator xMod = new LinearEnvelope(0);
+  private LXRangeModulator yMod = new LinearEnvelope(0);
+  private LXRangeModulator zMod = new LinearEnvelope(0);
+
+  private final int MAX_DISTANCE = 1000 * FEET;
+  private final int MAX_HEIGHT = 10 * FEET;
+  private final int START_RAND = 1 * FEET;
+  private final int MIN_FALL_TIME = 2000;
+  private final int MAX_FALL_TIME = 6000;
+  private final int MIN_BRIGHTNESS = 50;
+  private final int MAX_BRIGHTNESS = 75;
 
   public SnowflakeLayer(LX lx) {
     super(lx);
-    setInitialPoint();
-    heightMod = new SawLFO(this.point.y, 0, random(1000, 10000));
-    addModulator(heightMod).start();
+    addModulator(this.xMod);
+    addModulator(this.yMod);
+    addModulator(this.zMod);
   }
 
-  public void setInitialPoint() {
-    LEDomeEdge edge = ((LEDome)model).edges.get(((LEDome)model).edges.size() - 1);
-    this.point = edge.points.get(0);
+  private boolean isFalling() {
+    return (this.xMod.isRunning() || this.yMod.isRunning() ||
+            this.zMod.isRunning());
   }
 
-  public void setNextPoint() {
-    float min_dist = 1000 * FEET;
-    float height = this.heightMod.getValuef();
-    LXPoint nextPoint = this.point;
-    for (LEDomeEdge edge : ((LEDome)model).edges) {
+  private LXPoint getClosestPoint(float x, float y, float z) {
+    LXPoint closestPoint = model.points.get(0);
+    float currDist, minDist = this.MAX_DISTANCE;
+    for (LEDomeEdge edge : this.dome.edges) {
       for (LXPoint p : edge.points) {
-        float curr_dist = dist(p.x, p.y, p.z, this.point.x, height, this.point.z);
-        if (curr_dist < min_dist) {
-          min_dist = curr_dist;
-          nextPoint = p;
+        currDist = dist(p.x, p.y, p.z, x, y, z);
+        if (currDist < minDist) {
+          minDist = currDist;
+          closestPoint = p;
         }
       }
     }
-    this.point = nextPoint;
+    return closestPoint;
+  }
+
+  private void initSnowflake() {
+    float xStart = random(-this.START_RAND, this.START_RAND);
+    float yStart = this.MAX_HEIGHT;
+    float zStart = random(-this.START_RAND, this.START_RAND);
+    float rEnd = this.dome.DOME_RADIUS;
+    float thetaEnd = random(0, 2 * PI);
+    float xEnd = rEnd * cos(thetaEnd);
+    float zEnd = rEnd * sin(thetaEnd);
+    float fallTime = random(this.MIN_FALL_TIME, this.MAX_FALL_TIME);
+    this.point = this.getClosestPoint(xStart, yStart, zStart);
+    this.xMod.setRange(this.point.x, xEnd, fallTime).trigger();
+    this.yMod.setRange(this.point.y, 0, fallTime).trigger();
+    this.zMod.setRange(this.point.z, zEnd, fallTime).trigger();
+  }
+
+  private void updateSnowflake() {
+    float x = this.xMod.getValuef();
+    float y = this.yMod.getValuef();
+    float z = this.zMod.getValuef();
+    this.point = this.getClosestPoint(x, y, z);
+  }
+
+  private void colorSnowflake() {
+    float brightnessAdj = (this.MAX_BRIGHTNESS - this.MIN_BRIGHTNESS);
+    float brightnessFactor = 1 - (2 * abs(0.5 - this.yMod.getBasisf()));
+    float brightness = this.MIN_BRIGHTNESS + (brightnessAdj * brightnessFactor);
+    this.setColor(this.point.index, LX.hsb(360, 0, brightness));
   }
 
   public void run(double deltaMs) {
-    this.setNextPoint();
-    setColor(this.point.index, LX.hsb(360, 0, 100));
+    if (this.isFalling()) {
+      this.updateSnowflake();
+    } else {
+      this.initSnowflake();
+    }
+    this.colorSnowflake();
   }
 }
 
 
 class Snowfall extends LXPattern {
+  private final int SNOWFLAKE_COUNT = 42;
 
   public Snowfall(LX lx) {
     super(lx);
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < this.SNOWFLAKE_COUNT; i++) {
       addLayer(new SnowflakeLayer(lx));
     }
   }
