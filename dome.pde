@@ -54,8 +54,9 @@ import javax.sound.midi.MidiUnavailableException;
 LXPattern[] patterns(P2LX lx) {
   return new LXPattern[] {
     // Create New Pattern Instances Below HERE
-    new SnakeApple(lx),
+    new ShadyWaffle(lx),
     
+    // Slee
     new ClockPattern(lx),
     
     // BKudria
@@ -63,8 +64,9 @@ LXPattern[] patterns(P2LX lx) {
     new Breather(lx),
 
     // L8on
+    new Explosions(lx),
+    new SnakeApple(lx),
     new Snakes(lx),
-    new Explosions(lx),  
     new SpotLights(lx),
     new Life(lx),
     new L8onMixColor(lx),
@@ -85,15 +87,15 @@ LXPattern[] patterns(P2LX lx) {
 
     // Test Patterns
     new LayerDemoPattern(lx),
-    new FaceIteratorTest(lx),
-    new EdgeIteratorTest(lx), 
-    new HueTestPattern(lx),
-    new IteratorTestPattern(lx)
+//    new FaceIteratorTest(lx),
+//    new EdgeIteratorTest(lx), 
+//    new HueTestPattern(lx),
+//    new IteratorTestPattern(lx)
   };
 }
 
 LXEffect[] effects(P2LX lx) {
-  return new LXEffect[] {    
+  return new LXEffect[] {
     new ExplosionEffect(lx),
     new FlashEffect(lx),
     new DesaturationEffect(lx), 
