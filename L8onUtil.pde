@@ -89,14 +89,21 @@ public class SnakeLayer extends LXLayer {
     for (LXPoint p : model.points) {
       int snakeIndex = this.snakePoints.indexOf(p);
       
-      if (snakeIndex >= 0) {       
-        // Logarithmic decay 
-        float b = constrain((0.75 * (log(snakeIndex - modBasis)/ log(this.snakePoints.size()))) * brightness.getValuef(), 0.0, 100.0);      
-        snakeColors[p.index] = LX.hsb(this.hueValue(), 80, b);
-        continue;
+      if (snakeIndex < 0 ) {
+        snakeColors[p.index] = LX.hsb(0, 0, 0);
+        continue;  
       }
       
-      snakeColors[p.index] = LX.hsb(0, 0, 0);
+      // Fade in Head point
+      if (snakeIndex == this.snakePoints.size() - 1) {
+        snakeColors[p.index] = LX.hsb(this.hueValue(), 100, modBasis * brightness.getValuef());
+        continue;
+      }
+
+      // Logarithmic decay
+      float b = constrain((1.0 * (log(snakeIndex - modBasis)/ log(this.snakePoints.size()))) * brightness.getValuef(), 0.0, 100.0);      
+      snakeColors[p.index] = LX.hsb(this.hueValue(), 100, b);
+      continue;
     }
   }
   
