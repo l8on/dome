@@ -22,7 +22,7 @@ final static int SECONDS = 1000;
 final static int MINUTES = 60 * SECONDS;
 
 // Configure the NDB and the number of connected lights.
-final static int NUM_CONNECTED_LIGHTS = 30;
+final static int NUM_CONNECTED_LIGHTS = 582;
 final static String NDB_IP_ADDRESS = "10.0.0.116";
 
 /**
