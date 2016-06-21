@@ -133,6 +133,159 @@ class ShadyWaffle extends LEDomePattern {
   }
 }
 
+class HeartsBeat extends LEDomePattern {
+  private final float E = exp(1);  
+  private final int NUM_HEARTS = 3;
+  
+  private int[] HEART_1_FACES = {
+    27, 57, 58, 59, 83, 60
+  };  
+ 
+  private int[] HEART_1_EDGES = {
+    126, 110, 74, 63, 78, 79
+  };
+  
+  private int[] HEART_2_FACES = {
+    64, 87, 88, 89, 101, 90
+  };  
+ 
+  private int[] HEART_2_EDGES = {
+    111, 86, 236, 198, 204, 205
+  };
+  
+  private int[] HEART_3_FACES = {
+    13, 43, 44, 45, 71, 73
+  };  
+ 
+  private int[] HEART_3_EDGES = {
+    248, 275, 279, 231, 259, 260
+  };
+  
+  private SinLFO[] heartColors = new SinLFO[NUM_HEARTS];  
+  private SinLFO[] heartBeats = new SinLFO[NUM_HEARTS];
+  private SinLFO[] heartSaturations = new SinLFO[NUM_HEARTS];
+  private BasicParameter rateParam = new BasicParameter("RATE", 2.5, 0.5, 12);
+  private BasicParameter brightnessParam = new BasicParameter("BRIG", 90, 50, 100);  
+  
+  public HeartsBeat(LX lx) {
+    super(lx);    
+
+    addParameter(rateParam);
+    addParameter(brightnessParam);
+    initHeartModulators();
+  }
+  
+  public double getRate() {
+    float varianceRange = 0.3;
+    float rate = rateParam.getValuef();
+    float variance = random(-varianceRange, varianceRange) * rate;
+    return (rate + variance) * SECONDS;
+  }
+
+  private void initHeartModulators() {
+    for(int i = 0; i< NUM_HEARTS; i++) {
+      this.heartColors[i] = new SinLFO(320, 359, 2 * getRate());
+      this.heartColors[i].setLooping(false);
+      addModulator(this.heartColors[i]).start();
+      
+      this.heartBeats[i] = new SinLFO(0, 1, getRate());
+      this.heartBeats[i].setLooping(false);       
+      addModulator(this.heartBeats[i]).start();
+      
+      this.heartSaturations[i] = new SinLFO(60, 100, getRate());
+      this.heartSaturations[i].setLooping(false);
+      addModulator(this.heartSaturations[i]).start();
+    }
+    
+  }
+  
+  public void resetHeartBeat(int i) {
+    this.heartBeats[i].setPeriod(getRate());
+    this.heartBeats[i].setBasis(random(0.02, 0.15));
+    this.heartBeats[i].start();
+  }
+  
+  public void resetHeartColor(int i) {
+    this.heartColors[i].setPeriod(2 * getRate());
+    this.heartColors[i].setBasis(random(0.02, 0.15));
+    this.heartColors[i].start();
+  }
+  
+  public void resetHeartSaturation(int i) {
+    this.heartSaturations[i].setPeriod(getRate());
+    this.heartSaturations[i].setBasis(random(0.02, 0.15));
+    this.heartSaturations[i].start(); //<>//
+  }
+  
+  public void run(double deltaMs) {
+    setColors(0);
+    
+    for (int i = 0; i < NUM_HEARTS; i++) {
+      if (!this.heartBeats[i].isRunning()) { this.resetHeartBeat(i); }
+      if (!this.heartColors[i].isRunning()) { this.resetHeartColor(i); }
+    } 
+    
+    for(int i : HEART_1_FACES) {            
+      for(LXPoint p : model.faces.get(i).points) {
+        colors[p.index] = LX.hsb(
+          this.heartColors[0].getValuef(), 
+          this.heartSaturations[0].getValuef(), 
+          this.brightnessParam.getValuef()
+        );
+      }
+    }
+    
+    for(int i : HEART_1_EDGES) {
+      for(LXPoint p : model.edges.get(i).points) {
+        colors[p.index] = LX.hsb(
+          this.heartColors[0].getValuef(), 
+          this.heartSaturations[0].getValuef(),
+          this.heartBeats[0].getValuef() * this.brightnessParam.getValuef()
+        );
+      }
+    }
+    
+    for(int i : HEART_2_FACES) {
+      for(LXPoint p : model.faces.get(i).points) {
+        colors[p.index] = LX.hsb(
+          this.heartColors[1].getValuef(), 
+          this.heartSaturations[1].getValuef(),
+          this.brightnessParam.getValuef()
+        ); 
+      }
+    }
+    
+    for(int i : HEART_2_EDGES) {
+      for(LXPoint p : model.edges.get(i).points) {
+        colors[p.index] = LX.hsb(
+          this.heartColors[1].getValuef(), 
+          this.heartSaturations[1].getValuef(), 
+          this.heartBeats[1].getValuef() * this.brightnessParam.getValuef());
+      }
+    }
+    
+    for(int i : HEART_3_FACES) {
+      for(LXPoint p : model.faces.get(i).points) {
+        colors[p.index] = LX.hsb(
+          this.heartColors[2].getValuef(), 
+          this.heartSaturations[2].getValuef(),
+          this.brightnessParam.getValuef()
+        ); 
+      }
+    }
+    
+    for(int i : HEART_3_EDGES) {
+      for(LXPoint p : model.edges.get(i).points) {
+        colors[p.index] = LX.hsb(
+          this.heartColors[2].getValuef(), 
+          this.heartSaturations[2].getValuef(),
+          this.heartBeats[1].getValuef() * this.brightnessParam.getValuef()
+        );
+      }
+    }
+  }
+}
+
 class SnakeApple extends LEDomePattern {
   // Used to store info about each explosion.
   // See L8onUtil.pde for the definition.  
@@ -631,6 +784,416 @@ class SpotLights extends LEDomePattern {
     } else {
       for(int i = (this.spotlights.size() - 1); i >= num_spotlights; i--) {
         this.spotlights.remove(i);
+      }
+    }
+  }
+}
+
+class DarkLights extends LEDomePattern {
+  // Used to store info about each spotlight.
+  // See L8onUtil.pde for the definition.
+  private List<L8onSpotLight> spotlights = new ArrayList<L8onSpotLight>();
+  private final int faceCount = model.faces.size();
+
+  private final SinLFO saturationModulator = new SinLFO(75.0, 95.0, 20 * SECONDS);
+  private final SawLFO currIndex = new SawLFO(0, faceCount, 5000);
+
+  // Controls the radius of the spotlights.
+  private BasicParameter radiusParameter = new BasicParameter("RAD", 2.0 * FEET, 1.0, model.xRange / 2.0);
+  private BasicParameter numLightsParameter = new BasicParameter("NUM", 20.0, 1.0, 50.0);
+  private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);
+
+  private BasicParameter rateParameter = new BasicParameter("RATE", 4000.0, 1.0, 10000.0);
+  private BasicParameter restParameter = new BasicParameter("REST", 1000.0, 1.0, 10000.0);
+  private BasicParameter delayParameter = new BasicParameter("DELAY", 0, 0.0, 2000.0);
+  private BasicParameter minDistParameter = new BasicParameter("DIST", 100.0, 10.0, model.xRange);
+  
+  private BasicParameter blurParameter = new BasicParameter("BLUR", 0.55);
+
+  private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
+
+  public DarkLights(P2LX lx) {
+    super(lx);
+
+    addParameter(radiusParameter);
+    addParameter(numLightsParameter);
+    addParameter(brightnessParameter);
+
+    addParameter(rateParameter);
+    addParameter(restParameter);
+    addParameter(delayParameter);
+    addParameter(minDistParameter);
+    addParameter(blurParameter);
+
+    addLayer(blurLayer);
+
+    addModulator(saturationModulator).start();
+    addModulator(currIndex).start();
+
+    initL8onSpotlights();
+  }
+
+  public void run(double deltaMs) {
+    int index = (int)currIndex.getValuef();
+    int effectiveIndex;    
+    float dist_from_dest;
+    boolean is_on_spotlight = false;
+    
+    float hue;
+    float saturation = saturationModulator.getValuef();
+    float brightness = brightnessParameter.getValuef();    
+    float spotlight_radius = radiusParameter.getValuef();
+
+    initL8onSpotlights();
+    for(L8onSpotLight spotlight : this.spotlights) {            
+      dist_from_dest = spotlight.distFromDestination();
+
+      if (dist_from_dest < 0.01) {
+        if(spotlight.time_at_dest_ms > restParameter.getValuef()) {
+          // Will set a new destination if first guess is greater than min distance.
+          // Otherwise, will keep object as is and try again next tick.
+          spotlight.tryNewDestination();
+        } else {
+          spotlight.addTimeAtDestination((float)deltaMs);
+        }
+      } else {
+        float dist_to_travel = rateParameter.getValuef() / ((float)deltaMs * 100);
+        float dist_to_travel_perc = min(dist_to_travel / dist_from_dest, 1.0);
+
+        spotlight.movePercentageTowardDestination(dist_to_travel_perc);
+      }
+    }
+
+    for (int i = 0; i < faceCount; i++) {
+      LEDomeFace face = model.faces.get(i);
+      if(!face.hasLights()) {
+        continue;
+      }
+      
+      effectiveIndex = (i + index) % faceCount;
+      for (LXPoint p : face.points) {
+        is_on_spotlight = false;
+        
+        for(L8onSpotLight spotlight : this.spotlights) {
+          float dist_from_spotlight = dist(spotlight.center_x, spotlight.center_y, spotlight.center_z, p.x, p.y, p.z);
+          
+          if(dist_from_spotlight <= spotlight_radius) {
+            is_on_spotlight = true;
+            continue;
+          }
+        }
+        
+        if (is_on_spotlight) {
+          colors[p.index] = LX.hsb(0, 0, 0);
+        } else {        
+          hue = effectiveIndex / float(faceCount) * 360;        
+          colors[p.index] = LX.hsb(hue, saturation, brightness);
+        }
+      }
+    }
+  }
+
+  /**
+   * Initialize the waves.
+   */
+  private void initL8onSpotlights() {
+    int num_spotlights = (int) numLightsParameter.getValue();
+    if (this.spotlights.size() == num_spotlights) {
+      return;
+    }
+
+    if (this.spotlights.size() < num_spotlights) {
+      float min_dist = minDistParameter.getValuef();
+
+      for(int i = 0; i < (num_spotlights - this.spotlights.size()); i++) {
+        this.spotlights.add(
+          new L8onSpotLight(model.sphere,
+                            model.xMin + random(model.xRange), model.yMin + random(model.yRange), model.zMin + random(model.zRange),
+                            model.yMin + random(model.yRange), model.yMin + random(model.yRange), model.zMin + random(model.zRange),
+                            min_dist)
+        );
+      }
+    } else {
+      for(int i = (this.spotlights.size() - 1); i >= num_spotlights; i--) {
+        this.spotlights.remove(i);
+      }
+    }
+  }
+}
+
+class HeartExplosions extends LEDomePattern {
+  // Used to store info about each explosion.
+  // See L8onUtil.pde for the definition.
+  private List<L8onHeartExplosion> hearts = new ArrayList<L8onHeartExplosion>();
+  private final SinLFO saturationModulator = new SinLFO(70.0, 90.0, 20 * SECONDS);
+  private BasicParameter numHeartsParameter = new BasicParameter("NUM", 2.0, 1.0, 30.0);
+  private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);
+
+  private BasicParameter rateParameter = new BasicParameter("RATE", 4000.0, 500.0, 20000.0);
+  private BasicParameter blurParameter = new BasicParameter("BLUR", 0.69);
+
+  private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
+
+  public HeartExplosions(LX lx) {
+    super(lx);
+
+    addParameter(numHeartsParameter);
+    addParameter(brightnessParameter);
+
+    addParameter(rateParameter);
+    addParameter(blurParameter);
+
+    addLayer(blurLayer);
+
+    addModulator(saturationModulator).start();
+
+    initHearts();
+  }
+
+  public void run(double deltaMs) {
+    initHearts();
+
+    float base_hue = lx.getBaseHuef();
+    float wave_hue_diff = (float) (360.0 / this.hearts.size());
+
+    for(L8onHeartExplosion heart : this.hearts) {
+      if (heart.isChillin((float)deltaMs)) {
+        continue;
+      }
+ 
+      heart.hue_value = (float)(base_hue % 360.0);
+      base_hue += wave_hue_diff;
+
+      if (!heart.hasExploded()) {
+        heart.explode();
+      } else if (heart.isFinished()) {
+        assignNewCenter(heart);
+      }
+    }
+
+    color c;
+    float hue_value = 0.0;
+    float sat_value = saturationModulator.getValuef();
+    float brightness_value = brightnessParameter.getValuef();
+    float min_hv;
+    float max_hv;
+
+    for (LXPoint p : model.points) {
+      int num_explosions_in = 0;
+
+      for(L8onHeartExplosion heart : this.hearts) {
+        if(heart.isChillin(0)) {
+          continue;
+        }
+
+        if(heart.onHeart(p.x, p.y, p.z)) {
+          num_explosions_in++;
+
+          if(num_explosions_in == 1) {
+            hue_value = heart.hue_value;
+          } if(num_explosions_in == 2) {
+            // Blend new color with previous color.
+            min_hv = min(hue_value, heart.hue_value);
+            max_hv = max(hue_value, heart.hue_value);
+            hue_value = (min_hv * 2.0 + max_hv / 2.0) / 2.0;
+          } else {
+            // Jump color by 180 before blending again.
+            hue_value = LXUtils.wrapdistf(0, hue_value + 180, 360);
+            min_hv = min(hue_value, heart.hue_value);
+            max_hv = max(hue_value, heart.hue_value);
+            hue_value = (min_hv * 2.0 + max_hv / 2.0) / 2.0;
+          }
+        }
+      }
+
+      if(num_explosions_in > 0) {
+        c = LX.hsb(hue_value, sat_value, brightness_value);
+      } else {
+        c = colors[p.index];
+        c = LX.hsb(LXColor.h(c), LXColor.s(c), 0.0);
+      }
+
+      colors[p.index] = c;
+    }
+  }
+
+  private void initHearts() {
+    int num_hearts = (int) numHeartsParameter.getValue();
+
+    if (this.hearts.size() == num_hearts) {
+      return;
+    }
+
+    if (this.hearts.size() < num_hearts) {
+      for(int i = 0; i < (num_hearts - this.hearts.size()); i++) {
+        float stroke_width = this.new_stroke_width();
+        QuadraticEnvelope new_radius_env = new QuadraticEnvelope(0.0, 3 * model.xRange, rateParameter);
+        new_radius_env.setEase(QuadraticEnvelope.Ease.OUT);
+        WB_Point new_center = model.randomFaceCenter();
+        addModulator(new_radius_env);
+        this.hearts.add(
+          new L8onHeartExplosion(new_radius_env, stroke_width, new_center.xf(), new_center.yf(), new_center.zf())
+        );
+      }
+    } else {
+      for(int i = (this.hearts.size() - 1); i >= num_hearts; i--) {
+        this.hearts.remove(i);
+      }
+    }
+  }
+
+  private void assignNewCenter(L8onHeartExplosion heart) {
+    float stroke_width = this.new_stroke_width();
+    WB_Point new_center = model.randomFaceCenter();
+    float chill_time = (3.0 + random(7)) * SECONDS;
+    QuadraticEnvelope new_radius_env = new QuadraticEnvelope(0.0, model.xRange, rateParameter);
+    new_radius_env.setEase(QuadraticEnvelope.Ease.OUT);
+
+    heart.setCenter(new_center.xf(), new_center.yf(), new_center.zf());
+    addModulator(new_radius_env);
+    heart.setRadiusModulator(new_radius_env, stroke_width);
+    heart.setChillTime(chill_time);
+  }
+
+  public float new_stroke_width() {
+    return 3 * INCHES + random(6 * INCHES);
+  }
+}
+
+class HeartLights extends LEDomePattern {
+  // Used to store info about each heartlight.
+  // See L8onUtil.pde for the definition.
+  private List<L8onHeartLight> heartlights = new ArrayList<L8onHeartLight>();
+
+  private final SinLFO saturationModulator = new SinLFO(75.0, 95.0, 20 * SECONDS);
+
+  // Controls the radius of the spotlights.
+  private BasicParameter radiusParameter = new BasicParameter("RAD", 4.0 * FEET, 2.0, model.xRange);
+  private BasicParameter numLightsParameter = new BasicParameter("NUM", 3.0, 1.0, 30.0);
+  private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);
+
+  private BasicParameter rateParameter = new BasicParameter("RrATE", 4000.0, 1.0, 10000.0);
+  private BasicParameter restParameter = new BasicParameter("REST", 900.0, 1.0, 10000.0);
+  private BasicParameter delayParameter = new BasicParameter("DELAY", 0, 0.0, 2000.0);
+  private BasicParameter minDistParameter = new BasicParameter("DIST", 100.0, 10.0, model.xRange);
+  
+  private BasicParameter blurParameter = new BasicParameter("BLUR", 0.69);
+
+  private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
+
+  public HeartLights(P2LX lx) {
+    super(lx);
+
+    addParameter(radiusParameter);
+    addParameter(numLightsParameter);
+    addParameter(brightnessParameter);
+
+    addParameter(rateParameter);
+    addParameter(restParameter);
+    addParameter(delayParameter);
+    addParameter(minDistParameter);
+    addParameter(blurParameter);
+
+    addLayer(blurLayer);
+
+    addModulator(saturationModulator).start();
+
+    initL8onHeartlights();
+  }
+
+  public void run(double deltaMs) {
+    initL8onHeartlights();    
+    float base_hue = lx.getBaseHuef();
+    float wave_hue_diff = (float) (360.0 / this.heartlights.size());
+    float dist_from_dest;
+
+    for(L8onHeartLight heartlight : this.heartlights) {
+      heartlight.hue_value = base_hue;
+      base_hue += wave_hue_diff;
+      dist_from_dest = heartlight.distFromDestination();
+
+      if (dist_from_dest < 0.01) {
+        if(heartlight.time_at_dest_ms > restParameter.getValuef()) {
+          // Will set a new destination if first guess is greater than min distance.
+          // Otherwise, will keep object as is and try again next tick.
+          heartlight.tryNewDestination();
+        } else {
+          heartlight.addTimeAtDestination((float)deltaMs);
+        }
+      } else {
+        float dist_to_travel = rateParameter.getValuef() / ((float)deltaMs * 100);
+        float dist_to_travel_perc = min(dist_to_travel / dist_from_dest, 1.0);
+
+        heartlight.movePercentageTowardDestination(dist_to_travel_perc);
+      }
+    }
+
+    color c;
+    float hue_value = 0.0;
+    float sat_value = saturationModulator.getValuef();
+    float brightness_value = brightnessParameter.getValuef();
+    float min_hv;
+    float max_hv;
+
+    for (LXPoint p : model.points) {
+      int num_spotlights_in = 0;
+
+      for(L8onHeartLight heartlight : this.heartlights) {        
+        if(heartlight.onHeart(p.x, p.y, p.z)) {
+          num_spotlights_in++;
+
+          if(num_spotlights_in == 1) {
+            hue_value = heartlight.hue_value;
+          } if(num_spotlights_in == 2) {
+            // Blend new color with previous color.
+            min_hv = min(hue_value, heartlight.hue_value);
+            max_hv = max(hue_value, heartlight.hue_value);
+            hue_value = (min_hv * 2.0 + max_hv / 2.0) / 2.0;
+          } else {
+            // Jump color by 180 before blending again.
+            hue_value = LXUtils.wrapdistf(0, hue_value + 180, 360);
+            min_hv = min(hue_value, heartlight.hue_value);
+            max_hv = max(hue_value, heartlight.hue_value);
+            hue_value = (min_hv * 2.0 + max_hv / 2.0) / 2.0;
+          }
+        }
+      }
+
+      if(num_spotlights_in > 0) {
+        c = LX.hsb(hue_value, sat_value, brightness_value);
+      } else {
+        c = colors[p.index];
+        c = LX.hsb(LXColor.h(c), LXColor.s(c), L8onUtil.decayed_brightness(c, delayParameter.getValuef(), deltaMs));
+      }
+
+      colors[p.index] = c;
+    }
+  }
+
+  /**
+   * Initialize the waves.
+   */
+  private void initL8onHeartlights() {
+    int num_heartlights = (int) numLightsParameter.getValue();
+    if (this.heartlights.size() == num_heartlights) {
+      return;
+    }
+
+    if (this.heartlights.size() < num_heartlights) {
+      float min_dist = minDistParameter.getValuef();
+
+      for(int i = 0; i < (num_heartlights - this.heartlights.size()); i++) {
+        this.heartlights.add(
+          new L8onHeartLight(model.sphere,
+                            this.radiusParameter,
+                            model.xMin + random(model.xRange), model.yMin + random(model.yRange), model.zMin + random(model.zRange),
+                            model.yMin + random(model.yRange), model.yMin + random(model.yRange), model.zMin + random(model.zRange),
+                            min_dist)
+        );
+      }
+    } else {
+      for(int i = (this.heartlights.size() - 1); i >= num_heartlights; i--) {
+        this.heartlights.remove(i);
       }
     }
   }

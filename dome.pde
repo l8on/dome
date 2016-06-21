@@ -53,6 +53,12 @@ import javax.sound.midi.MidiUnavailableException;
 
 LXPattern[] patterns(P2LX lx) {
   return new LXPattern[] {
+    
+    new HeartsBeat(lx),
+    new DarkLights(lx),
+    new HeartLights(lx),
+    new HeartExplosions(lx),
+    
     // Create New Pattern Instances Below HERE
     new ShadyWaffle(lx),
     
