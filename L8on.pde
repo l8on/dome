@@ -134,7 +134,7 @@ class ShadyWaffle extends LEDomePattern {
 }
 
 class HeartsBeat extends LEDomePattern {
-  private final float E = exp(1);  
+  private final float E = exp(1);
   private final int NUM_HEARTS = 3;
   
   private int[] HEART_1_FACES = {
@@ -161,7 +161,7 @@ class HeartsBeat extends LEDomePattern {
     248, 275, 279, 231, 259, 260
   };
   
-  private SinLFO[] heartColors = new SinLFO[NUM_HEARTS];  
+  private SinLFO[] heartColors = new SinLFO[NUM_HEARTS];
   private SinLFO[] heartBeats = new SinLFO[NUM_HEARTS];
   private SinLFO[] heartSaturations = new SinLFO[NUM_HEARTS];
   private BasicParameter rateParam = new BasicParameter("RATE", 2.5, 0.5, 12);

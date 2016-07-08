@@ -45,17 +45,17 @@ class UIDome extends UI3dComponent {
     int numFaces = geodome.getNumberOfFaces();
     HE_Face currentFace;
     WB_Point faceCenter;
-    PFont labelFont = createFont("SansSerif", 8, true);  
+    PFont labelFont = createFont("SansSerif", 5, true);  
     textFont(labelFont);
     textAlign(CENTER, CENTER); 
     
     pushMatrix();
     scale(1, -1, 1);
     
-    for(int i = 0; i < numFaces; i++) {    
+    for(int i = 0; i < numFaces; i++) {                
       currentFace = geodome.getFaceByIndex(i);
-      faceCenter = currentFace.getFaceCenter();
-      if (currentFace.getLabel() != -1) {                               
+      faceCenter = currentFace.getFaceCenter();           
+      if (currentFace.getLabel() != -1) {       
         text(currentFace.getLabel(), faceCenter.xf(), -1 * faceCenter.yf(), faceCenter.zf());        
       }
     }
