@@ -44,10 +44,10 @@ void setup() {
 
   frame.setResizable(true);
   noSmooth();
-  textSize(6);
+  textSize(6);  
 
   // Create LEDome instance
-  model = new LEDome();  
+  model = new LEDome();
   // Create the P2LX engine
   lx = new P2LX(this, model);    
   // Create the NDB output manager
@@ -165,11 +165,10 @@ void setupMidiDevices() {
   }
 }
 
-
 void draw() {
-  background(#292929);  
+  background(#292929);
 }
 
 void mousePressed() {
-  println("mouseX:" + mouseX + ", mouseY: " + mouseY);  
+  println("mouseX:" + mouseX + ", mouseY: " + mouseY);
 }
