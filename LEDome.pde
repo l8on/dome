@@ -355,7 +355,12 @@ static class LEDome extends LXModel {
       LEDomeEdge prevDomeEdge = null;      
       LXPoint lx_point;
                            
-      do {             
+      do {
+        // If we are moving counter clockwise, get the hedge that is pointing toward the current vertex.        
+        if (LIGHT_DIRECTION == COUNTER_CLOCKWISE) {
+          currHalfedge = currHalfedge.getNextInFace().getNextInFace();          
+        }
+        
         // Create LEDomeEdge model for the first edge.   
         currHalfedge.setLabel(this.edges.size());
         currDomeEdge = new LEDomeEdge(face, currHalfedge);
@@ -371,10 +376,6 @@ static class LEDome extends LXModel {
         // Add point to model and to points array.
         points.add(lx_point);
         addPoint(lx_point);
-
-        if (LIGHT_DIRECTION == COUNTER_CLOCKWISE) {
-          currHalfedge = currHalfedge.getNextInFace().getNextInFace();
-        }
 
         // Add point to current edge
         currDomeEdge.addPoint(lx_point);

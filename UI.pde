@@ -19,40 +19,67 @@
  * onDraw method and invoke Processing drawing methods directly.
  */
 class UIDome extends UI3dComponent {
-  private boolean LABEL_FACES = false; 
+  private boolean LABEL_FACES = false;
+  private boolean LABEL_EDGES = false; 
   
   protected void onDraw(UI ui, PGraphics pg) {
-    HE_Mesh geodome = model.getLEDomeMesh();        
-    
+    HE_Mesh geodome = model.getLEDomeMesh();      
+
     if (RENDER_3D) {
       stroke(5);
       render.drawEdges(geodome);
     }
-    
+
     if (RENDER_3D && LABEL_FACES) {
       stroke(1);
       labelFaces(geodome);
+    }
+
+    if (RENDER_3D && LABEL_EDGES) {
+      stroke(1);      
+      labelEdges();
     }    
   }
   
   private void labelFaces(HE_Mesh geodome) {      
     int numFaces = geodome.getNumberOfFaces();
     HE_Face currentFace;
-    WB_Point faceCenter;  
+    WB_Point faceCenter;
+    PFont labelFont = createFont("SansSerif", 5, true);  
+    textFont(labelFont);
+    textAlign(CENTER, CENTER); 
     
-    scale(1, -1);
-    for(int i = 0; i < numFaces; i++) {    
+    pushMatrix();
+    scale(1, -1, 1);
+    
+    for(int i = 0; i < numFaces; i++) {                
       currentFace = geodome.getFaceByIndex(i);
-      faceCenter = currentFace.getFaceCenter();
-      if (currentFace.getLabel() != -1) {
-        
-        pushMatrix();
-        text(currentFace.getLabel(), faceCenter.xf(), -1 * faceCenter.yf(), faceCenter.zf());
-        popMatrix();
+      faceCenter = currentFace.getFaceCenter();           
+      if (currentFace.getLabel() != -1) {       
+        text(currentFace.getLabel(), faceCenter.xf(), -1 * faceCenter.yf(), faceCenter.zf());        
       }
     }
 
-    scale(1, 1);
+    popMatrix();
+  }
+  
+  private void labelEdges() {      
+    int numEdges = model.edges.size();
+    PFont labelFont = createFont("SansSerif", 7, true);  
+    textFont(labelFont);  
+    textAlign(CENTER, CENTER);
+    
+    pushMatrix();
+    scale(1, -1);
+    
+    for(int i = 0; i < numEdges; ++i) {  
+      LEDomeEdge edge = model.edges.get(i);
+      LXPoint middlePoint = edge.points.get(1);   
+            
+      text(i, middlePoint.x, -1 * middlePoint.y, middlePoint.z);
+    }
+    
+    popMatrix();
   }
 }
 

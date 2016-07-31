@@ -169,32 +169,44 @@ public static class LEDomeEdge {
     return retPoint;
   }
   
+  public float vertexXf() {
+    return he_halfedge.getVertex().xf();
+  }
+  
+  public float vertexYf() {
+    return this.he_halfedge.getVertex().yf();
+  }
+  
+  public float vertexZf() {
+    return this.he_halfedge.getVertex().zf();
+  }
+  
   public float xf() {
-    return he_halfedge.getEdgeCenter().xf();  
+    return this.he_halfedge.getEdgeCenter().xf();  
   }
   
   public float yf() {
-    return he_halfedge.getEdgeCenter().yf();  
+    return this.he_halfedge.getEdgeCenter().yf();  
   }
   
   public float zf() {
-    return he_halfedge.getEdgeCenter().zf();  
+    return this.he_halfedge.getEdgeCenter().zf();  
   }
   
   public double xd() {
-    return he_halfedge.getEdgeCenter().xd();  
+    return this.he_halfedge.getEdgeCenter().xd();  
   }
   
   public double yd() {
-    return he_halfedge.getEdgeCenter().yd();  
+    return this.he_halfedge.getEdgeCenter().yd();  
   }
   
   public double zd() {
-    return he_halfedge.getEdgeCenter().zd();  
+    return this.he_halfedge.getEdgeCenter().zd();  
   }
    
   public boolean hasLights() {
-   return this.points != null && this.points.size() > 0;    
+   return this.points != null && this.points.size() > 0;
   }
   
   public boolean onEdge(LXPoint point) {

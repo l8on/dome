@@ -1,5 +1,5 @@
-class ColorSpiral extends LXPattern {
-  private final int faceCount = ((LEDome)model).faces.size();
+class ColorSpiral extends LEDomePattern {
+  private final int faceCount = model.faces.size();
   private final SawLFO currIndex = new SawLFO(0, faceCount, 5000);
 
   private BasicParameter brightnessParam  = new BasicParameter("BRT", 50, 0, 100);
@@ -23,7 +23,7 @@ class ColorSpiral extends LXPattern {
     currIndex.setPeriod(speedParam.getValuef());
 
     for (int i = 0; i < faceCount; i++) {
-      LEDomeFace face = ((LEDome)model).faces.get(i);
+      LEDomeFace face = model.faces.get(i);
       if(!face.hasLights()) {
         continue;
       }
