@@ -38,12 +38,17 @@ class ColorSpiral extends LEDomePattern {
 
 
 class Meteor extends LXLayer {
-  private final float MAX_ANGLE = 3.0;
-  private final float MIN_ANGLE = 2.2;
+  private final int METEOR_HUE = 60;
+  private final int METEOR_SAT = 40;
   private final int DEFAULT_RATE = 6;
-  private final float DEFAULT_SPEED = 60.0;
+  private final float DEFAULT_SPEED = 75.0;
   private final float SPEED_RAND = 15.0;
+  private final int DELAY_MAX = 60000;
   private final int DELAY_RAND = 2000;
+  private final int MIN_COUNT = 6;
+  private final int MAX_COUNT = 18;
+  private final float MAX_ANGLE = PI / 6;
+  private final int FADE_TIME = 50;
 
   private LEDome dome = (LEDome)model;
   private LXRangeModulator xMod = new LinearEnvelope(0);
@@ -55,6 +60,7 @@ class Meteor extends LXLayer {
   private List<LXPoint> points = new ArrayList<LXPoint>();
   private List<LXPoint> queue = new ArrayList<LXPoint>();
   private int count = 0;
+  private int maxCount = 0;
   private int rate = DEFAULT_RATE;
   private float speed = DEFAULT_SPEED;
 
@@ -67,14 +73,15 @@ class Meteor extends LXLayer {
   }
 
   private void restart() {
-    float delayDuration = 60000 / this.rate + (int)random(-1 * DELAY_RAND, DELAY_RAND);
+    float delayDuration = DELAY_MAX / this.rate + (int)random(-1 * DELAY_RAND, DELAY_RAND);
     this.delayMod.setRange(0, 1, delayDuration).trigger();
     this.speed = DEFAULT_SPEED + random(-1 * SPEED_RAND, SPEED_RAND);
     this.edges.clear();
     this.points.clear();
     this.queue.clear();
     this.count = 0;
-    LEDomeEdge firstEdge = ((LEDome)model).randomEdge();
+    this.maxCount = (int)random(MIN_COUNT, MAX_COUNT);
+    LEDomeEdge firstEdge = dome.randomEdge();
     this.edges.add(firstEdge);
     this.queue.add(firstEdge.points.get(0));
     this.queue.add(firstEdge.points.get(1));
@@ -84,38 +91,44 @@ class Meteor extends LXLayer {
   private void addEdge() {
     LXPoint origin = this.queue.get(0);
     LEDomeEdge currEdge = this.edges.get(this.edges.size() - 1);
-    HE_Vertex originVertex = ((LEDome)model).closestVertex(origin);
+    HE_Vertex originVertex = dome.closestVertex(origin);
     List<HE_Halfedge> neighbors = originVertex.getHalfedgeStar();
-    Collections.shuffle(neighbors);
-    for (HE_Halfedge he_edge : neighbors) {
-      if (he_edge.getLabel() < 0) {
+    float bestAngle = PI;
+    LEDomeEdge bestEdge = null;
+    for (HE_Halfedge halfEdge : neighbors) {
+      HE_Halfedge pairedHalfEdge = halfEdge.getPair();
+      int pairedHalfEdgeLabel = pairedHalfEdge.getLabel();
+      if (pairedHalfEdgeLabel < 0) {
         continue;
       }
-      LEDomeEdge edge = ((LEDome)model).edges.get(he_edge.getLabel());
+      LEDomeEdge edge = dome.edges.get(pairedHalfEdgeLabel);
       if (edge == null || this.edges.contains(edge)) {
         continue;
       }
-      float angleBetweenEdges = ((LEDome)model).angleBetweenEdges(currEdge, edge);
-      if (angleBetweenEdges < MIN_ANGLE || angleBetweenEdges > MAX_ANGLE) {
-        continue;
+      float angle = dome.angleBetweenEdges(currEdge, edge);
+      if (angle < MAX_ANGLE && angle < bestAngle) {
+        bestEdge = edge;
+        bestAngle = angle;
       }
-      this.edges.add(edge);
-      LXPoint closestPoint = edge.closestVertexPoint(origin.x, origin.y, origin.z);
-      if (closestPoint != origin) {
-        this.queue.add(closestPoint);
-      }
-      this.queue.add(edge.points.get(1));
-      if (closestPoint == edge.points.get(0)) {
-        this.queue.add(edge.points.get(2));
-      } else {
-        this.queue.add(edge.points.get(0));
-      }
-      break;
+    }
+    if (bestEdge == null) {
+      return;
+    }
+    this.edges.add(bestEdge);
+    LXPoint closestPoint = bestEdge.closestVertexPoint(origin.x, origin.y, origin.z);
+    if (closestPoint != origin) {
+      this.queue.add(closestPoint);
+    }
+    this.queue.add(bestEdge.points.get(1));
+    if (closestPoint == bestEdge.points.get(0)) {
+      this.queue.add(bestEdge.points.get(2));
+    } else {
+      this.queue.add(bestEdge.points.get(0));
     }
   }
 
   private void move() {
-    if (this.queue.size() < 2) {
+    if (this.queue.size() < 2 && this.count < this.maxCount) {
       this.addEdge();
     }
     if (this.queue.size() > 1) {
@@ -139,7 +152,8 @@ class Meteor extends LXLayer {
     if (index < 0) {
       return null;
     }
-    return LX.hsb(60, 40, 100.0 * (index + 1) / this.count);
+    float brightness = 100.0 * (index + 1) / this.count;
+    return LX.hsb(METEOR_HUE, METEOR_SAT, brightness);
   }
 
   public void run(double deltaMs) {
@@ -151,10 +165,9 @@ class Meteor extends LXLayer {
         this.points.add(this.queue.get(0));
         this.count += 1;
         this.move();
-      // kludgy fade-out
       } else if (this.count < 3 * this.points.size()) {
         this.count += 1;
-        this.delayMod.setRange(0, 1, 50).trigger();
+        this.delayMod.setRange(0, 1, FADE_TIME).trigger();
       } else {
         this.restart();
       }
@@ -177,7 +190,7 @@ class Stargaze extends LXPattern {
   private List<SinLFO> twinklers = new ArrayList<SinLFO>();
   private Meteor meteor = new Meteor(lx);
 
-  private BasicParameter brightnessParam = new BasicParameter("BRT", 75, 10, 100);
+  private BasicParameter brightnessParam = new BasicParameter("BRT", 70, 40, 100);
   private BasicParameter numStarsParam = new BasicParameter("STAR", 40, 10, 90);
   private BasicParameter meteorRateParam = new BasicParameter("MET", 6, 1, 20);
 
@@ -205,6 +218,20 @@ class Stargaze extends LXPattern {
     }
   }
 
+  public void blendColor(int index, int newColor) {
+    int existingColor = this.colors[index];
+    float h1 = LXColor.h(existingColor);
+    float s1 = LXColor.s(existingColor);
+    float b1 = LXColor.b(existingColor);
+    float h2 = LXColor.h(newColor);
+    float s2 = LXColor.s(newColor);
+    float b2 = LXColor.b(newColor);
+    float b3 = max(b1, b2);
+    float h3 = h2 + (h1 - h2) * (1 - (b3 - b1) / (101 - b1));
+    float s3 = s2 + (s1 - s2) * (1 - (b3 - b1) / (101 - b1));
+    this.colors[index] = LX.hsb(h3, s3, b3);
+  }
+
   public void run(double deltaMs) {
     float brightness = this.brightnessParam.getValuef();
     for (LXPoint point : model.points) {
@@ -219,7 +246,7 @@ class Stargaze extends LXPattern {
     for (LXPoint point : model.points) {
       Integer meteorColor = this.meteor.getColor(point);
       if (meteorColor != null) {
-        this.colors[point.index] = (int)meteorColor;
+        this.blendColor(point.index, (int)meteorColor);
       }
     }
   }
