@@ -134,7 +134,6 @@ class ShadyWaffle extends LEDomePattern {
 }
 
 class HeartsBeat extends LEDomePattern {
-  private final float E = exp(1);
   private final int NUM_HEARTS = 3;
   
   private int[] HEART_1_FACES = {
@@ -142,7 +141,7 @@ class HeartsBeat extends LEDomePattern {
   };  
  
   private int[] HEART_1_EDGES = {
-    126, 110, 74, 63, 78, 79
+    126, 110, 74, 63, 78, 79, 89, 94
   };
   
   private int[] HEART_2_FACES = {
@@ -150,7 +149,7 @@ class HeartsBeat extends LEDomePattern {
   };  
  
   private int[] HEART_2_EDGES = {
-    111, 86, 236, 198, 204, 205
+    111, 86, 236, 198, 204, 205, 137, 166
   };
   
   private int[] HEART_3_FACES = {
@@ -158,7 +157,7 @@ class HeartsBeat extends LEDomePattern {
   };  
  
   private int[] HEART_3_EDGES = {
-    248, 275, 279, 231, 259, 260
+    248, 275, 279, 231, 259, 260, 241, 267
   };
   
   private SinLFO[] heartColors = new SinLFO[NUM_HEARTS];
@@ -184,7 +183,7 @@ class HeartsBeat extends LEDomePattern {
 
   private void initHeartModulators() {
     for(int i = 0; i< NUM_HEARTS; i++) {
-      this.heartColors[i] = new SinLFO(320, 359, 2 * getRate());
+      this.heartColors[i] = new SinLFO(320, 380, 2 * getRate());
       this.heartColors[i].setLooping(false);
       addModulator(this.heartColors[i]).start();
       
@@ -228,7 +227,7 @@ class HeartsBeat extends LEDomePattern {
     for(int i : HEART_1_FACES) {            
       for(LXPoint p : model.faces.get(i).points) {
         colors[p.index] = LX.hsb(
-          this.heartColors[0].getValuef(), 
+          this.heartColors[0].getValuef() % 360.0,
           this.heartSaturations[0].getValuef(), 
           this.brightnessParam.getValuef()
         );
@@ -799,8 +798,8 @@ class DarkLights extends LEDomePattern {
   private final SawLFO currIndex = new SawLFO(0, faceCount, 5000);
 
   // Controls the radius of the spotlights.
-  private BasicParameter radiusParameter = new BasicParameter("RAD", 2.0 * FEET, 1.0, model.xRange / 2.0);
-  private BasicParameter numLightsParameter = new BasicParameter("NUM", 20.0, 1.0, 50.0);
+  private BasicParameter radiusParameter = new BasicParameter("RAD", 2.2 * FEET, 1.0, model.xRange / 2.0);
+  private BasicParameter numLightsParameter = new BasicParameter("NUM", 12.0, 1.0, 50.0);
   private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);
 
   private BasicParameter rateParameter = new BasicParameter("RATE", 4000.0, 1.0, 10000.0);
