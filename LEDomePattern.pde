@@ -1,7 +1,7 @@
 public abstract class LEDomePattern extends LXPattern {
-  protected LEDome model;
+  public LEDome model;
   
-  protected LEDomePattern(LX lx) {
+  public LEDomePattern(LX lx) {
     super(lx);
     this.model = (LEDome) lx.model;
   }
@@ -29,13 +29,18 @@ public abstract class LEDomeEffect extends LXEffect {
   protected LEDome model;
   
   protected LEDomeEffect(LX lx) {
-    this(lx, false);    
+    super(lx);
   }
+
+  // TODO: figure out how effects have changed in general.
+  // protected LEDomeEffect(LX lx) {
+  //  this(lx, false);
+  //}
   
-  protected LEDomeEffect(LX lx, boolean on) {
-    super(lx, on); 
-    this.model = (LEDome) lx.model;  
-  }
+  //protected LEDomeEffect(LX lx, boolean on) {
+  //  super(lx, on); 
+  //  this.model = (LEDome) lx.model;  
+  //}
 
   /**
    * Reset this pattern to its default state.
@@ -53,4 +58,12 @@ public abstract class LEDomeEffect extends LXEffect {
    * Subclasses may override to add additional reset functionality.
    */
   protected void onReset() {}
+}
+
+public abstract class LEDomeLayer extends LXLayer {
+  protected LEDome model;
+  
+  protected LEDomeLayer(LX lx) {
+    super(lx);
+  }  
 }

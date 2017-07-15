@@ -1,4 +1,4 @@
-class ShadyWaffle extends LEDomePattern { 
+public class ShadyWaffle extends LEDomePattern { 
   private final float E = exp(1);
   
   private int PINK = LX.hsb(330, 59, 100);
@@ -14,7 +14,7 @@ class ShadyWaffle extends LEDomePattern {
     40, 37, 67, 46, 70, 
     // Top
     85, 145, 205, 289, 25, 
-  };
+  }; 
   
   private int YELLOW = LX.hsb(61, 90, 89);
   
@@ -56,7 +56,7 @@ class ShadyWaffle extends LEDomePattern {
   };
  
   private SinLFO[] breathers = new SinLFO[lx.total]; 
-  private BasicParameter rateParam = new BasicParameter("RATE", 2.5, 0.5, 12);
+  private BoundedParameter rateParam = new BoundedParameter("RATE", 2.5, 0.5, 12);
   
   public ShadyWaffle(LX lx) {
     super(lx);
@@ -133,7 +133,7 @@ class ShadyWaffle extends LEDomePattern {
   }
 }
 
-class HeartsBeat extends LEDomePattern {
+public class HeartsBeat extends LEDomePattern {
   private final int NUM_HEARTS = 3;
   
   private int[] HEART_1_FACES = {
@@ -163,8 +163,8 @@ class HeartsBeat extends LEDomePattern {
   private SinLFO[] heartColors = new SinLFO[NUM_HEARTS];
   private SinLFO[] heartBeats = new SinLFO[NUM_HEARTS];
   private SinLFO[] heartSaturations = new SinLFO[NUM_HEARTS];
-  private BasicParameter rateParam = new BasicParameter("RATE", 2.5, 0.5, 12);
-  private BasicParameter brightnessParam = new BasicParameter("BRIG", 90, 50, 100);  
+  private BoundedParameter rateParam = new BoundedParameter("RATE", 2.5, 0.5, 12);
+  private BoundedParameter brightnessParam = new BoundedParameter("BRIG", 90, 50, 100);  
   
   public HeartsBeat(LX lx) {
     super(lx);    
@@ -285,22 +285,22 @@ class HeartsBeat extends LEDomePattern {
   }
 }
 
-class SnakeApple extends LEDomePattern {
+public class SnakeApple extends LEDomePattern {
   // Used to store info about each explosion.
   // See L8onUtil.pde for the definition.  
   private List<Apple> apples = new ArrayList<Apple>();
   private List<Integer> appleIndices = new ArrayList<Integer>();
   private Random appleRandom = new Random();
    
-  private BasicParameter snakeSpeed = new BasicParameter("SPD", 86.0, 6.0, 520.0);
-  private BasicParameter numApples = new BasicParameter("APL", 50.0, 10.0, 100.0);
+  private BoundedParameter snakeSpeed = new BoundedParameter("SPD", 86.0, 6.0, 520.0);
+  private BoundedParameter numApples = new BoundedParameter("APL", 50.0, 10.0, 100.0);
     
   private final int SNAKES = 3;
   private final int HUES = 6;
   private final int BRIGHTS = 5;
   
   private SnakeLayer[] snakes = new SnakeLayer[SNAKES];
-  private BasicParameter[] lengthParameters = new BasicParameter[SNAKES];
+  private BoundedParameter[] lengthParameters = new BoundedParameter[SNAKES];
   private LXModulator[] hueMods = new SinLFO[HUES];
   private LXModulator[] brightnessMods = new SinLFO[BRIGHTS];
   
@@ -365,7 +365,7 @@ class SnakeApple extends LEDomePattern {
   
   private void initSnakes() {
     for(int i = 0; i < SNAKES; i++) {
-      this.lengthParameters[i] = new BasicParameter("LNG" + i, 4.0, 4.0, 582.0);
+      this.lengthParameters[i] = new BoundedParameter("LNG" + i, 4.0, 4.0, 582.0);
       this.snakes[i] = new SnakeLayer(lx, this.lengthParameters[i], this.snakeSpeed);
       addLayer(this.snakes[i]);
     }
@@ -396,7 +396,7 @@ class SnakeApple extends LEDomePattern {
     int totalApples = (int) this.numApples.getValue();
     
     while(this.apples.size() < totalApples) {
-      LXPoint point = model.points.get(this.appleRandom.nextInt(model.points.size()));
+      LXPoint point = model.getPoints().get(this.appleRandom.nextInt(model.size));
       if (appleIndices.contains(point.index)) { continue; }
 
       float hueValue = this.appleRandom.nextFloat() * 360;
@@ -414,14 +414,14 @@ class SnakeApple extends LEDomePattern {
   } 
 }
 
-class Snakes extends LEDomePattern {
+public class Snakes extends LEDomePattern {
   // Used to store info about each explosion.
   // See L8onUtil.pde for the definition.
   private List<SnakeLayer> snakes = new ArrayList<SnakeLayer>();
-  private BasicParameter numSnakes = new BasicParameter("NUM", 3.0, 1.0, 30.0);
-  private BasicParameter snakeSpeed = new BasicParameter("SPD", 86.0, 6.0, 640.0);
-  private BasicParameter brightnessParameter = new BasicParameter("BRGT", 95.0, 10.0, 100.0);
-  private BasicParameter lengthParameter = new BasicParameter("LNGT", 11.0, 3.0, 48.0);  
+  private BoundedParameter numSnakes = new BoundedParameter("NUM", 3.0, 1.0, 30.0);
+  private BoundedParameter snakeSpeed = new BoundedParameter("SPD", 86.0, 6.0, 640.0);
+  private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 95.0, 10.0, 100.0);
+  private BoundedParameter lengthParameter = new BoundedParameter("LNGT", 11.0, 3.0, 48.0);  
   
   public String getName() { return "Snakes"; }
 
@@ -440,7 +440,7 @@ class Snakes extends LEDomePattern {
     
     float hueStep = 0;
     for(SnakeLayer snake: this.snakes) {
-      snake.hue = LXUtils.wrapdistf(lx.getBaseHuef(), lx.getBaseHuef() + hueStep, 360);
+      snake.hue = LXUtils.wrapdistf(lx.palette.getHuef(), lx.palette.getHuef() + hueStep, 360);
       hueStep += 360.0 / (float)this.snakes.size();
     }
     
@@ -508,16 +508,16 @@ class Snakes extends LEDomePattern {
   }
 }
 
-class Explosions extends LEDomePattern {
+public class Explosions extends LEDomePattern {
   // Used to store info about each explosion.
   // See L8onUtil.pde for the definition.
   private List<L8onExplosion> explosions = new ArrayList<L8onExplosion>();
   private final SinLFO saturationModulator = new SinLFO(70.0, 90.0, 20 * SECONDS);
-  private BasicParameter numExplosionsParameter = new BasicParameter("NUM", 2.0, 1.0, 30.0);
-  private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);
+  private BoundedParameter numExplosionsParameter = new BoundedParameter("NUM", 2.0, 1.0, 30.0);
+  private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 50, 10, 80);
 
-  private BasicParameter rateParameter = new BasicParameter("RATE", 4000.0, 500.0, 20000.0);
-  private BasicParameter blurParameter = new BasicParameter("BLUR", 0.69);
+  private BoundedParameter rateParameter = new BoundedParameter("RATE", 4000.0, 500.0, 20000.0);
+  private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.69);
 
   private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
 
@@ -540,7 +540,7 @@ class Explosions extends LEDomePattern {
   public void run(double deltaMs) {
     initExplosions();
 
-    float base_hue = lx.getBaseHuef();
+    float base_hue = lx.palette.getHuef();
     float wave_hue_diff = (float) (360.0 / this.explosions.size());
 
     for(L8onExplosion explosion : this.explosions) {
@@ -647,7 +647,7 @@ class Explosions extends LEDomePattern {
   }
 }
 
-class SpotLights extends LEDomePattern {
+public class SpotLights extends LEDomePattern {
   // Used to store info about each spotlight.
   // See L8onUtil.pde for the definition.
   private List<L8onSpotLight> spotlights = new ArrayList<L8onSpotLight>();
@@ -655,20 +655,20 @@ class SpotLights extends LEDomePattern {
   private final SinLFO saturationModulator = new SinLFO(75.0, 95.0, 20 * SECONDS);
 
   // Controls the radius of the spotlights.
-  private BasicParameter radiusParameter = new BasicParameter("RAD", 2.0 * FEET, 1.0, model.xRange / 2.0);
-  private BasicParameter numLightsParameter = new BasicParameter("NUM", 3.0, 1.0, 30.0);
-  private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);
+  private BoundedParameter radiusParameter = new CompoundParameter("RAD", 2.0 * FEET, 1.0, model.xRange / 2.0);
+  private BoundedParameter numLightsParameter = new BoundedParameter("NUM", 3.0, 1.0, 30.0);
+  private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 50, 10, 80);
 
-  private BasicParameter rateParameter = new BasicParameter("RATE", 4000.0, 1.0, 10000.0);
-  private BasicParameter restParameter = new BasicParameter("REST", 900.0, 1.0, 10000.0);
-  private BasicParameter delayParameter = new BasicParameter("DELAY", 0, 0.0, 2000.0);
-  private BasicParameter minDistParameter = new BasicParameter("DIST", 100.0, 10.0, model.xRange);
+  private BoundedParameter rateParameter = new BoundedParameter("RATE", 4000.0, 1.0, 10000.0);
+  private BoundedParameter restParameter = new BoundedParameter("REST", 900.0, 1.0, 10000.0);
+  private BoundedParameter delayParameter = new BoundedParameter("DELAY", 0, 0.0, 2000.0);
+  private BoundedParameter minDistParameter = new BoundedParameter("DIST", 100.0, 10.0, model.xRange);
   
-  private BasicParameter blurParameter = new BasicParameter("BLUR", 0.69);
+  private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.69);
 
   private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
 
-  public SpotLights(P2LX lx) {
+  public SpotLights(LX lx) {
     super(lx);
 
     addParameter(radiusParameter);
@@ -691,7 +691,7 @@ class SpotLights extends LEDomePattern {
   public void run(double deltaMs) {
     initL8onSpotlights();
     float spotlight_radius = radiusParameter.getValuef();
-    float base_hue = lx.getBaseHuef();
+    float base_hue = lx.palette.getHuef();
     float wave_hue_diff = (float) (360.0 / this.spotlights.size());
     float dist_from_dest;
 
@@ -788,7 +788,7 @@ class SpotLights extends LEDomePattern {
   }
 }
 
-class DarkLights extends LEDomePattern {
+public class DarkLights extends LEDomePattern {
   // Used to store info about each spotlight.
   // See L8onUtil.pde for the definition.
   private List<L8onSpotLight> spotlights = new ArrayList<L8onSpotLight>();
@@ -798,20 +798,20 @@ class DarkLights extends LEDomePattern {
   private final SawLFO currIndex = new SawLFO(0, faceCount, 5000);
 
   // Controls the radius of the spotlights.
-  private BasicParameter radiusParameter = new BasicParameter("RAD", 2.2 * FEET, 1.0, model.xRange / 2.0);
-  private BasicParameter numLightsParameter = new BasicParameter("NUM", 12.0, 1.0, 50.0);
-  private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);
+  private BoundedParameter radiusParameter = new BoundedParameter("RAD", 2.2 * FEET, 1.0, model.xRange / 2.0);
+  private BoundedParameter numLightsParameter = new BoundedParameter("NUM", 12.0, 1.0, 50.0);
+  private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 50, 10, 80);
 
-  private BasicParameter rateParameter = new BasicParameter("RATE", 4000.0, 1.0, 10000.0);
-  private BasicParameter restParameter = new BasicParameter("REST", 1000.0, 1.0, 10000.0);
-  private BasicParameter delayParameter = new BasicParameter("DELAY", 0, 0.0, 2000.0);
-  private BasicParameter minDistParameter = new BasicParameter("DIST", 100.0, 10.0, model.xRange);
+  private BoundedParameter rateParameter = new BoundedParameter("RATE", 4000.0, 1.0, 10000.0);
+  private BoundedParameter restParameter = new BoundedParameter("REST", 1000.0, 1.0, 10000.0);
+  private BoundedParameter delayParameter = new BoundedParameter("DELAY", 0, 0.0, 2000.0);
+  private BoundedParameter minDistParameter = new BoundedParameter("DIST", 100.0, 10.0, model.xRange);
   
-  private BasicParameter blurParameter = new BasicParameter("BLUR", 0.55);
+  private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.55);
 
   private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
 
-  public DarkLights(P2LX lx) {
+  public DarkLights(LX lx) {
     super(lx);
 
     addParameter(radiusParameter);
@@ -920,16 +920,16 @@ class DarkLights extends LEDomePattern {
   }
 }
 
-class HeartExplosions extends LEDomePattern {
+public class HeartExplosions extends LEDomePattern {
   // Used to store info about each explosion.
   // See L8onUtil.pde for the definition.
   private List<L8onHeartExplosion> hearts = new ArrayList<L8onHeartExplosion>();
   private final SinLFO saturationModulator = new SinLFO(70.0, 90.0, 20 * SECONDS);
-  private BasicParameter numHeartsParameter = new BasicParameter("NUM", 2.0, 1.0, 30.0);
-  private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);
+  private BoundedParameter numHeartsParameter = new BoundedParameter("NUM", 2.0, 1.0, 30.0);
+  private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 50, 10, 80);
 
-  private BasicParameter rateParameter = new BasicParameter("RATE", 4000.0, 500.0, 20000.0);
-  private BasicParameter blurParameter = new BasicParameter("BLUR", 0.69);
+  private BoundedParameter rateParameter = new BoundedParameter("RATE", 4000.0, 500.0, 20000.0);
+  private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.69);
 
   private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
 
@@ -952,7 +952,7 @@ class HeartExplosions extends LEDomePattern {
   public void run(double deltaMs) {
     initHearts();
 
-    float base_hue = lx.getBaseHuef();
+    float base_hue = lx.palette.getHuef();
     float wave_hue_diff = (float) (360.0 / this.hearts.size());
 
     for(L8onHeartExplosion heart : this.hearts) {
@@ -1059,7 +1059,7 @@ class HeartExplosions extends LEDomePattern {
   }
 }
 
-class HeartLights extends LEDomePattern {
+public class HeartLights extends LEDomePattern {
   // Used to store info about each heartlight.
   // See L8onUtil.pde for the definition.
   private List<L8onHeartLight> heartlights = new ArrayList<L8onHeartLight>();
@@ -1067,20 +1067,20 @@ class HeartLights extends LEDomePattern {
   private final SinLFO saturationModulator = new SinLFO(75.0, 95.0, 20 * SECONDS);
 
   // Controls the radius of the spotlights.
-  private BasicParameter radiusParameter = new BasicParameter("RAD", 4.0 * FEET, 2.0, model.xRange);
-  private BasicParameter numLightsParameter = new BasicParameter("NUM", 3.0, 1.0, 30.0);
-  private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);
+  private BoundedParameter radiusParameter = new BoundedParameter("RAD", 4.0 * FEET, 2.0, model.xRange);
+  private BoundedParameter numLightsParameter = new BoundedParameter("NUM", 3.0, 1.0, 30.0);
+  private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 50, 10, 80);
 
-  private BasicParameter rateParameter = new BasicParameter("RrATE", 4000.0, 1.0, 10000.0);
-  private BasicParameter restParameter = new BasicParameter("REST", 900.0, 1.0, 10000.0);
-  private BasicParameter delayParameter = new BasicParameter("DELAY", 0, 0.0, 2000.0);
-  private BasicParameter minDistParameter = new BasicParameter("DIST", 100.0, 10.0, model.xRange);
+  private BoundedParameter rateParameter = new BoundedParameter("RrATE", 4000.0, 1.0, 10000.0);
+  private BoundedParameter restParameter = new BoundedParameter("REST", 900.0, 1.0, 10000.0);
+  private BoundedParameter delayParameter = new BoundedParameter("DELAY", 0, 0.0, 2000.0);
+  private BoundedParameter minDistParameter = new BoundedParameter("DIST", 100.0, 10.0, model.xRange);
   
-  private BasicParameter blurParameter = new BasicParameter("BLUR", 0.69);
+  private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.69);
 
   private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
 
-  public HeartLights(P2LX lx) {
+  public HeartLights(LX  lx) {
     super(lx);
 
     addParameter(radiusParameter);
@@ -1102,7 +1102,7 @@ class HeartLights extends LEDomePattern {
 
   public void run(double deltaMs) {
     initL8onHeartlights();    
-    float base_hue = lx.getBaseHuef();
+    float base_hue = lx.palette.getHuef();
     float wave_hue_diff = (float) (360.0 / this.heartlights.size());
     float dist_from_dest;
 
@@ -1204,7 +1204,7 @@ class HeartLights extends LEDomePattern {
  * Each wave is a specific color, their intersection is the mix of those two colors.
  * Between each wave, there are a discrete number of bands of color.
  */
-class L8onMixColor extends LEDomePattern {
+public class L8onMixColor extends LEDomePattern {
   // Oscillators for the wave breathing effect.
   private final SinLFO xOffsetMax = new SinLFO( -1 * (model.xRange / 2.0) , model.xRange / 2.0, 20000);
   private final SinLFO yOffsetMax = new SinLFO( -1 * (model.yRange / 2.0) , model.yRange / 2.0, 20000);
@@ -1215,26 +1215,26 @@ class L8onMixColor extends LEDomePattern {
   private List<L8onWave> l8on_waves;
 
   // Controls the radius of the string.
-  private BasicParameter radiusParameterX = new BasicParameter("RADX", 1 * FEET, 1.0, model.xRange / 2.0);
-  private BasicParameter radiusParameterY = new BasicParameter("RADY", 1 * FEET, 1.0, model.yRange / 2.0);
-  private BasicParameter radiusParameterZ = new BasicParameter("RADZ", 1 * FEET, 1.0, model.yRange / 2.0);
+  private BoundedParameter radiusParameterX = new BoundedParameter("RADX", 1 * FEET, 1.0, model.xRange / 2.0);
+  private BoundedParameter radiusParameterY = new BoundedParameter("RADY", 1 * FEET, 1.0, model.yRange / 2.0);
+  private BoundedParameter radiusParameterZ = new BoundedParameter("RADZ", 1 * FEET, 1.0, model.yRange / 2.0);
   // Controls the center X coordinate of the waves.
-  private BasicParameter centerXParameter = new BasicParameter("X", (model.xMin + model.xMax) / 2.0, model.xMin, model.xMax);
+  private BoundedParameter centerXParameter = new BoundedParameter("X", (model.xMin + model.xMax) / 2.0, model.xMin, model.xMax);
     // Controles the center Y coordinate of the waves.
-  private BasicParameter centerYParameter = new BasicParameter("Y", (model.yMin + model.yMax) / 2.0, model.yMin, model.yMax);
+  private BoundedParameter centerYParameter = new BoundedParameter("Y", (model.yMin + model.yMax) / 2.0, model.yMin, model.yMax);
   // Controls the center Z coordinate of the waves.
-  private BasicParameter centerZParameter = new BasicParameter("Z", (model.zMin + model.zMax) / 2.0, model.zMin, model.zMax);
+  private BoundedParameter centerZParameter = new BoundedParameter("Z", (model.zMin + model.zMax) / 2.0, model.zMin, model.zMax);
   // Controls the number of waves by axis.
-  private BasicParameter numWavesX = new BasicParameter("WAVX", 3.0, 1.0, 10.0);
-  private BasicParameter numWavesY = new BasicParameter("WAVY", 4.0, 1.0, 10.0);
-  private BasicParameter numWavesZ = new BasicParameter("WAVZ", 4.0, 1.0, 10.0);
+  private BoundedParameter numWavesX = new BoundedParameter("WAVX", 3.0, 1.0, 10.0);
+  private BoundedParameter numWavesY = new BoundedParameter("WAVY", 4.0, 1.0, 10.0);
+  private BoundedParameter numWavesZ = new BoundedParameter("WAVZ", 4.0, 1.0, 10.0);
   // Controls brightness of on lights
-  private BasicParameter brightnessParameter = new BasicParameter("BRGT", 50, 10, 80);
-  private BasicParameter saturationParameter = new BasicParameter("SAT", 65, 0, 100);
+  private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 50, 10, 80);
+  private BoundedParameter saturationParameter = new BoundedParameter("SAT", 65, 0, 100);
   // Controls the the amount of delay until a light is completely off.
-  private BasicParameter delayParameter = new BasicParameter("DELAY", 500, 0.0, 2000.0);
+  private BoundedParameter delayParameter = new BoundedParameter("DELAY", 500, 0.0, 2000.0);
 
-  public L8onMixColor(P2LX lx) {
+  public L8onMixColor(LX  lx) {
     super(lx);
 
     initL8onWaves();
@@ -1260,7 +1260,7 @@ class L8onMixColor extends LEDomePattern {
   public void run(double deltaMs) {
     float offset_value_x = xOffsetMax.getValuef();
     float offset_value_z = zOffsetMax.getValuef();
-    float base_hue = lx.getBaseHuef();
+    float base_hue = lx.palette.getHuef();
     float wave_hue_diff = (float) (360.0 / this.l8on_waves.size());
 
     for(L8onWave l8on_wave : this.l8on_waves) {
@@ -1373,15 +1373,15 @@ class L8onMixColor extends LEDomePattern {
  *
  * Thanks to Jack for starting me up, Tim for the parameter code, and Slee for the fade idea.
  */
-class Life extends LEDomePattern {
+public class Life extends LEDomePattern {
   // Controls the rate of life algorithm ticks, in milliseconds
-  private BasicParameter rateParameter = new BasicParameter("DELAY", 700, 0.0, 10 * SECONDS);
+  private BoundedParameter rateParameter = new BoundedParameter("DELAY", 700, 0.0, 10 * SECONDS);
   // Controls the probability of a mutation in the cycleOfLife
-  private BasicParameter mutationParameter = new BasicParameter("MUT", 0.03, 0.0, 0.2);
+  private BoundedParameter mutationParameter = new BoundedParameter("MUT", 0.03, 0.0, 0.2);
   // Controls the saturation.
-  private BasicParameter saturationParameter = new BasicParameter("SAT", 75.0, 0.0, 100.0);
+  private BoundedParameter saturationParameter = new BoundedParameter("SAT", 75.0, 0.0, 100.0);
   
-  private BasicParameter neighborCountParameter = new BasicParameter("NEIG", 0.0, -2.0, 2.0);
+  private BoundedParameter neighborCountParameter = new BoundedParameter("NEIG", 0.0, -2.0, 2.0);
 
   // Alive probability ranges for randomization
   public final double MIN_ALIVE_PROBABILITY = 0.3;
@@ -1405,7 +1405,7 @@ class Life extends LEDomePattern {
   // Hold the new lives
   private List<Boolean> new_lives;
 
-  public Life(P2LX lx) {
+  public Life(LX  lx) {
      super(lx);
      this.faces = model.faces;
 
@@ -1691,27 +1691,31 @@ class Life extends LEDomePattern {
   }
 }
 
-class ExplosionEffect extends LEDomeEffect {
+public class ExplosionEffect extends LEDomeEffect {
   // Used to store info about each explosion.
   // See L8onUtil.pde for the definition.
   private List<ExplosionLayer> explosion_layers = new ArrayList<ExplosionLayer>();
 
-  private BasicParameter brightnessParameter = new BasicParameter("BRGT", 90, 10, 80);
-  private BasicParameter saturationParameter = new BasicParameter("SAT", 60, 0, 100);
-  private BasicParameter rateParameter = new BasicParameter("RATE", 400.0, 100.0, 20000.0);
-  private BasicParameter delayParameter = new BasicParameter("DELAY", 1000.0, 10.0, 3000.0);
-  final float maxr = sqrt(model.xMax*model.xMax + model.yMax*model.yMax + model.zMax*model.zMax) + 10;
-  private BasicParameter strokeParameter = new BasicParameter("STRK", 15.0, 3.0, maxr / 2.0);
+  private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 90, 10, 80);
+  private BoundedParameter saturationParameter = new BoundedParameter("SAT", 60, 0, 100);
+  private BoundedParameter rateParameter = new BoundedParameter("RATE", 400.0, 100.0, 20000.0);
+  private BoundedParameter delayParameter = new BoundedParameter("DELAY", 1000.0, 10.0, 3000.0);    
+  private BoundedParameter strokeParameter;
   
-  class ExplosionLayer {
-    QuadraticEnvelope boom = new QuadraticEnvelope(0, maxr, rateParameter);
+  public class ExplosionLayer {    
+    QuadraticEnvelope boom;
     L8onExplosion explosion;
+    LEDome model;    
 
-    ExplosionLayer() {
+    public ExplosionLayer(LX lx) {      
+      this.model = (LEDome)lx.model;            
+      float maxr = sqrt(model.xMax*model.xMax + model.yMax*model.yMax + model.zMax*model.zMax) + 10;      
+          
       boom = new QuadraticEnvelope(0, maxr, rateParameter);
-      boom.setEase(QuadraticEnvelope.Ease.OUT);
-      WB_Point new_center = model.randomFaceCenter();
+      boom.setEase(QuadraticEnvelope.Ease.OUT);      
       addModulator(boom);
+      
+      WB_Point new_center = model.randomFaceCenter();
       explosion = new L8onExplosion(boom, strokeParameter.getValuef(), new_center.xf(), new_center.yf(), new_center.zf());
       trigger();
     }
@@ -1722,14 +1726,14 @@ class ExplosionEffect extends LEDomeEffect {
       explosion.explode();
     }
 
-    public void run(double deltaMs) {      
+    public void run(double deltaMs, int[] colors) { 
       float brightv = brightnessParameter.getValuef();
       float satv = saturationParameter.getValuef();
-      float huev = lx.getBaseHuef();
-      for (LXPoint p : model.points) {
+      float huev = lx.palette.getHuef();
+      for (LXPoint p : this.model.points) {
         if (explosion.onExplosion(p.x, p.y, p.z)) {
           addColor(p.index, LX.hsb(huev, satv, brightv));
-        } else {
+        } else {          
           color c = colors[p.index];
           addColor(p.index, LX.hsb(LXColor.h(c), LXColor.s(c), L8onUtil.decayed_brightness(c, delayParameter.getValuef(), deltaMs)));
         }
@@ -1738,30 +1742,93 @@ class ExplosionEffect extends LEDomeEffect {
   }
 
   public ExplosionEffect(LX lx) {
-    super(lx, true);
+    super(lx);
+    
+    float maxr = sqrt(lx.model.xMax*lx.model.xMax + lx.model.yMax*lx.model.yMax + lx.model.zMax*lx.model.zMax) + 10;
+    strokeParameter = new BoundedParameter("STRK", 15.0, 3.0, maxr / 2.0);
 
     addParameter(brightnessParameter);
     addParameter(saturationParameter);
     addParameter(rateParameter);
     addParameter(delayParameter);
-    addParameter(strokeParameter);; }
+    addParameter(strokeParameter);; 
+  }
 
- public void onEnable() {
+  public void onEnable() {    
+    println("On enable called");
     for (ExplosionLayer l : explosion_layers) {
       if (!l.explosion.isExploding()) {
         l.trigger();
         return;
       }
     }
-
-    explosion_layers.add(new ExplosionLayer());
+    explosion_layers.add(new ExplosionLayer(this.lx));
   }
 
-  public void run(double deltaMs) {
+  public void run(double deltaMs, double enabledAmount) {    
     for (ExplosionLayer l : explosion_layers) {
       if (l.explosion != null && l.explosion.isExploding()) {
-        l.run(deltaMs);
+        l.run(deltaMs, colors);
       }
     }
+  }
+}
+
+// Adapted from Slee's wonderful Clocl animation
+public class JumpRopes extends LEDomePattern {
+  
+  final SinLFO thAmt = new SinLFO(0, 50, startModulator(new SinLFO(5000, 19000, 27000)));
+  
+  JumpRopes(LX lx) {
+    super(lx);
+    for (int i = 0; i < 5; ++i) {
+      addLayer(new JumpRope(lx, i));
+    } 
+    startModulator(thAmt.randomBasis());
+  }
+  
+  public class JumpRope extends LXLayer {
+    
+    final SawLFO angle = new SawLFO(
+      0, 
+      TWO_PI,
+      startModulator(new SinLFO(random(4000, 7000), random(19000, 21000), random(17000, 31000)).randomBasis())
+    );
+    
+    final SinLFO falloff = new SinLFO(200, 500, random(17000, 21000));
+    
+    final SinLFO xSpr = new SinLFO(0, 2, random(10000, 29000));
+    
+    final int i;
+    
+    JumpRope(LX lx, int i) {
+      super(lx);
+      this.i = i;
+      startModulator(angle.randomBasis());
+      startModulator(falloff.randomBasis());
+      startModulator(xSpr.randomBasis());
+    }
+    
+    public void run(double deltaMs) {
+      float av = angle.getValuef();
+      if (i % 2 == 1) {
+        av = TWO_PI - av;
+      }
+      
+      for (LXPoint p : model.points) {
+        float b = 100 - (falloff.getValuef() - p.x) * LXUtils.wrapdistf(p.theta, av, TWO_PI);
+        if (b > 0) {
+          addColor(p.index, LX.hsb(
+            (abs(p.x-model.cx)*xSpr.getValuef() + thAmt.getValuef() * abs(p.theta - PI)) % 360,
+            100,
+            b
+          ));
+        }
+      }
+    }
+  }
+  
+  public void run(double deltaMs) {
+    setColors(0);
   }
 }

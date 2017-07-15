@@ -1,10 +1,10 @@
-class ColorSpiral extends LEDomePattern {
+public class ColorSpiral extends LEDomePattern {
   private final int faceCount = model.faces.size();
   private final SawLFO currIndex = new SawLFO(0, faceCount, 5000);
 
-  private BasicParameter brightnessParam  = new BasicParameter("BRT", 50, 0, 100);
-  private BasicParameter saturationParam  = new BasicParameter("SAT", 75, 50, 100);
-  private BasicParameter speedParam  = new BasicParameter("SPD", 5000, 9000, 1000);
+  private BoundedParameter brightnessParam  = new BoundedParameter("BRT", 50, 0, 100);
+  private BoundedParameter saturationParam  = new BoundedParameter("SAT", 75, 50, 100);
+  private BoundedParameter speedParam  = new BoundedParameter("SPD", 5000, 9000, 1000);
 
   public ColorSpiral(LX lx) {
     super(lx);
@@ -36,8 +36,7 @@ class ColorSpiral extends LEDomePattern {
   }
 }
 
-
-class Meteor extends LXLayer {
+public class Meteor extends LXLayer {
   private final int METEOR_HUE = 60;
   private final int METEOR_SAT = 40;
   private final int DEFAULT_RATE = 6;
@@ -175,8 +174,7 @@ class Meteor extends LXLayer {
   }
 }
 
-
-class Stargaze extends LXPattern {
+public class Stargaze extends LXPattern {
   private final int SKY_COLOR = LX.hsb(240, 80, 40);
   private final int STAR_HUE = 60;
   private final int STAR_SAT = 20;
@@ -190,9 +188,9 @@ class Stargaze extends LXPattern {
   private List<SinLFO> twinklers = new ArrayList<SinLFO>();
   private Meteor meteor = new Meteor(lx);
 
-  private BasicParameter brightnessParam = new BasicParameter("BRT", 70, 40, 100);
-  private BasicParameter numStarsParam = new BasicParameter("STAR", 40, 10, 90);
-  private BasicParameter meteorRateParam = new BasicParameter("MET", 6, 1, 20);
+  private BoundedParameter brightnessParam = new BoundedParameter("BRT", 70, 40, 100);
+  private BoundedParameter numStarsParam = new BoundedParameter("STAR", 40, 10, 90);
+  private BoundedParameter meteorRateParam = new BoundedParameter("MET", 6, 1, 20);
 
   public Stargaze(LX lx) {
     super(lx);

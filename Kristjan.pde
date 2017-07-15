@@ -1,6 +1,6 @@
 import java.util.Collections;
 
-class Disco extends LEDomePattern {
+public class Disco extends LEDomePattern {
   public static final int SET_COUNT = 3;
   public static final float HUE_SEPARATION = 360 / SET_COUNT;
 
@@ -11,7 +11,7 @@ class Disco extends LEDomePattern {
 
   private Random random = new Random();
 
-  public BasicParameter tempo = new BasicParameter("TPO", 5000, 3000, 10000);
+  public BoundedParameter tempo = new BoundedParameter("TPO", 6000, 4000, 12000);
   private TriangleLFO beat = new TriangleLFO(0.0, 1.0, tempo);
 
   public String getName() { return "Disco"; }

@@ -1,9 +1,9 @@
 public class Dancers extends LEDomePattern {
   
-  private BasicParameter brightnessParam = new BasicParameter("BRIG", 80, 30, 95);
-  private BasicParameter speedParam  = new BasicParameter("SPD", 2000, 6000, 500);
+  private BoundedParameter brightnessParam = new BoundedParameter("BRIG", 80, 30, 95);
+  private BoundedParameter speedParam  = new BoundedParameter("SPD", 2000, 6000, 500);
 
-  private BasicParameter blurParam = new BasicParameter("BLUR", 0, 0, .75);
+  private BoundedParameter blurParam = new BoundedParameter("BLUR", 0, 0, .75);
 
   private BlurLayer blurLayer = new BlurLayer(lx, this, blurParam);  
   
@@ -38,7 +38,7 @@ public class Dancers extends LEDomePattern {
   public void run(double deltaMs) {
     setColors(0);
     
-    float curHue = lx.getBaseHuef();
+    float curHue = lx.palette.getHuef();
     float dancerHueDiff = (float) (360.0 / (float)this.dancers.length);
     
     for(Dancer curDancer : dancers) {

@@ -1,14 +1,14 @@
-class Beachball extends LEDomePattern {
+public class Beachball extends LEDomePattern {
   private final int stripeSize = 360 / 10;
   private final int maxTwist   = 24;
 
-  private BasicParameter rateParam = new BasicParameter("RATE", 3600, 1800, 6000);
-  private BasicParameter blurParam = new BasicParameter("BLUR", 0.1, 0.01, 1.0);
+  private BoundedParameter rateParam = new BoundedParameter("RATE", 3600, 1800, 6000);
+  private BoundedParameter blurParam = new BoundedParameter("BLUR", 0.1, 0.01, 1.0);
 
   private final SawLFO angle   = new SawLFO(0, 360, rateParam);
 
   public String getName() { return "Beachball"; }
-  public Beachball(P2LX lx) {
+  public Beachball(LX lx) {
     super(lx);
     addParameter(rateParam);
     addParameter(blurParam);
@@ -26,7 +26,7 @@ class Beachball extends LEDomePattern {
       float radius     = map(dist, 0, LEDome.DOME_RADIUS, 0, 1);
 
       float twistAngle = LXUtils.lerpf(0.0, maxTwist, radius);
-      float pixelAngle     = (p.ztheta * (180.0/PI));
+      float pixelAngle     = (p.azimuth * (180.0/PI));
       float sweepingAngle  = pixelAngle + twistAngle - angle.getValuef();
 
       double stripe = floor( (sweepingAngle % 360) / stripeSize);
@@ -41,7 +41,7 @@ class Beachball extends LEDomePattern {
   }
 }
 
-class Breather extends LEDomePattern {
+public class Breather extends LEDomePattern {
   private final float E = exp(1);
   private final float SECOND = 1000;
 
@@ -49,11 +49,11 @@ class Breather extends LEDomePattern {
   private double[] hues      = new double[lx.total];
   private SinLFO[] breathers = new SinLFO[lx.total];
 
-  private BasicParameter satParam  = new BasicParameter("SAT", 60, 40, 100);
-  private BasicParameter huesParam = new BasicParameter("HUES", 50, 30, 100);
-  private BasicParameter rateParam = new BasicParameter("RATE", 8, 0.6, 15);
+  private BoundedParameter satParam  = new BoundedParameter("SAT", 60, 40, 100);
+  private BoundedParameter huesParam = new BoundedParameter("HUES", 50, 30, 100);
+  private BoundedParameter rateParam = new BoundedParameter("RATE", 8, 0.6, 15);
 
-  public Breather(P2LX lx) {
+  public Breather(LX lx) {
     super(lx);
     addParameter(satParam);
     addParameter(huesParam);

@@ -1,4 +1,4 @@
-class ClockPattern extends LXPattern {
+public class ClockPattern extends LXPattern {
   
   final SinLFO thAmt = new SinLFO(0, 50, startModulator(new SinLFO(5000, 19000, 27000)));
   
@@ -10,7 +10,7 @@ class ClockPattern extends LXPattern {
     startModulator(thAmt.randomBasis());
   }
   
-  class ClockLayer extends LXLayer {
+  public class ClockLayer extends LXLayer {
     
     final SawLFO angle = new SawLFO(
       0, 
@@ -39,10 +39,10 @@ class ClockPattern extends LXPattern {
       }
       
       for (LXPoint p : model.points) {
-        float b = 100 - (falloff.getValuef() - p.y) * LXUtils.wrapdistf(p.ztheta, av, TWO_PI);
+        float b = 100 - (falloff.getValuef() - p.y) * LXUtils.wrapdistf(p.azimuth, av, TWO_PI);
         if (b > 0) {
           addColor(p.index, LX.hsb(
-            (abs(p.y-model.cy)*ySpr.getValuef() + thAmt.getValuef() * abs(p.ztheta - PI)) % 360,
+            (abs(p.y-model.cy)*ySpr.getValuef() + thAmt.getValuef() * abs(p.azimuth - PI)) % 360,
             100,
             b
           ));

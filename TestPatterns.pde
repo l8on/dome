@@ -3,8 +3,8 @@
  * concepts and tools of the LX framework.
  */
  
-class HueTestPattern extends LXPattern {
-  private final BasicParameter colorChangeSpeed = new BasicParameter("SPD",  5000, 0, 10000);
+public class HueTestPattern extends LXPattern {
+  private final BoundedParameter colorChangeSpeed = new BoundedParameter("SPD",  5000, 0, 10000);
   private final SinLFO whatColor = new SinLFO(0, 360, colorChangeSpeed);
   
   public HueTestPattern(LX lx) {
@@ -23,8 +23,7 @@ class HueTestPattern extends LXPattern {
   }
 }
 
-
-class FaceIteratorTest extends LXPattern {
+public class FaceIteratorTest extends LEDomePattern {
   private final SawLFO currIndex = new SawLFO(0, ((LEDome)model).faces.size(), ((LEDome)model).faces.size() * 300);
   public FaceIteratorTest(LX lx) {
     super(lx);     
@@ -35,8 +34,8 @@ class FaceIteratorTest extends LXPattern {
   public void run(double deltaMs) {
     int index = (int) currIndex.getValuef();
     
-    for(int i = 0; i < ((LEDome)model).faces.size(); i++) {
-      LEDomeFace face = ((LEDome)model).faces.get(i);
+    for(int i = 0; i < model.faces.size(); i++) {
+      LEDomeFace face = model.faces.get(i);
       if(!face.hasLights()) {
         continue;  
       }
@@ -50,7 +49,7 @@ class FaceIteratorTest extends LXPattern {
   }
 }
 
-class EdgeIteratorTest extends LXPattern {
+class EdgeIteratorTest extends LEDomePattern {
   private final SawLFO currIndex = new SawLFO(0, ((LEDome)model).edges.size(), ((LEDome)model).edges.size() * 200);
   
   public EdgeIteratorTest(LX lx) {
@@ -61,7 +60,7 @@ class EdgeIteratorTest extends LXPattern {
   
   public void run(double deltaMs) {
     int index = (int) currIndex.getValuef();
-    LEDomeEdge edge = ((LEDome)model).edges.get(index);
+    LEDomeEdge edge = this.model.edges.get(index);
     
     for(LXPoint p : model.points) {
       float bv = edge.onEdge(p) ? 100.0 : 0.0;
@@ -70,9 +69,9 @@ class EdgeIteratorTest extends LXPattern {
   }
 }
  
-class LayerDemoPattern extends LXPattern {  
-  private final BasicParameter colorSpread = new BasicParameter("Clr", 0.5, 0, 3);
-  private final BasicParameter stars = new BasicParameter("Stars", 100, 0, 100);
+class LayerDemoPattern extends LEDomePattern {  
+  private final BoundedParameter colorSpread = new BoundedParameter("Clr", 0.5, 0, 3);
+  private final BoundedParameter stars = new BoundedParameter("Stars", 100, 0, 100);
   
   public LayerDemoPattern(LX lx) {
     super(lx);        
@@ -108,7 +107,7 @@ class LayerDemoPattern extends LXPattern {
         float distanceFromCenter = dist(p.x, p.y, model.cx, model.cy);
         float distanceFromBrightness = dist(p.x, abs(p.y - model.cy), brightnessX.getValuef(), yWave);
         colors[p.index] = LXColor.hsb(
-          lx.getBaseHuef() + colorSpread.getValuef() * distanceFromCenter,
+          lx.palette.getHuef() + colorSpread.getValuef() * distanceFromCenter,
           100,
           max(0, 100 - falloff*distanceFromBrightness)
         );
@@ -132,7 +131,7 @@ class LayerDemoPattern extends LXPattern {
         float b = 100 - dist(p.x, p.y, model.cx, model.cy) - abs(p.z - zPos.getValuef());
         if (b > 0) {
           addColor(p.index, LXColor.hsb(
-            lx.getBaseHuef() + p.z,
+            lx.palette.getHuef() + p.azimuth,
             100,
             b
           ));
@@ -163,7 +162,7 @@ class LayerDemoPattern extends LXPattern {
       if (brightness.getValuef() <= 0) {
         pickStar();
       } else {
-        addColor(index, LXColor.hsb(lx.getBaseHuef(), 50, brightness.getValuef()));
+        addColor(index, LXColor.hsb(lx.palette.getHuef(), 50, brightness.getValuef()));
       }
     }
   }

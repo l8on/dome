@@ -1,8 +1,8 @@
 import java.util.Collections;
 
-class Sunshine extends LEDomePattern {
+public class Sunshine extends LEDomePattern {
 
-  private final BasicParameter colorChangeSpeed = new BasicParameter("SPD", 0, 0, 10000);
+  private final BoundedParameter colorChangeSpeed = new BoundedParameter("SPD", 0, 0, 10000);
   private final TriangleLFO whatSunFace = new TriangleLFO(0, 1, 5000);
 
   public boolean sunReversed = false;
@@ -125,5 +125,3 @@ class SunshineHalf extends Sunshine {
     }
   }
 }
-
-

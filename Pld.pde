@@ -1,10 +1,10 @@
-class Spiral extends LEDomePattern {
+public class Spiral extends LEDomePattern {
   private final int numFaces = model.faces.size();
-  private final BasicParameter tail = new BasicParameter("Tail", 4, 1, numFaces / 3);
-  private final BasicParameter offset = new BasicParameter("Offset", 15, 1, numFaces / 2);
-  private final BasicParameter faceVariation = new BasicParameter("Face", 0, 0, 2);
-  private final BasicParameter numTrails = new BasicParameter("Trails", 4, 1, 4);
-  private final BasicParameter solidFaces = new BasicParameter("Solid", 0, 0, 1);
+  private final BoundedParameter tail = new BoundedParameter("Tail", 4, 1, numFaces / 3);
+  private final BoundedParameter offset = new BoundedParameter("Offset", 15, 1, numFaces / 2);
+  private final BoundedParameter faceVariation = new BoundedParameter("Face", 0, 0, 2);
+  private final BoundedParameter numTrails = new BoundedParameter("Trails", 4, 1, 4);
+  private final BoundedParameter solidFaces = new BoundedParameter("Solid", 0, 0, 1);
 
   public Spiral(LX lx) {
     super(lx); 
@@ -81,7 +81,7 @@ class Spiral extends LEDomePattern {
         float hue = 0;
 
         // Ty BK!
-        float pixelAngle = (p.ztheta * (180.0/PI));
+        float pixelAngle = (p.azimuth * (180.0/PI));
         hue = pixelAngle % 360;
 
         if (!active) {

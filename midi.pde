@@ -1,4 +1,4 @@
-public static class KorgNanoKontrol2 extends LXMidiDevice {
+public static class KorgNanoKontrol2 extends LXMidiRemote {
 
   public static final int SLIDER_1 = 0;
   public static final int SLIDER_2 = 1;
@@ -71,19 +71,7 @@ public static class KorgNanoKontrol2 extends LXMidiDevice {
   public static final int FORWARD = 44;
   public static final int LOOP = 49;
   public static final int STOP = 42;
-  public static final int RECORD = 45;
-
-  public static MidiDevice matchInputDevice() {
-    return LXMidiSystem.matchInputDevice(DEVICE_NAMES);
-  }
-
-  public static KorgNanoKontrol2 getNanoKontrol2(LX lx) {
-    LXMidiInput input = LXMidiSystem.matchInput(lx, DEVICE_NAMES);    
-    if (input != null) {
-      return new KorgNanoKontrol2(input);
-    }    
-    return null;
-  }
+  public static final int RECORD = 45;    
   
   public static boolean hasName(String name) {    
     for(String deviceName: DEVICE_NAMES) {
@@ -181,7 +169,7 @@ public static class KorgNanoKontrol2 extends LXMidiDevice {
   }
   
   public KorgNanoKontrol2 bindKnobsAndSlidersToPattern(LXPattern pattern) {
-    List<LXParameter> patternParameters = pattern.getParameters();
+    List<LXParameter> patternParameters = (List) pattern.getParameters();
     if(patternParameters.size() == 0) { return this; }
     
     int numKnobs = min(KorgNanoKontrol2.KNOBS.length, patternParameters.size());
@@ -206,7 +194,7 @@ public static class KorgNanoKontrol2 extends LXMidiDevice {
   }
   
   public KorgNanoKontrol2 bindSlidersToEffect(LXEffect effect) {
-    List<LXParameter> effectParameters = effect.getParameters();
+    List<LXParameter> effectParameters = (List) effect.getParameters();
     if(effectParameters.size() == 0) { return this; }
         
     int numSliders = min(4, effectParameters.size());
@@ -224,19 +212,21 @@ public static class KorgNanoKontrol2 extends LXMidiDevice {
 public class KorgNanoKontrol2MidiListener implements LXMidiListener, LXChannel.Listener {
   private boolean DEBUG = false;   
   private LX lx;
+  private KorgNanoKontrol2 nanoKontrol2;
  
 
- public KorgNanoKontrol2MidiListener(LX lx) {
+ public KorgNanoKontrol2MidiListener(LX lx, KorgNanoKontrol2 nanoKontrol2) {
    this.lx = lx;
+   this.nanoKontrol2 = nanoKontrol2;
  }
  
- public void aftertouchReceived(LXMidiAftertouch aftertouch) {
+ public void aftertouchReceived(MidiAftertouch aftertouch) {
    if (DEBUG) {
      println("aftertouchReceived aftertouch: " + aftertouch.getAftertouch());
    }
  } 
            
- public void controlChangeReceived(LXMidiControlChange cc) {   
+ public void controlChangeReceived(MidiControlChange cc) {   
    // Wire up specific buttons.
    // Bind does not work for toggling as the value toggle both ways on each key press.
    switch(cc.getCC()) {
@@ -254,7 +244,7 @@ public class KorgNanoKontrol2MidiListener implements LXMidiListener, LXChannel.L
        if (cc.getValue() > 0) { lx.goNext(); }
        break;
      case KorgNanoKontrol2.CYCLE:
-       if (cc.getValue() > 0) { lx.engine.getDefaultChannel().autoTransitionEnabled.toggle(); }
+       if (cc.getValue() > 0) { lx.engine.getDefaultChannel().autoCycleEnabled.toggle(); }
        break;
      case KorgNanoKontrol2.R_BUTTON_8:
        if (cc.getValue() > 0) {
@@ -272,37 +262,37 @@ public class KorgNanoKontrol2MidiListener implements LXMidiListener, LXChannel.L
    }
  } 
            
- public void noteOffReceived(LXMidiNote note) {
+ public void noteOffReceived(MidiNote note) {
    if (DEBUG) {
      println("noteOffReceived pitch: " + note.getPitch());
      println("noteOffReceived velocity: " + note.getVelocity());  
    }   
  } 
            
- public void noteOnReceived(LXMidiNoteOn note) {
+ public void noteOnReceived(MidiNoteOn note) {
    if (DEBUG) {
      println("noteOnReceived pitch: " + note.getPitch());
      println("noteOnReceived velocity: " + note.getVelocity());
    } 
  } 
            
- public void pitchBendReceived(LXMidiPitchBend pitchBend) {
+ public void pitchBendReceived(MidiPitchBend pitchBend) {
    if (DEBUG) {
      println("noteOnReceived pitch: " + pitchBend.getPitchBend());
    }  
  } 
            
- public void programChangeReceived(LXMidiProgramChange pc) {
+ public void programChangeReceived(MidiProgramChange pc) {
    if (DEBUG) {
      println("LXMidiProgramChange pitch: " + pc.getProgram());
    }
  }
  
- public void effectAdded(LXChannel channel, LXEffect effect) {} 
+ public void effectAdded(LXBus channel, LXEffect effect) {} 
            
- public void effectRemoved(LXChannel channel, LXEffect effect) {} 
-
- public void faderTransitionDidChange(LXChannel channel, LXTransition faderTransition) {} 
+ public void effectRemoved(LXBus channel, LXEffect effect) {}
+ 
+ public void effectMoved(LXBus channel, LXEffect effect) {}
            
  public void patternAdded(LXChannel channel, LXPattern pattern) {} 
            
@@ -313,66 +303,70 @@ public class KorgNanoKontrol2MidiListener implements LXMidiListener, LXChannel.L
    nanoKontrol2.bindKnobsAndSlidersToPattern(pattern);
  } 
            
- public void patternRemoved(LXChannel channel, LXPattern pattern) {} 
+ public void patternRemoved(LXChannel channel, LXPattern pattern) {}
+ 
+ public void patternMoved(LXChannel channel, LXPattern pattern) {}
            
  public void patternWillChange(LXChannel channel, LXPattern pattern, LXPattern nextPattern) {}
+ 
+ public void indexChanged(LXChannel channel) {}
 }
 
 /**
  * The LEDomeMidiListener connects the midi controller to the interface.
  */
-public class KorgNanoKontrol2ChannelListener implements LXChannel.Listener {
- LX lx;
+//public class KorgNanoKontrol2ChannelListener implements LXChannel.Listener {
+// LX lx;
 
- public KorgNanoKontrol2ChannelListener(LX lx) {
-   this.lx = lx;
- }
+// public KorgNanoKontrol2ChannelListener(LX lx) {
+//   this.lx = lx;
+// }
  
- public void effectAdded(LXChannel channel, LXEffect effect) {   
-   if (nanoKontrol2 == null) { return; }
+// public void effectAdded(LXBus channel, LXEffect effect) {   
+//   if (nanoKontrol2 == null) { return; }
 
-   nanoKontrol2.unbindEffectSliders();
-   nanoKontrol2.bindSlidersToEffect(effect);
- } 
+//   nanoKontrol2.unbindEffectSliders();
+//   nanoKontrol2.bindSlidersToEffect(effect);
+// } 
            
- public void effectRemoved(LXChannel channel, LXEffect effect) {
- } 
+// public void effectRemoved(LXBus channel, LXEffect effect) {
+// } 
 
- public void faderTransitionDidChange(LXChannel channel, LXTransition faderTransition) {
- } 
+// public void faderTransitionDidChange(LXChannel channel, LXTransition faderTransition) {
+// } 
            
- public void patternAdded(LXChannel channel, LXPattern pattern) {
- } 
+// public void patternAdded(LXChannel channel, LXPattern pattern) {
+// } 
            
- public void patternDidChange(LXChannel channel, LXPattern pattern) {
-   if (nanoKontrol2 == null) { return; }
+// public void patternDidChange(LXChannel channel, LXPattern pattern) {
+//   if (nanoKontrol2 == null) { return; }
       
-   nanoKontrol2.unbindPatternKnobsAndSliders();
-   nanoKontrol2.bindKnobsAndSlidersToPattern(pattern);
- } 
+//   nanoKontrol2.unbindPatternKnobsAndSliders();
+//   nanoKontrol2.bindKnobsAndSlidersToPattern(pattern);
+// } 
            
- public void patternRemoved(LXChannel channel, LXPattern pattern) {
- } 
+// public void patternRemoved(LXChannel channel, LXPattern pattern) {
+// } 
            
- public void patternWillChange(LXChannel channel, LXPattern pattern, LXPattern nextPattern) {
- }
-}
+// public void patternWillChange(LXChannel channel, LXPattern pattern, LXPattern nextPattern) {
+// }
+//}
 
-/**
- * The LEDomeMidiListener connects the midi controller to the interface.
- */
-public class KorgNanoKontrol2EffectParameterListener implements LXParameterListener { 
-  private LXEffect effect; 
+///**
+// * The LEDomeMidiListener connects the midi controller to the interface.
+// */
+//public class KorgNanoKontrol2EffectParameterListener implements LXParameterListener { 
+//  private LXEffect effect; 
 
-  public KorgNanoKontrol2EffectParameterListener(LXEffect effect) {   
-    this.effect = effect;
-  }
+//  public KorgNanoKontrol2EffectParameterListener(LXEffect effect) {   
+//    this.effect = effect;
+//  }
  
-  public void onParameterChanged(LXParameter parameter) {
-    // Expecting the boolean parameter that returns true if the effect is on.   
-    if (((BooleanParameter)parameter).getValueb()) {
-      nanoKontrol2.unbindSliders();
-      nanoKontrol2.bindSlidersToEffect(this.effect);
-    }
-  }
-}
+//  public void onParameterChanged(LXParameter parameter) {
+//    // Expecting the boolean parameter that returns true if the effect is on.   
+//    if (((BooleanParameter)parameter).getValueb()) {
+//      nanoKontrol2.unbindSliders();
+//      nanoKontrol2.bindSlidersToEffect(this.effect);
+//    }
+//  }
+//}

@@ -29,7 +29,7 @@ final static String NDB_IP_ADDRESS = "10.0.0.116";
  * This is a very basic model class that is a 3-D matrix
  * of points. The model contains just one fixture.
  */
-static class LEDome extends LXModel {
+public static class LEDome extends LXModel {
   public List<LEDomeFace> faces;
   public List<LEDomeEdge> edges;
   public WB_Sphere sphere;
@@ -538,7 +538,8 @@ static class LEDomeOutputManager implements LXParameterListener {
 
     try {
       this.ndbOutput = new LXDatagramOutput(this.lx);
-      DDPDatagram datagram = (DDPDatagram)new DDPDatagram(points).setAddress(NDB_IP_ADDRESS); 
+      DDPDatagram datagram = new DDPDatagram(points);
+      datagram.setAddress(NDB_IP_ADDRESS); 
       this.ndbOutput.addDatagram(datagram);
       this.lx.addOutput(this.ndbOutput);
     } catch (Exception x) {
@@ -548,7 +549,7 @@ static class LEDomeOutputManager implements LXParameterListener {
 
   private void removeLXOutputForNDB() {
     if (this.ndbOutput != null) {
-      this.lx.removeOutput(this.ndbOutput);
+      this.lx.engine.output.removeChild(this.ndbOutput);
     }
   }
 }

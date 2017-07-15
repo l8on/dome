@@ -21,96 +21,76 @@
 class UIDome extends UI3dComponent {
   private boolean LABEL_FACES = false;
   private boolean LABEL_EDGES = false; 
-  
+    
+  @Override
   protected void onDraw(UI ui, PGraphics pg) {
-    HE_Mesh geodome = model.getLEDomeMesh();      
-
+    HE_Mesh geodome = model.getLEDomeMesh();            
+  
     if (RENDER_3D) {
-      stroke(5);
+      pg.stroke(5);
+      render = new WB_Render((PGraphics3D)pg);      
       render.drawEdges(geodome);
     }
 
     if (RENDER_3D && LABEL_FACES) {
-      stroke(1);
-      labelFaces(geodome);
+      pg.stroke(1);
+      labelFaces(geodome, pg);
     }
 
     if (RENDER_3D && LABEL_EDGES) {
-      stroke(1);      
-      labelEdges();
-    }    
+      pg.stroke(1);      
+      labelEdges(pg);
+    }   
   }
   
-  private void labelFaces(HE_Mesh geodome) {      
+  @Override
+  protected void endDraw(UI ui, PGraphics pg) {
+    pg.noLights();
+  }
+  
+  private void labelFaces(HE_Mesh geodome, PGraphics pg) {      
     int numFaces = geodome.getNumberOfFaces();
     HE_Face currentFace;
     WB_Point faceCenter;
     PFont labelFont = createFont("SansSerif", 5, true);  
-    textFont(labelFont);
-    textAlign(CENTER, CENTER); 
+    pg.textFont(labelFont);
+    pg.textAlign(CENTER, CENTER); 
     
-    pushMatrix();
-    scale(1, -1, 1);
+    pg.pushMatrix();
+    pg.scale(1, -1, 1);
     
     for(int i = 0; i < numFaces; i++) {                
       currentFace = geodome.getFaceByIndex(i);
       faceCenter = currentFace.getFaceCenter();           
       if (currentFace.getLabel() != -1) {       
-        text(currentFace.getLabel(), faceCenter.xf(), -1 * faceCenter.yf(), faceCenter.zf());        
+        pg.text(currentFace.getLabel(), faceCenter.xf(), -1 * faceCenter.yf(), faceCenter.zf());        
       }
     }
 
-    popMatrix();
+    pg.popMatrix();
   }
   
-  private void labelEdges() {      
+  private void labelEdges(PGraphics pg) {      
     int numEdges = model.edges.size();
     PFont labelFont = createFont("SansSerif", 7, true);  
-    textFont(labelFont);  
-    textAlign(CENTER, CENTER);
+    pg.textFont(labelFont);  
+    pg.textAlign(CENTER, CENTER);
     
-    pushMatrix();
-    scale(1, -1);
+    pg.pushMatrix();
+    pg.scale(1, -1);
     
     for(int i = 0; i < numEdges; ++i) {  
       LEDomeEdge edge = model.edges.get(i);
       LXPoint middlePoint = edge.points.get(1);   
             
-      text(i, middlePoint.x, -1 * middlePoint.y, middlePoint.z);
+      pg.text(i, middlePoint.x, -1 * middlePoint.y, middlePoint.z);
     }
     
-    popMatrix();
-  }
+    pg.popMatrix();
+  }  
 }
 
-class UIEngineControl extends UIWindow {
-  
-  final UIKnob fpsKnob;
-  
-  UIEngineControl(UI ui, float x, float y) {
-    super(ui, "ENGINE", x, y, UIChannelControl.WIDTH, 96);
-        
-    y = UIWindow.TITLE_LABEL_HEIGHT;
-    new UIButton(4, y, width-8, 20) {
-      protected void onToggle(boolean enabled) {
-        lx.engine.setThreaded(enabled);
-        fpsKnob.setEnabled(enabled);
-      }
-    }
-    .setActiveLabel("Multi-Threaded")
-    .setInactiveLabel("Single-Threaded")
-    .addToContainer(this);
-    
-    y += 24;
-    fpsKnob = new UIKnob(4, y);    
-    fpsKnob
-    .setParameter(lx.engine.framesPerSecond)
-    .setEnabled(lx.engine.isThreaded())
-    .addToContainer(this);
-  }
-}
-
-class LEDomeNDBOutputControl extends UIWindow { 
+public class LEDomeNDBOutputControl extends UIWindow { 
   LEDomeNDBOutputControl(UI ui, float x, float y) {
     super(ui, "NDB Output", x, y, UIChannelControl.WIDTH, 50);    
     

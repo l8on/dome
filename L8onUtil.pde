@@ -1,4 +1,4 @@
-static class L8onUtil {
+public static class L8onUtil {
   L8onUtil() {
   }
   
@@ -32,7 +32,7 @@ public class SnakeLayer extends LXLayer {
   private static final float MAX_ANGLE = 2.5;
   private static final float MIN_ANGLE = PI / 4.0;
   
-  private int[] snakeColors = new int[model.points.size()];
+  private int[] snakeColors = new int[model.size];
   private List<LEDomeEdge> snakeEdges = new ArrayList<LEDomeEdge>();
   private List<LXPoint> snakePoints = new ArrayList<LXPoint>();  
   private List<LXPoint> pointQueue = new ArrayList<LXPoint>();
@@ -45,23 +45,23 @@ public class SnakeLayer extends LXLayer {
   private LXRangeModulator yMod = new LinearEnvelope(0);
   private LXRangeModulator zMod = new LinearEnvelope(0);
 
-  private BasicParameter brightness;  
-  private BasicParameter numPoints;
-  private BasicParameter snakeSpeed;
+  private BoundedParameter brightness;  
+  private BoundedParameter numPoints;
+  private BoundedParameter snakeSpeed;
   
   public SnakeLayer(LX lx) {
-    this(lx, new BasicParameter("EDG", NUM_POINTS));  
+    this(lx, new BoundedParameter("EDG", NUM_POINTS));  
   }
   
-  public SnakeLayer(LX lx, BasicParameter numPoints) {
-    this(lx, numPoints, new BasicParameter("SPD", SNAKE_SPEED));
+  public SnakeLayer(LX lx, BoundedParameter numPoints) {
+    this(lx, numPoints, new BoundedParameter("SPD", SNAKE_SPEED));
   }
   
-  public SnakeLayer(LX lx, BasicParameter numPoints, BasicParameter snakeSpeed) {
-    this(lx, numPoints, snakeSpeed, new BasicParameter("BRIT", BRIGHTNESS, 0, 100));
+  public SnakeLayer(LX lx, BoundedParameter numPoints, BoundedParameter snakeSpeed) {
+    this(lx, numPoints, snakeSpeed, new BoundedParameter("BRIT", BRIGHTNESS, 0, 100));
   }
   
-  public SnakeLayer(LX lx, BasicParameter numPoints, BasicParameter snakeSpeed, BasicParameter brightness) {
+  public SnakeLayer(LX lx, BoundedParameter numPoints, BoundedParameter snakeSpeed, BoundedParameter brightness) {
     super(lx);    
     this.numPoints = numPoints;
     this.snakeSpeed = snakeSpeed;
@@ -108,7 +108,7 @@ public class SnakeLayer extends LXLayer {
   }
   
   public float hueValue() {
-    return (this.hue >= 0.0) ? this.hue : lx.getBaseHuef();
+    return (this.hue >= 0.0) ? this.hue : lx.palette.getHuef();
   }
   
   public boolean hasPoint(LXPoint point) {
@@ -255,7 +255,7 @@ public class SnakeLayer extends LXLayer {
 public class OffLayer extends LXLayer {
   private color black = LX.hsb(0, 0, 0);
   
-  public OffLayer(LX lx, LXBufferedComponent pattern) {
+  public OffLayer(LX lx, LXDeviceComponent pattern) {
     super(lx, pattern);
   }
   
@@ -268,15 +268,15 @@ public class OffLayer extends LXLayer {
 
 
 public class BlurLayer extends LXLayer {
-  public final BasicParameter amount;
+  public final BoundedParameter amount;
   private final int[] blurBuffer;
 
-  public BlurLayer(LX lx, LXBufferedComponent pattern) {
-    this(lx, pattern, new BasicParameter("BLUR", 0));
+  public BlurLayer(LX lx, LXDeviceComponent pattern) {
+    this(lx, pattern, new BoundedParameter("BLUR", 0));
   }
 
-  public BlurLayer(LX lx, LXBufferedComponent pattern, BasicParameter amount) {    
-    super(lx, pattern);     //<>//
+  public BlurLayer(LX lx, LXDeviceComponent pattern, BoundedParameter amount) {    
+    super(lx, pattern); //<>// //<>//
     this.amount = amount;
     this.blurBuffer = new int[lx.total];
     
@@ -303,7 +303,7 @@ public class BlurLayer extends LXLayer {
 /*
  * A container to keep state of the different 3d waves in the color remix.
  */
-class L8onWave {
+public class L8onWave {
   public static final int DIRECTION_X = 1;
   public static final int DIRECTION_Y = 2;
   public static final int DIRECTION_Z = 3;
@@ -318,7 +318,7 @@ class L8onWave {
   }
 }
 
-class L8onSpotLight {   
+public class L8onSpotLight {   
   WB_Sphere sphere;
   float center_x;
   float center_y;
@@ -408,7 +408,7 @@ class L8onSpotLight {
  * Base class for keeping the state of a shape for a
  * game of life simulation.
  */
-class L8onFaceLife {
+public class L8onFaceLife {
   // Index of face
    public Integer index;
    // Boolean which describes if shape is alive.
@@ -429,7 +429,7 @@ class L8onFaceLife {
 /**
  * Contains the current state of an explosion.
  */
-class L8onExplosion {
+public class L8onExplosion {
   float center_x;
   float center_y;
   float center_z;  
@@ -510,7 +510,7 @@ class L8onExplosion {
   }
 }
 
-class L8onHeartExplosion {
+public class L8onHeartExplosion {
   float center_x;
   float center_y;
   float center_z;  
@@ -602,7 +602,7 @@ class L8onHeartExplosion {
   }
 }
 
-class L8onHeartLight {
+public class L8onHeartLight {
   WB_Sphere sphere;
   float center_x;
   float center_y;
