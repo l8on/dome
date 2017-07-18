@@ -436,11 +436,11 @@ public class Snakes extends LEDomePattern {
   }
 
   public void run(double deltaMs) {
-    calibrateSnakes();
+    calibrateSnakes();    
     
     float hueStep = 0;
-    for(SnakeLayer snake: this.snakes) {
-      snake.hue = LXUtils.wrapdistf(lx.palette.getHuef(), lx.palette.getHuef() + hueStep, 360);
+    for(SnakeLayer snake: this.snakes) {      
+      snake.hue = (lx.palette.getHuef() + hueStep) % 360;      
       hueStep += 360.0 / (float)this.snakes.size();
     }
     

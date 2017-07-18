@@ -95,7 +95,7 @@ public class SnakeLayer extends LXLayer {
       }
       
       // Fade in Head point
-      if (snakeIndex == this.snakePoints.size() - 1) {
+      if (snakeIndex == this.snakePoints.size() - 1) {        
         snakeColors[p.index] = LX.hsb(this.hueValue(), 100, modBasis * brightness.getValuef());
         continue;
       }

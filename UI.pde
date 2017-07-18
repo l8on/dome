@@ -89,22 +89,3 @@ class UIDome extends UI3dComponent {
     pg.popMatrix();
   }  
 }
-
-public class LEDomeNDBOutputControl extends UIWindow { 
-  LEDomeNDBOutputControl(UI ui, float x, float y) {
-    super(ui, "NDB Output", x, y, UIChannelControl.WIDTH, 50);    
-    
-    y = UIWindow.TITLE_LABEL_HEIGHT;
-    
-    new UIButton(4, y, width-8, 20) {
-      protected void onToggle(boolean enabled) {
-        println("Toggle NDB output: " + enabled);
-        outputManager.toggleNDBOutput(enabled);
-      }  
-    }
-    .setInactiveLabel("Output to NDB")
-    .setActiveLabel("Disconnect NDB")
-    .setParameter(ndbOutputParameter)    
-    .addToContainer(this);
-  }
-}

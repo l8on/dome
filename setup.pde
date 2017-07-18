@@ -19,15 +19,22 @@
 
 void setupPatterns() {
   LXPattern[] domePatterns = patterns(lx);
-  for (LXPattern pattern: domePatterns) {
-    LXBus channel = lx.engine.getFocusedChannel();
-    if (channel instanceof LXChannel) {
-      ((LXChannel)channel).addPattern(pattern);
-    } else {
-      lx.engine.addChannel(new LXPattern[] { pattern });
-    }
-  }  
-  //lx.setPatterns(domePatterns);
+  LXChannel channel = (LXChannel)lx.engine.getFocusedChannel();  
+  // LXStudio has to load with at least 1 pattern.
+  // We save it here so we can remove it immediately.
+  LXPattern initalPattern = channel.getPatterns().get(0);
+  
+  // Add all patterns from the main list.
+  for (LXPattern pattern: domePatterns) {    
+    channel.addPattern(pattern);    
+  }
+  
+  // Remove the initial pattern
+  channel.removePattern(initalPattern);
+ 
+  // Figure out which parameters can be connected to an audio source.
+  audioInputEnabledParameter = new BooleanParameter("AUDIN", false);
+  audioParameterManager = new LEDomeAudioParameterManager(lx, audioInputEnabledParameter, domePatterns);   
 }
 
 void setupEffects() {

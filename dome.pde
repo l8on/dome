@@ -48,82 +48,15 @@ import javax.sound.midi.MidiUnavailableException;
  * If you're an artist, create a new tab in the Processing environment with
  * your name. Implement your classes there, and add them to the list below.
  */
- 
- 
-//Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-//final int VIEWPORT_WIDTH = (int)screenSize.getWidth();;
-//final int VIEWPORT_HEIGHT = (int)screenSize.getHeight();
 
 // The raspberry pi can't render 3d out of the box.
 // Set RENDER_3D to false to avoid using OpenGL.
+// TODO: see if this is true any more with processing 3
 final static boolean RENDER_3D = true;
 final static int AUTO_TRANSITION_SECONDS = 30;
 
 LEDome model;
 LXStudio lx;
-
-WB_Render render;
-LEDomeOutputManager outputManager;
-BooleanParameter ndbOutputParameter;
-KorgNanoKontrol2 nanoKontrol2 = null;
-
-void settings() {
-  size(1024, 768, P3D);
-  //if (RENDER_3D) {
-  //  size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, P3D);
-  //} else {
-  //  size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
-  //
-  noSmooth();  
-}
-
-void setup() { 
-  surface.setResizable(true);
-  textSize(6);
-
-  // Create LEDome instance
-  model = new LEDome();
-  // Create the LXStudio engine 
-  lx = new LXStudio(this, model) {
-    @Override
-    protected void initialize(LXStudio lx, LXStudio.UI ui) {
-      // Add custom LXComponents or LXOutput objects to the engine here,
-      // before the UI is constructed
-      // Create the NDB output manager
-      ndbOutputParameter = new BooleanParameter("NDB", false);
-      outputManager = new LEDomeOutputManager(lx, ndbOutputParameter);  
-      outputManager.addLXOutputForNDB();
-    }
-    
-    @Override
-    protected void onUIReady(LXStudio lx, LXStudio.UI ui) {
-      // The UI is now ready, can add custom UI components if desired
-      //ui.preview.addComponent(new UIWalls());  
-      ui.preview.addComponent(new UIDome());
-    }     
-  };
-   
-
-  setupPatterns();
-  setupEffects();  
-  setupMidiDevices();
-  
-  println("model center x: " + model.cx);
-  println("model center y: " + model.cy);
-  println("model center z: " + model.cz);
-  
-  if (RENDER_3D) {
-    lx.engine.output.enabled.setValue(false);
-    //render = new WB_Render(this);
-  } else { 
-    // Start up network output immediately if no 3d
-    lx.engine.output.enabled.setValue(true);
-    lx.enableAutoTransition(AUTO_TRANSITION_SECONDS);
-  }
-}
-// LXStudio handles all the drawing.
-void draw() {
-}
 
 LXPattern[] patterns(P3LX lx) {
   return new LXPattern[] {
@@ -173,6 +106,65 @@ LXPattern[] patterns(P3LX lx) {
 //    new HueTestPattern(lx),
 //    new IteratorTestPattern(lx)
   };
+}
+
+WB_Render render;
+LEDomeOutputManager outputManager;
+BooleanParameter ndbOutputParameter;
+LEDomeAudioParameterManager audioParameterManager;
+BooleanParameter audioInputEnabledParameter;
+KorgNanoKontrol2 nanoKontrol2 = null;
+// TODO: get C-Media audio card and create class to manage input
+
+void settings() {
+  size(1024, 768, P3D);    
+  noSmooth();  
+}
+
+void setup() { 
+  surface.setResizable(true);
+  surface.setSize(displayWidth, displayHeight);
+  textSize(6);
+
+  // Create LEDome instance
+  model = new LEDome();
+  // Create the LXStudio engine 
+  lx = new LXStudio(this, model) {
+    @Override
+    protected void initialize(LXStudio lx, LXStudio.UI ui) {
+      // Add custom LXComponents or LXOutput objects to the engine here,
+      // before the UI is constructed
+      
+      // Create the NDB output manager
+      outputManager = new LEDomeOutputManager(lx);  
+      outputManager.addLXOutputForNDB();
+    }
+    
+    @Override
+    protected void onUIReady(LXStudio lx, LXStudio.UI ui) {
+      // The UI is now ready, can add custom UI components if desired      
+      ui.preview.addComponent(new UIDome());
+    }
+  };
+  
+  setupPatterns();
+  setupEffects();  
+  setupMidiDevices();   
+  
+  if (RENDER_3D) {
+    lx.engine.output.enabled.setValue(false);    
+  } else { 
+    // Start up network output immediately if no 3d
+    lx.engine.output.enabled.setValue(true);
+    lx.enableAutoTransition(AUTO_TRANSITION_SECONDS);
+  }
+  
+  // Set the hue mode of the palette to cycle through all the colors.  
+  lx.palette.hueMode.setValue(2);
+}
+
+// LXStudio handles all the drawing.
+void draw() {
 }
 
 LXEffect[] effects(P3LX lx) {

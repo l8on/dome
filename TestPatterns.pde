@@ -69,7 +69,7 @@ class EdgeIteratorTest extends LEDomePattern {
   }
 }
  
-class LayerDemoPattern extends LEDomePattern {  
+public class LayerDemoPattern extends LEDomePattern {  
   private final BoundedParameter colorSpread = new BoundedParameter("Clr", 0.5, 0, 3);
   private final BoundedParameter stars = new BoundedParameter("Stars", 100, 0, 100);
   

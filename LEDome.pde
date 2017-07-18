@@ -495,42 +495,16 @@ public static class LEDome extends LXModel {
   }
 }
 
-static class LEDomeOutputManager implements LXParameterListener {
-  private LX lx;
-  private BooleanParameter ndbOutputEnabled;  
-  private LXDatagramOutput ndbOutput;
-
-  public LEDomeOutputManager(LX lx) {
-    this(lx, new BooleanParameter("NDB", false));
-  }
-  
-  public LEDomeOutputManager(LX lx, BooleanParameter ndbOutputEnabled) {
-    this.lx = lx;
-    this.ndbOutputEnabled = ndbOutputEnabled;
-    this.ndbOutputEnabled.addListener(this);
-  }
-  
-  public void onParameterChanged(LXParameter parameter) {
-    if (parameter == this.ndbOutputEnabled) {
-      println("parameter and ndbOutputEnabled are equal");  
-    }
+// TODO: simplify class now that we are using the "master" output
+public static class LEDomeOutputManager {
+  private LX lx;  
+  private LXDatagramOutput ndbOutput = null;
     
-    if (((BooleanParameter)parameter).getValueb()) {
-      this.addLXOutputForNDB();
-    } else {
-      this.removeLXOutputForNDB();
-    }      
+  public LEDomeOutputManager(LX lx) {
+    this.lx = lx;    
   }
 
-  public void toggleNDBOutput() {
-    this.toggleNDBOutput(!this.ndbOutputEnabled.getValueb());    
-  }  
-
-  public void toggleNDBOutput(boolean enable) {
-    this.ndbOutputEnabled.setValue(enable);    
-  }
-
-  private void addLXOutputForNDB() {
+  public void addLXOutputForNDB() {
     int[] points = new int[NUM_CONNECTED_LIGHTS];
     for (int i = 0; i < points.length; ++i) {
       points[i] = i;
@@ -547,7 +521,7 @@ static class LEDomeOutputManager implements LXParameterListener {
     }
   }
 
-  private void removeLXOutputForNDB() {
+  public void removeLXOutputForNDB() {
     if (this.ndbOutput != null) {
       this.lx.engine.output.removeChild(this.ndbOutput);
     }
