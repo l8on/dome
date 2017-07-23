@@ -60,6 +60,7 @@ LXStudio lx;
 
 LXPattern[] patterns(P3LX lx) {
   return new LXPattern[] {
+    new SpotLights(lx),
              
     // Create New Pattern Instances Below HERE
     new ShadyWaffle(lx),
@@ -78,8 +79,7 @@ LXPattern[] patterns(P3LX lx) {
     new JumpRopes(lx),
     new Explosions(lx),
     new SnakeApple(lx),
-    new Snakes(lx),
-    new SpotLights(lx),
+    new Snakes(lx),    
     new HeartsBeat(lx),
     new DarkLights(lx),
     new Life(lx),
