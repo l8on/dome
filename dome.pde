@@ -110,9 +110,7 @@ LXPattern[] patterns(P3LX lx) {
 
 WB_Render render;
 LEDomeOutputManager outputManager;
-BooleanParameter ndbOutputParameter;
 LEDomeAudioParameterManager audioParameterManager;
-BooleanParameter audioInputEnabledParameter;
 KorgNanoKontrol2 nanoKontrol2 = null;
 // TODO: get C-Media audio card and create class to manage input
 
@@ -161,7 +159,52 @@ void setup() {
   
   // Set the hue mode of the palette to cycle through all the colors.  
   lx.palette.hueMode.setValue(2);
+  
+  // Set the audio input to be on by default
+  lx.engine.audio.enabled.setValue(true);
 }
+
+void setupPatterns() {
+  LXPattern[] domePatterns = patterns(lx);
+  LXChannel channel = (LXChannel)lx.engine.getFocusedChannel();  
+  // LXStudio has to load with at least 1 pattern.
+  // We save it here so we can remove it immediately.
+  LXPattern initalPattern = channel.getPatterns().get(0);
+  
+  // Add all patterns from the main list.
+  for (LXPattern pattern: domePatterns) {    
+    channel.addPattern(pattern);    
+  }
+  
+  // Remove the initial pattern
+  channel.removePattern(initalPattern);
+ 
+  // Figure out which parameters can be connected to an audio source.  
+  audioParameterManager = new LEDomeAudioParameterManager(lx, lx.engine.audio.enabled, domePatterns);   
+}
+
+void setupEffects() {
+  lx.addEffects(effects(lx));  
+}
+
+void setupMidiDevices() {
+  //LXMidiInput korgNanoControl2Input = null;
+  ////LXMidiInput korgNanoControl2Input = lx.engine.midi.matchInput(KorgNanoKontrol2.DEVICE_NAMES);
+  //if (korgNanoControl2Input == null) {
+  //  println("Midi Remote not connected");
+  //  return;
+  //}
+  
+  //nanoKontrol2 = new KorgNanoKontrol2(korgNanoControl2Input);
+  //korgNanoControl2Input.addListener(new KorgNanoKontrol2MidiListener(lx, nanoKontrol2));
+  //lx.engine.getDefaultChannel().addListener(new KorgNanoKontrol2MidiListener(lx, nanoKontrol2));
+
+  // Listen to each effect to connect the last 4 sliders to the latest effect.
+  //for (LXEffect effect: lx.engine.getEffects()) {
+  //  effect.enabled.addListener(new KorgNanoKontrol2EffectParameterListener(effect));  
+  //}  
+}
+
 
 // LXStudio handles all the drawing.
 void draw() {
@@ -171,7 +214,7 @@ LXEffect[] effects(P3LX lx) {
   return new LXEffect[] {
     new ExplosionEffect(lx),
     new FlashEffect(lx),
-    new DesaturationEffect(lx), 
+    new DesaturationEffect(lx),
     new BlurEffect(lx)
   };
 }
