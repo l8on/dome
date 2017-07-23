@@ -231,7 +231,7 @@ public class KorgNanoKontrol2MidiListener implements LXMidiListener, LXChannel.L
    // Bind does not work for toggling as the value toggle both ways on each key press.
    switch(cc.getCC()) {
      case KorgNanoKontrol2.MARKER_SET:
-       if (cc.getValue() > 0) { ndbOutputParameter.toggle(); }
+       //if (cc.getValue() > 0) { ndbOutputParameter.toggle(); }
        break;
      case KorgNanoKontrol2.MARKER_LEFT:
      case KorgNanoKontrol2.TRACK_LEFT:
