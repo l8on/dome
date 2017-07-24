@@ -112,6 +112,7 @@ WB_Render render;
 LEDomeOutputManager outputManager;
 LEDomeAudioParameterManager audioParameterManager;
 KorgNanoKontrol2 nanoKontrol2 = null;
+LXStudio.UI lxUI = null;
 // TODO: get C-Media audio card and create class to manage input
 
 void settings() {
@@ -142,12 +143,16 @@ void setup() {
     protected void onUIReady(LXStudio lx, LXStudio.UI ui) {
       // The UI is now ready, can add custom UI components if desired      
       ui.preview.addComponent(new UIDome());
+      lxUI = ui;   
     }
   };
   
+  // Create audio parameter manager before setting up patterns so the listner will work out of the box
+  audioParameterManager = new LEDomeAudioParameterManager(lx, lx.engine.audio.enabled);
+  
   setupPatterns();
   setupEffects();  
-  setupMidiDevices();   
+  setupMidiDevices();
   
   if (RENDER_3D) {
     lx.engine.output.enabled.setValue(false);    
@@ -178,9 +183,6 @@ void setupPatterns() {
   
   // Remove the initial pattern
   channel.removePattern(initalPattern);
- 
-  // Figure out which parameters can be connected to an audio source.  
-  audioParameterManager = new LEDomeAudioParameterManager(lx, lx.engine.audio.enabled, domePatterns);   
 }
 
 void setupEffects() {

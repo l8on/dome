@@ -655,7 +655,7 @@ public class SpotLights extends LEDomePattern {
   private final SinLFO saturationModulator = new SinLFO(75.0, 95.0, 20 * SECONDS);
 
   // Controls the radius of the spotlights.
-  private BoundedParameter radiusParameter = new CompoundParameter("RAD", 2.0 * FEET, 1.0, model.xRange / 2.0);
+  private BoundedParameter radiusParameter = new LEDomeAudioParameterLow("RAD", 2.0 * FEET, 1.0, model.xRange / 2.0);
   private BoundedParameter numLightsParameter = new BoundedParameter("NUM", 3.0, 1.0, 30.0);
   private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 50, 10, 80);
 
@@ -798,7 +798,7 @@ public class DarkLights extends LEDomePattern {
   private final SawLFO currIndex = new SawLFO(0, faceCount, 5000);
 
   // Controls the radius of the spotlights.
-  private BoundedParameter radiusParameter = new BoundedParameter("RAD", 2.2 * FEET, 1.0, model.xRange / 2.0);
+  private CompoundParameter radiusParameter = new LEDomeAudioParameterLow("RAD", 2.2 * FEET, 1.0, model.xRange / 2.0);
   private BoundedParameter numLightsParameter = new BoundedParameter("NUM", 12.0, 1.0, 50.0);
   private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 50, 10, 80);
 
@@ -1215,9 +1215,9 @@ public class L8onMixColor extends LEDomePattern {
   private List<L8onWave> l8on_waves;
 
   // Controls the radius of the string.
-  private BoundedParameter radiusParameterX = new BoundedParameter("RADX", 1 * FEET, 1.0, model.xRange / 2.0);
-  private BoundedParameter radiusParameterY = new BoundedParameter("RADY", 1 * FEET, 1.0, model.yRange / 2.0);
-  private BoundedParameter radiusParameterZ = new BoundedParameter("RADZ", 1 * FEET, 1.0, model.yRange / 2.0);
+  private BoundedParameter radiusParameterX = new LEDomeAudioParameterLow("RADX", 1 * FEET, 1.0, model.xRange / 2.0);
+  private BoundedParameter radiusParameterY = new LEDomeAudioParameterMid("RADY", 1 * FEET, 1.0, model.yRange / 2.0);
+  private BoundedParameter radiusParameterZ = new LEDomeAudioParameterHigh("RADZ", 1 * FEET, 1.0, model.yRange / 2.0);
   // Controls the center X coordinate of the waves.
   private BoundedParameter centerXParameter = new BoundedParameter("X", (model.xMin + model.xMax) / 2.0, model.xMin, model.xMax);
     // Controles the center Y coordinate of the waves.
@@ -1377,9 +1377,9 @@ public class Life extends LEDomePattern {
   // Controls the rate of life algorithm ticks, in milliseconds
   private BoundedParameter rateParameter = new BoundedParameter("DELAY", 700, 0.0, 10 * SECONDS);
   // Controls the probability of a mutation in the cycleOfLife
-  private BoundedParameter mutationParameter = new BoundedParameter("MUT", 0.03, 0.0, 0.2);
+  private BoundedParameter mutationParameter = new LEDomeAudioParameterLow("MUT", 0.03, 0.0, 0.2);
   // Controls the saturation.
-  private BoundedParameter saturationParameter = new BoundedParameter("SAT", 75.0, 0.0, 100.0);
+  private LEDomeAudioParameterFull saturationParameter = new LEDomeAudioParameterFull("SAT", 50.0, 0.0, 100.0);
   
   private BoundedParameter neighborCountParameter = new BoundedParameter("NEIG", 0.0, -2.0, 2.0);
 
@@ -1416,6 +1416,8 @@ public class Life extends LEDomePattern {
      time_since_last_run = 0;
      any_changes_this_run = false;
      new_lives = new ArrayList<Boolean>(this.faces.size());
+     
+     saturationParameter.setModulationPolarity(LXParameter.Polarity.BIPOLAR);
 
      addParameter(rateParameter);
      addParameter(mutationParameter);
@@ -1774,7 +1776,7 @@ public class ExplosionEffect extends LEDomeEffect {
   }
 }
 
-// Adapted from Slee's wonderful Clocl animation
+// Adapted from Slee's wonderful Clock animation
 public class JumpRopes extends LEDomePattern {
   
   final SinLFO thAmt = new SinLFO(0, 50, startModulator(new SinLFO(5000, 19000, 27000)));
