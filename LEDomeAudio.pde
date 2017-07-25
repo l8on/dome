@@ -210,7 +210,7 @@ public static class LEDomeAudioParameterManager implements LXParameterListener, 
   }
   
   private void createAverageAudioModulator() {
-    this.audioModulatorFull = new BandGate("Average", this.lx);
+    this.audioModulatorFull = new BandGate("Full", this.lx);
     this.lx.engine.modulation.addModulator(this.audioModulatorFull);
     this.audioModulatorFull.threshold.setValue(1);
     this.audioModulatorFull.floor.setValue(0);
