@@ -1,7 +1,5 @@
 public class ShadyWaffle extends LEDomePattern { 
-  private final float E = exp(1);
-  
-  private int PINK = LX.hsb(330, 59, 100);
+  private int PINK = LX.hsb(330, 59, 50);
   
   private int[] PINK_EDGES = { 
     // Pentagon opposite door, left 
@@ -15,8 +13,8 @@ public class ShadyWaffle extends LEDomePattern {
     // Top
     85, 145, 205, 289, 25, 
   }; 
-  
-  private int YELLOW = LX.hsb(61, 90, 89);
+    
+  private int YELLOW = LX.hsb(61, 90, 50);
   
   private int[] YELLOW_SPOKES = {
      // Pentagon opposite door, left
@@ -31,22 +29,22 @@ public class ShadyWaffle extends LEDomePattern {
     84,  86, 144, 146, 204, 206, 288, 290,  24,  26
   };
   
-  private int BLUE = LX.hsb(239, 61, 100);
+  private int BLUE = LX.hsb(239, 61, 50);
   private int[] BLUE_FACES = {
     33, 39, 45, 51, 57,
     63, 68, 73, 78, 83,
     85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99  
   };
- 
-  private int PURPLE = LX.hsb(293, 72, 82);
+   
+  private int PURPLE = LX.hsb(293, 72, 50);
   
   private int[] PURPLE_FACES = {
     2, 5, 8, 11, 14, 20, 23, 26, 29,
     62, 64, 67, 69, 72, 74, 77, 79, 82, 84
   };
- 
-  private int TEAL = LX.hsb(177, 97, 91);
-  
+   
+  private int TEAL = LX.hsb(177, 97, 50);
+
   private int[] TEAL_FACES = {
     0, 1, 32, 3, 4, 34,
     6, 7, 38, 9, 10, 40,
@@ -55,39 +53,17 @@ public class ShadyWaffle extends LEDomePattern {
     24, 25, 56, 27, 28, 58
   };
  
-  private SinLFO[] breathers = new SinLFO[lx.total]; 
-  private BoundedParameter rateParam = new BoundedParameter("RATE", 2.5, 0.5, 12);
+  private BoundedParameter rateParam = new BoundedParameter("TWNK", 2.5, 0.5, 12);
+  private TwinkleLayer twinkleLayer = new TwinkleLayer(lx, this, rateParam);
   
   public ShadyWaffle(LX lx) {
     super(lx);
 
     addParameter(rateParam);
-    initBreathers();
+    addLayer(twinkleLayer);    
   }  
-  
-  public double getRate() {
-    float varianceRange = 0.2;
-    float rate = rateParam.getValuef();
-    float variance = random(-varianceRange, varianceRange) * rate;
-    return (rate + variance) * SECONDS;
-  }
 
-  private void initBreathers() {
-    for (int p = 0; p < lx.total; p++) {
-      breathers[p] = new SinLFO(-1, 1, getRate());
-      breathers[p].setLooping(false);
-      addModulator(breathers[p]).start();
-    }
-  }
-  
-  public void resetBreather(int p) {
-    breathers[p].setPeriod(getRate());
-    breathers[p].setBasis(random(0.02, 0.15));
-    breathers[p].start();
-  }
-
-  public void run(double deltaMs) {
-  
+  public void run(double deltaMs) {  
     // Draw spokes first. 
     for(int i : YELLOW_SPOKES) {
       for(LXPoint p : model.edges.get(i).points) {
@@ -119,16 +95,6 @@ public class ShadyWaffle extends LEDomePattern {
       for(LXPoint p : model.faces.get(i).points) {
         colors[p.index] = TEAL; 
       }
-    }
-    
-    for (LXPoint p : model.points) {
-      if(!breathers[p.index].isRunning()) {
-        this.resetBreather(p.index);
-      }
-      
-      double breath = norm(-exp(breathers[p.index].getValuef()), -1/E, -E);
-      double brightness = 50 + breath * 50;
-      colors[p.index] = LXColor.hsb(LXColor.h(colors[p.index]), LXColor.s(colors[p.index]), brightness);
     }
   }
 }
@@ -660,7 +626,7 @@ public class SpotLights extends LEDomePattern {
   private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 50, 10, 80);
 
   private BoundedParameter rateParameter = new BoundedParameter("RATE", 4000.0, 1.0, 10000.0);
-  private BoundedParameter restParameter = new BoundedParameter("REST", 900.0, 1.0, 10000.0);
+  private BoundedParameter restParameter = new BoundedParameter("REST", 2000.0, 1.0, 10000.0);
   private BoundedParameter delayParameter = new BoundedParameter("DELAY", 0, 0.0, 2000.0);
   private BoundedParameter minDistParameter = new BoundedParameter("DIST", 100.0, 10.0, model.xRange);
   
@@ -753,7 +719,7 @@ public class SpotLights extends LEDomePattern {
         c = LX.hsb(hue_value, sat_value, brightness_value);
       } else {
         c = colors[p.index];
-        c = LX.hsb(LXColor.h(c), LXColor.s(c), L8onUtil.decayed_brightness(c, delayParameter.getValuef(), deltaMs));
+        c = LX.hsb(LXColor.h(c), LXColor.s(c), LEDomeUtil.decayed_brightness(c, delayParameter.getValuef(), deltaMs));
       }
 
       colors[p.index] = c;
@@ -1162,7 +1128,7 @@ public class HeartLights extends LEDomePattern {
         c = LX.hsb(hue_value, sat_value, brightness_value);
       } else {
         c = colors[p.index];
-        c = LX.hsb(LXColor.h(c), LXColor.s(c), L8onUtil.decayed_brightness(c, delayParameter.getValuef(), deltaMs));
+        c = LX.hsb(LXColor.h(c), LXColor.s(c), LEDomeUtil.decayed_brightness(c, delayParameter.getValuef(), deltaMs));
       }
 
       colors[p.index] = c;
@@ -1335,7 +1301,7 @@ public class L8onMixColor extends LEDomePattern {
         c = LX.hsb(hue_value, sat_value, brightness_value);
       } else {
         c = colors[p.index];
-        c = LX.hsb(LXColor.h(c), LXColor.s(c), L8onUtil.decayed_brightness(c, delayParameter.getValuef(), deltaMs));
+        c = LX.hsb(LXColor.h(c), LXColor.s(c), LEDomeUtil.decayed_brightness(c, delayParameter.getValuef(), deltaMs));
       }
 
       colors[p.index] = c;
@@ -1737,7 +1703,7 @@ public class ExplosionEffect extends LEDomeEffect {
           addColor(p.index, LX.hsb(huev, satv, brightv));
         } else {          
           color c = colors[p.index];
-          addColor(p.index, LX.hsb(LXColor.h(c), LXColor.s(c), L8onUtil.decayed_brightness(c, delayParameter.getValuef(), deltaMs)));
+          addColor(p.index, LX.hsb(LXColor.h(c), LXColor.s(c), LEDomeUtil.decayed_brightness(c, delayParameter.getValuef(), deltaMs)));
         }
       }
     }
@@ -1833,4 +1799,82 @@ public class JumpRopes extends LEDomePattern {
   public void run(double deltaMs) {
     setColors(0);
   }
+}
+
+public class AudioBelts extends LEDomePattern {
+  private LEDomeAudioParameterLow bassHeight = new LEDomeAudioParameterLow("BH", 3 * INCHES, 3 * INCHES, 3.5 * FEET);
+  private LEDomeAudioParameterMid midHeight = new LEDomeAudioParameterMid("MH", 3 * INCHES, 3 * INCHES, 2 * FEET);
+  private LEDomeAudioParameterHigh trebleHeight = new LEDomeAudioParameterHigh("HH", 3 * INCHES, 3 * INCHES, 2 * FEET);
+  
+  private double BASS_MODULATION_RANGE = 1;
+  private double MID_MODULATION_RANGE = .7;
+  private double TREBLE_MODULATION_RANGE = .5;
+    
+  private float bassBeltY = -.9;
+  private float midBeltY = 23.26;
+  private float trebleBeltY = model.yMax - (1 * FEET);
+  
+  private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.4);
+  private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
+  
+  private boolean[] twinkleBits = new boolean[lx.total];
+  private LEDomeAudioParameterFull twinkleRate = new LEDomeAudioParameterFull("TWNK", 1, 0.5, 12);
+  private TwinkleLayer twinkleLayer = new TwinkleLayer(lx, this, twinkleRate, twinkleBits);
+  
+  AudioBelts(LX lx) {
+    super(lx);
+    bassHeight.setModulationRange(BASS_MODULATION_RANGE);
+    midHeight.setModulationRange(MID_MODULATION_RANGE);
+    trebleHeight.setModulationRange(TREBLE_MODULATION_RANGE);    
+    
+    addParameter(bassHeight);
+    addParameter(midHeight);
+    addParameter(trebleHeight);
+
+    twinkleRate.setModulationRange(1);
+    addParameter(twinkleRate);
+    addLayer(twinkleLayer);
+    
+    addParameter(blurParameter);
+    addLayer(blurLayer);
+  }
+ 
+  public void run(double deltaMs) {
+    //setColors(0); 
+    float bassHue = lx.palette.getHuef();
+    float midHue = (bassHue + 120) % 360;
+    float trebleHue = (midHue + 120) % 360;
+       
+    for (LXPoint p : model.points) {
+      int numBelts = 0;
+      float pointHue = LXColor.h(colors[p.index]);
+      
+      //if (dist(p.x, p.y, p.z, p.x, bassBeltY, p.z) <= bassHeight.getValuef()) {
+      if (dist(p.x, p.y, p.z, p.x, bassBeltY, p.z) <= bassHeight.getValuef()) {
+        numBelts++;
+        pointHue = LEDomeUtil.natural_hue_blend(bassHue, pointHue, numBelts);
+        //setColor(p.index, LX.hsb(bassHue, 100, 30));
+      }
+      //if (dist(p.x, p.y, p.z, p.x, midBeltY, p.z) <= midHeight.getValuef()) {
+      if (dist(p.x, p.y, p.z, p.x, midBeltY, p.z) <= midHeight.getValuef()) {
+        numBelts++;
+        pointHue = LEDomeUtil.natural_hue_blend(midHue, pointHue, numBelts);
+        //setColor(p.index, LX.hsb(midHue, 100, 30));
+      }
+      //if (dist(p.x, p.y, p.z, p.x, trebleBeltY, p.z) <= trebleHeight.getValuef()) {
+      if (dist(p.x, p.y, p.z, p.x, trebleBeltY, p.z) <= trebleHeight.getValuef()) {
+        numBelts++;
+        pointHue = LEDomeUtil.natural_hue_blend(trebleHue, pointHue, numBelts);
+        //setColor(p.index, LX.hsb(trebleHue, 100, 30));
+      }
+      
+      if (numBelts > 0) {
+        this.twinkleBits[p.index] = true;
+        setColor(p.index, LX.hsb(pointHue, 100, 30));
+      } else {
+        this.twinkleBits[p.index] = false;
+        setColor(p.index, 0);        
+      }
+    }
+  }   
 }

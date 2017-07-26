@@ -1,6 +1,6 @@
 public class Dancers extends LEDomePattern {
   
-  private BoundedParameter brightnessParam = new BoundedParameter("BRIG", 80, 30, 95);
+  private LEDomeAudioParameterLow brightnessParam = new LEDomeAudioParameterLow("BRIG", 55, 30, 95);
   private BoundedParameter speedParam  = new BoundedParameter("SPD", 2000, 6000, 500);
 
   private BoundedParameter blurParam = new BoundedParameter("BLUR", 0, 0, .75);
@@ -23,7 +23,8 @@ public class Dancers extends LEDomePattern {
 
   public Dancers(LX lx) {
     super(lx);
-        
+
+    brightnessParam.setModulationPolarity(LXParameter.Polarity.BIPOLAR);
     addParameter(speedParam);
     addParameter(brightnessParam);
     addParameter(blurParam);    

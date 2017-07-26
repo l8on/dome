@@ -1,14 +1,3 @@
-public static class L8onUtil {
-  L8onUtil() {
-  }
-  
-  public static float decayed_brightness(color c, float delay,  double deltaMs) {
-    float bright_prop = min(((float)deltaMs / delay), 1.0);
-    float bright_diff = max((LXColor.b(c) * bright_prop), 1);
-    return max(LXColor.b(c) - bright_diff, 0.0);
-  }
-}
-
 public class Apple {
   public int index;
   public float hue;
@@ -250,55 +239,7 @@ public class SnakeLayer extends LXLayer {
     float distToTravel = dist(firstHeadPoint.x, firstHeadPoint.y, firstHeadPoint.z, secondHeadPoint.x, secondHeadPoint.y, secondHeadPoint.z);
     return max(distToTravel / (snakeSpeed.getValuef() / SECONDS), 0.0);      
   }
-}
-
-public class OffLayer extends LXLayer {
-  private color black = LX.hsb(0, 0, 0);
-  
-  public OffLayer(LX lx, LXDeviceComponent pattern) {
-    super(lx, pattern);
-  }
-  
-  public void run(double deltaMs) {  
-    for (LXPoint p : model.points) {
-      setColor(p.index, black);  
-    }
-  }
-}
-
-
-public class BlurLayer extends LXLayer {
-  public final BoundedParameter amount;
-  private final int[] blurBuffer;
-
-  public BlurLayer(LX lx, LXDeviceComponent pattern) {
-    this(lx, pattern, new BoundedParameter("BLUR", 0));
-  }
-
-  public BlurLayer(LX lx, LXDeviceComponent pattern, BoundedParameter amount) {    
-    super(lx, pattern); //<>// //<>//
-    this.amount = amount;
-    this.blurBuffer = new int[lx.total];
-    
-    for (int i = 0; i < blurBuffer.length; ++i) {
-      this.blurBuffer[i] = 0xff000000;
-    }
-  }
-  
-  public void run(double deltaMs) {
-    float blurf = this.amount.getValuef();
-    if (blurf > 0) {
-      blurf = 1 - (1 - blurf) * (1 - blurf) * (1 - blurf);
-      for (int i = 0; i < this.colors.length; ++i) {
-        int blend = LXColor.screen(this.colors[i], this.blurBuffer[i]);
-        this.colors[i] = LXColor.lerp(this.colors[i], blend, blurf);
-      }
-    }
-    for (int i = 0; i < this.colors.length; ++i) {
-      this.blurBuffer[i] = this.colors[i];
-    }
-  }
-}
+} //<>//
 
 /*
  * A container to keep state of the different 3d waves in the color remix.
