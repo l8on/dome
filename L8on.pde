@@ -257,8 +257,13 @@ public class SnakeApple extends LEDomePattern {
   private List<Apple> apples = new ArrayList<Apple>();
   private List<Integer> appleIndices = new ArrayList<Integer>();
   private Random appleRandom = new Random();
-   
-  private BoundedParameter snakeSpeed = new BoundedParameter("SPD", 86.0, 6.0, 520.0);
+  
+  private LEDomeAudioParameterLow snakeSpeedBass = new LEDomeAudioParameterLow("SPDB", 42.0, 6.0, 220.0);
+  private LEDomeAudioParameterMid snakeSpeedMid = new LEDomeAudioParameterMid("SPDM", 42.0, 6.0, 220.0);
+  private LEDomeAudioParameterHigh snakeSpeedTreble = new LEDomeAudioParameterHigh("SPDT", 42.0, 6.0, 220.0);  
+  
+  private LEDomeAudioParameter[] snakeSpeeds = new LEDomeAudioParameter[] {snakeSpeedBass, snakeSpeedMid, snakeSpeedTreble};
+     
   private BoundedParameter numApples = new BoundedParameter("APL", 50.0, 10.0, 100.0);
     
   private final int SNAKES = 3;
@@ -273,7 +278,14 @@ public class SnakeApple extends LEDomePattern {
   public SnakeApple(LX lx) {
     super(lx);
     
-    addParameter(snakeSpeed);
+    snakeSpeedBass.setModulationRange(.7);
+    snakeSpeedMid.setModulationRange(.7);
+    snakeSpeedTreble.setModulationRange(.7);    
+    
+    addParameter(snakeSpeedBass);
+    addParameter(snakeSpeedMid);
+    addParameter(snakeSpeedTreble);    
+
     addParameter(numApples);
     
     initHues();
@@ -288,7 +300,6 @@ public class SnakeApple extends LEDomePattern {
       Apple currApple = null;
       int winnerSnake = -1;
       int numSnakesOn = 0;
-      
       
       for(Apple apple : this.apples) {
         if (apple.index == p.index) {
@@ -332,7 +343,7 @@ public class SnakeApple extends LEDomePattern {
   private void initSnakes() {
     for(int i = 0; i < SNAKES; i++) {
       this.lengthParameters[i] = new BoundedParameter("LNG" + i, 4.0, 4.0, 582.0);
-      this.snakes[i] = new SnakeLayer(lx, this.lengthParameters[i], this.snakeSpeed);
+      this.snakes[i] = new SnakeLayer(lx, this.lengthParameters[i], this.snakeSpeeds[i % 3]);
       addLayer(this.snakes[i]);
     }
   }
@@ -384,18 +395,34 @@ public class Snakes extends LEDomePattern {
   // Used to store info about each explosion.
   // See L8onUtil.pde for the definition.
   private List<SnakeLayer> snakes = new ArrayList<SnakeLayer>();
-  private BoundedParameter numSnakes = new BoundedParameter("NUM", 3.0, 1.0, 30.0);
+  private BoundedParameter numSnakes = new BoundedParameter("NUM", 4.0, 1.0, 30.0);
   private BoundedParameter snakeSpeed = new BoundedParameter("SPD", 86.0, 6.0, 640.0);
   private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 95.0, 10.0, 100.0);
   private BoundedParameter lengthParameter = new BoundedParameter("LNGT", 11.0, 3.0, 48.0);  
+  
+  private LEDomeAudioParameterLow snakeSpeedBass = new LEDomeAudioParameterLow("SPDB", 42.0, 6.0, 420.0);
+  private LEDomeAudioParameterMid snakeSpeedMid = new LEDomeAudioParameterMid("SPDM", 42.0, 6.0, 420.0);
+  private LEDomeAudioParameterHigh snakeSpeedTreble = new LEDomeAudioParameterHigh("SPDT", 42.0, 6.0, 420.0);
+  private LEDomeAudioParameterFull snakeSpeedFull = new LEDomeAudioParameterFull("SPDF", 42.0, 6.0, 420.0);
+  
+  private LEDomeAudioParameter[] snakeSpeeds = new LEDomeAudioParameter[] {snakeSpeedBass, snakeSpeedMid, snakeSpeedTreble, snakeSpeedFull};
   
   public String getName() { return "Snakes"; }
 
   public Snakes(LX lx) {
     super(lx);
+    
+    snakeSpeedBass.setModulationRange(.7);
+    snakeSpeedMid.setModulationRange(.7);
+    snakeSpeedTreble.setModulationRange(.7);
+    snakeSpeedFull.setModulationRange(.7);
+    
+    addParameter(snakeSpeedBass);
+    addParameter(snakeSpeedMid);
+    addParameter(snakeSpeedTreble);
+    addParameter(snakeSpeedFull);
 
     addParameter(numSnakes);
-    addParameter(snakeSpeed);    
     addParameter(lengthParameter);
 
     initSnakes();
@@ -451,7 +478,8 @@ public class Snakes extends LEDomePattern {
     snakes.clear();
     
     for(int i = 0; i < (int)this.numSnakes.getValuef(); i++) {
-      SnakeLayer snake = new SnakeLayer(lx, lengthParameter, snakeSpeed, brightnessParameter);
+      int snakeSpeedIndex = i % 4;
+      SnakeLayer snake = new SnakeLayer(lx, lengthParameter, snakeSpeeds[snakeSpeedIndex], brightnessParameter);
       snakes.add(snake);
       addLayer(snake);
     }
@@ -769,7 +797,7 @@ public class DarkLights extends LEDomePattern {
   private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 50, 10, 80);
 
   private BoundedParameter rateParameter = new BoundedParameter("RATE", 4000.0, 1.0, 10000.0);
-  private BoundedParameter restParameter = new BoundedParameter("REST", 1000.0, 1.0, 10000.0);
+  private BoundedParameter restParameter = new BoundedParameter("REST", 2000.0, 1.0, 10000.0);
   private BoundedParameter delayParameter = new BoundedParameter("DELAY", 0, 0.0, 2000.0);
   private BoundedParameter minDistParameter = new BoundedParameter("DIST", 100.0, 10.0, model.xRange);
   
@@ -1181,46 +1209,48 @@ public class L8onMixColor extends LEDomePattern {
   private List<L8onWave> l8on_waves;
 
   // Controls the radius of the string.
-  private BoundedParameter radiusParameterX = new LEDomeAudioParameterLow("RADX", 1 * FEET, 1.0, model.xRange / 2.0);
-  private BoundedParameter radiusParameterY = new LEDomeAudioParameterMid("RADY", 1 * FEET, 1.0, model.yRange / 2.0);
-  private BoundedParameter radiusParameterZ = new LEDomeAudioParameterHigh("RADZ", 1 * FEET, 1.0, model.yRange / 2.0);
-  // Controls the center X coordinate of the waves.
-  private BoundedParameter centerXParameter = new BoundedParameter("X", (model.xMin + model.xMax) / 2.0, model.xMin, model.xMax);
-    // Controles the center Y coordinate of the waves.
-  private BoundedParameter centerYParameter = new BoundedParameter("Y", (model.yMin + model.yMax) / 2.0, model.yMin, model.yMax);
-  // Controls the center Z coordinate of the waves.
-  private BoundedParameter centerZParameter = new BoundedParameter("Z", (model.zMin + model.zMax) / 2.0, model.zMin, model.zMax);
-  // Controls the number of waves by axis.
-  private BoundedParameter numWavesX = new BoundedParameter("WAVX", 3.0, 1.0, 10.0);
-  private BoundedParameter numWavesY = new BoundedParameter("WAVY", 4.0, 1.0, 10.0);
-  private BoundedParameter numWavesZ = new BoundedParameter("WAVZ", 4.0, 1.0, 10.0);
+  private LEDomeAudioParameterLow radiusParameterX = new LEDomeAudioParameterLow("RADX", 2.0, 2.0, 2 * FEET);
+  private LEDomeAudioParameterMid radiusParameterY = new LEDomeAudioParameterMid("RADY", 2.0, 2.0, 2 * FEET);
+  private LEDomeAudioParameterHigh radiusParameterZ = new LEDomeAudioParameterHigh("RADZ", 2.0, 2.0, 2 * FEET);  
+ 
+  // The center of the waves by axis
+  final float CENTERX = (model.xMin + model.xMax) / 2.0;
+  final float CENTERY = (model.yMin + model.yMax) / 2.0;
+  final float CENTERZ = (model.zMin + model.zMax) / 2.0;
+  
+  // Number of Waves by axis
+  final float WAVX = 2.0;
+  final float WAVY = 3.0;
+  final float WAVZ = 3.0;
+  
   // Controls brightness of on lights
   private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 50, 10, 80);
-  private BoundedParameter saturationParameter = new BoundedParameter("SAT", 65, 0, 100);
-  // Controls the the amount of delay until a light is completely off.
-  private BoundedParameter delayParameter = new BoundedParameter("DELAY", 500, 0.0, 2000.0);
+  private BoundedParameter saturationParameter = new BoundedParameter("SAT", 100, 0, 100);
+  
+  private BoundedParameter blurParameter = new BoundedParameter("BLUR", .6);
+  private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
 
   public L8onMixColor(LX  lx) {
     super(lx);
 
     initL8onWaves();
 
+    radiusParameterX.setModulationRange(1);
+    radiusParameterY.setModulationRange(1);
+    radiusParameterZ.setModulationRange(1);
+    
     addParameter(radiusParameterX);
     addParameter(radiusParameterY);
-    addParameter(radiusParameterZ);
-    addParameter(numWavesX);
-    addParameter(numWavesY);
-    addParameter(numWavesZ);
-    addParameter(centerXParameter);
-    addParameter(centerYParameter);
-    addParameter(centerZParameter);
+    addParameter(radiusParameterZ);    
     addParameter(brightnessParameter);
-    addParameter(saturationParameter);
-    addParameter(delayParameter);
+    addParameter(saturationParameter);    
+    addParameter(blurParameter);
 
     addModulator(xOffsetMax).trigger();
     addModulator(yOffsetMax).trigger();
     addModulator(zOffsetMax).trigger();
+    
+    addLayer(blurLayer);
   }
 
   public void run(double deltaMs) {
@@ -1235,27 +1265,21 @@ public class L8onMixColor extends LEDomePattern {
     }
 
     color c;
-//    float dist_percentage;
     float hue_value = 0.0;
     float sat_value = saturationParameter.getValuef();
     float brightness_value = brightnessParameter.getValuef();
     float wave_center_x;
     float wave_center_y;
     float wave_center_z;
-    float wave_radius;
-    float min_hv;
-    float max_hv;
+    float wave_radius;    
 
     for (LXPoint p : model.points) {
       float x_percentage = (p.x - model.xMin) / model.xRange;
       float y_percentage = (p.y - model.yMin) / model.yRange;
       float z_percentage = (p.z - model.zMin) / model.zRange;
-//      float sin_x = sin(PI / 2 + numWavesX.getValuef() * PI * x_percentage);
-      float cos_x = cos(PI / 2 + numWavesX.getValuef() * PI * x_percentage);
-      float sin_y = sin(PI / 2 + numWavesY.getValuef() * PI * y_percentage);
-//      float cos_y = cos(PI / 2 + numWavesY.getValuef() * PI * y_percentage);
-      float sin_z = sin(PI / 2 + numWavesZ.getValuef() * PI * z_percentage);
-//      float cos_z = cos(PI / 2 + numWavesZ.getValuef() * PI * z_percentage);
+      float cos_x = cos(PI / 2 + WAVX * PI * x_percentage);
+      float sin_y = sin(PI / 2 + WAVY * PI * y_percentage);
+      float sin_z = sin(PI / 2 + WAVZ * PI * z_percentage);
 
       int num_waves_in = 0;
 
@@ -1265,13 +1289,13 @@ public class L8onMixColor extends LEDomePattern {
         wave_center_z = p.z;
 
         if(l8on_wave.direction == L8onWave.DIRECTION_X) {
-          wave_center_z = centerZParameter.getValuef() + (l8on_wave.offset_multiplier * offset_value_z * cos_x);
+          wave_center_z = CENTERZ + (l8on_wave.offset_multiplier * offset_value_z * cos_x);
           wave_radius = radiusParameterX.getValuef();
         } else if(l8on_wave.direction == L8onWave.DIRECTION_Y) {
-          wave_center_x = centerXParameter.getValuef() + (l8on_wave.offset_multiplier * offset_value_x * sin_y);
-          wave_radius = radiusParameterX.getValuef();
+          wave_center_x = CENTERX + (l8on_wave.offset_multiplier * offset_value_x * sin_y);
+          wave_radius = radiusParameterY.getValuef();
         } else {
-          wave_center_x = centerXParameter.getValuef() + (l8on_wave.offset_multiplier * offset_value_x * sin_z);
+          wave_center_x = CENTERX + (l8on_wave.offset_multiplier * offset_value_x * sin_z);
           wave_radius = radiusParameterZ.getValuef();
         }
 
@@ -1279,21 +1303,7 @@ public class L8onMixColor extends LEDomePattern {
 
         if(dist_from_wave <= wave_radius) {
           num_waves_in++;
-
-          if(num_waves_in == 1) {
-            hue_value = l8on_wave.hue_value;
-          } if(num_waves_in == 2) {
-            // Blend new color with previous color.
-            min_hv = min(hue_value, l8on_wave.hue_value);
-            max_hv = max(hue_value, l8on_wave.hue_value);
-            hue_value = (min_hv * 2.0 + max_hv / 2.0) / 2.0;
-          } else {
-            // Jump color by 180 before blending again.
-            hue_value = LXUtils.wrapdistf(0, hue_value + 180, 360);
-            min_hv = min(hue_value, l8on_wave.hue_value);
-            max_hv = max(hue_value, l8on_wave.hue_value);
-            hue_value = (min_hv * 2.0 + max_hv / 2.0) / 2.0;
-          }
+          hue_value = LEDomeUtil.natural_hue_blend(l8on_wave.hue_value, hue_value, num_waves_in);
         }
       }
 
@@ -1301,7 +1311,7 @@ public class L8onMixColor extends LEDomePattern {
         c = LX.hsb(hue_value, sat_value, brightness_value);
       } else {
         c = colors[p.index];
-        c = LX.hsb(LXColor.h(c), LXColor.s(c), LEDomeUtil.decayed_brightness(c, delayParameter.getValuef(), deltaMs));
+        c = LX.hsb(LXColor.h(c), LXColor.s(c), 0);
       }
 
       colors[p.index] = c;
@@ -1747,10 +1757,32 @@ public class JumpRopes extends LEDomePattern {
   
   final SinLFO thAmt = new SinLFO(0, 50, startModulator(new SinLFO(5000, 19000, 27000)));
   
+  private LEDomeAudioParameterLow falloffLow = new LEDomeAudioParameterLow("LOW", 600, 600, 100);
+  private LEDomeAudioParameterMid falloffMid = new LEDomeAudioParameterMid("MID", 600, 600, 100);
+  private LEDomeAudioParameterHigh falloffHigh = new LEDomeAudioParameterHigh("HIGH", 600, 600, 100);
+  private LEDomeAudioParameterFull falloffFull = new LEDomeAudioParameterFull("FULL", 600, 600, 100);
+  private LEDomeAudioParameter[] clockFalloffs = new LEDomeAudioParameter[] {
+    falloffLow,
+    falloffMid,
+    falloffHigh,
+    falloffFull
+  };
+  
   JumpRopes(LX lx) {
     super(lx);
-    for (int i = 0; i < 5; ++i) {
-      addLayer(new JumpRope(lx, i));
+    falloffLow.setModulationRange(1);
+    falloffMid.setModulationRange(1);
+    falloffHigh.setModulationRange(1);
+    falloffFull.setModulationRange(1);
+    
+    addParameter(falloffLow);
+    addParameter(falloffMid);
+    addParameter(falloffHigh);
+    addParameter(falloffFull);
+
+    
+    for (int i = 0; i < 4; ++i) {
+      addLayer(new JumpRope(lx, i, clockFalloffs[i]));
     } 
     startModulator(thAmt.randomBasis());
   }
@@ -1763,17 +1795,19 @@ public class JumpRopes extends LEDomePattern {
       startModulator(new SinLFO(random(4000, 7000), random(19000, 21000), random(17000, 31000)).randomBasis())
     );
     
-    final SinLFO falloff = new SinLFO(200, 500, random(17000, 21000));
+    final SinLFO falloffLFO = new SinLFO(200, 500, random(17000, 21000));
+    LEDomeAudioParameter falloffParam;
     
     final SinLFO xSpr = new SinLFO(0, 2, random(10000, 29000));
     
     final int i;
     
-    JumpRope(LX lx, int i) {
+    JumpRope(LX lx, int i, LEDomeAudioParameter falloffParam) {
       super(lx);
       this.i = i;
+      this.falloffParam = falloffParam;
       startModulator(angle.randomBasis());
-      startModulator(falloff.randomBasis());
+      startModulator(falloffLFO.randomBasis());
       startModulator(xSpr.randomBasis());
     }
     
@@ -1784,7 +1818,7 @@ public class JumpRopes extends LEDomePattern {
       }
       
       for (LXPoint p : model.points) {
-        float b = 100 - (falloff.getValuef() - p.x) * LXUtils.wrapdistf(p.theta, av, TWO_PI);
+        float b = 100 - (this.getFalloffValue() - p.x) * LXUtils.wrapdistf(p.theta, av, TWO_PI);
         if (b > 0) {
           addColor(p.index, LX.hsb(
             (abs(p.x-model.cx)*xSpr.getValuef() + thAmt.getValuef() * abs(p.theta - PI)) % 360,
@@ -1792,6 +1826,14 @@ public class JumpRopes extends LEDomePattern {
             b
           ));
         }
+      }
+    }
+    
+    public float getFalloffValue() {
+      if (this.lx.engine.audio.enabled.getValueb()) {
+        return this.falloffParam.getValuef();  
+      } else {
+        return this.falloffLFO.getValuef();
       }
     }
   }
@@ -1802,24 +1844,25 @@ public class JumpRopes extends LEDomePattern {
 }
 
 public class AudioBelts extends LEDomePattern {
-  private LEDomeAudioParameterLow bassHeight = new LEDomeAudioParameterLow("BH", 3 * INCHES, 3 * INCHES, 3.5 * FEET);
-  private LEDomeAudioParameterMid midHeight = new LEDomeAudioParameterMid("MH", 3 * INCHES, 3 * INCHES, 2 * FEET);
+  private LEDomeAudioParameterLow bassHeight = new LEDomeAudioParameterLow("BH", 3 * INCHES, 3 * INCHES, 1.5 * FEET);
+  private LEDomeAudioParameterMid midHeight = new LEDomeAudioParameterMid("MH", 3 * INCHES, 3 * INCHES, 1.5 * FEET);
   private LEDomeAudioParameterHigh trebleHeight = new LEDomeAudioParameterHigh("HH", 3 * INCHES, 3 * INCHES, 2 * FEET);
   
   private double BASS_MODULATION_RANGE = 1;
-  private double MID_MODULATION_RANGE = .7;
-  private double TREBLE_MODULATION_RANGE = .5;
+  private double MID_MODULATION_RANGE = 1;
+  private double TREBLE_MODULATION_RANGE = 1;
     
   private float bassBeltY = -.9;
   private float midBeltY = 23.26;
-  private float trebleBeltY = model.yMax - (1 * FEET);
+  private float trebleBeltY = model.yMax - (1.25 * FEET);
   
   private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.4);
   private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
   
+  private BoundedParameter maxBrightnessParameter = new BoundedParameter("BRIG", 70, 0, 100);
   private boolean[] twinkleBits = new boolean[lx.total];
   private LEDomeAudioParameterFull twinkleRate = new LEDomeAudioParameterFull("TWNK", 1, 0.5, 12);
-  private TwinkleLayer twinkleLayer = new TwinkleLayer(lx, this, twinkleRate, twinkleBits);
+  private TwinkleLayer twinkleLayer = new TwinkleLayer(lx, this, twinkleRate, twinkleBits, maxBrightnessParameter);
   
   AudioBelts(LX lx) {
     super(lx);
@@ -1833,6 +1876,7 @@ public class AudioBelts extends LEDomePattern {
 
     twinkleRate.setModulationRange(1);
     addParameter(twinkleRate);
+    addParameter(maxBrightnessParameter);
     addLayer(twinkleLayer);
     
     addParameter(blurParameter);

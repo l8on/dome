@@ -60,6 +60,8 @@ LXStudio lx;
 
 LXPattern[] patterns(P3LX lx) {
   return new LXPattern[] {    
+    new L8onMixColor(lx),
+    
     new AudioBelts(lx),
     
     // Create New Pattern Instances Below HERE
@@ -83,8 +85,7 @@ LXPattern[] patterns(P3LX lx) {
     new Snakes(lx),    
     new HeartsBeat(lx),
     new DarkLights(lx),
-    new Life(lx),
-    new L8onMixColor(lx),
+    new Life(lx),    
     
     // Cackler
     new ColorSpiral(lx),

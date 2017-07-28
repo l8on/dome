@@ -167,12 +167,12 @@ public static class LEDomeAudioParameterManager implements LXParameterListener, 
   public static final double MODULATOR_RANGE_DEFAULT = .3;
   public static final double GAIN_DEFAULT = 6;
       
-  public static final double MAX_FREQ_LOW = 256;
+  public static final double MAX_FREQ_LOW = 216;
 
-  public static final double MIN_FREQ_MID = 256;
-  public static final double MAX_FREQ_MID = 2000;
+  public static final double MIN_FREQ_MID = 216;
+  public static final double MAX_FREQ_MID = 2360;
 
-  public static final double MIN_FREQ_HIGH = 2000;  
+  public static final double MIN_FREQ_HIGH = 2360;  
 
   public LEDomeAudioParameterManager(LX lx, BooleanParameter audioInputEnabled) {
     this.lx = lx;
@@ -216,8 +216,8 @@ public static class LEDomeAudioParameterManager implements LXParameterListener, 
     this.audioModulatorFull.floor.setValue(0);
     this.audioModulatorFull.gain.setValue(GAIN_DEFAULT);
     
+    this.audioModulatorFull.maxFreq.setValue(this.audioModulatorFull.maxFreq.range.max);
     this.audioModulatorFull.minFreq.setValue(0);
-    this.audioModulatorFull.maxFreq.setValue(this.audioModulatorFull.maxFreq.range.max);            
     
     this.audioModulatorFull.start();
   }
@@ -229,8 +229,8 @@ public static class LEDomeAudioParameterManager implements LXParameterListener, 
     this.audioModulatorLow.floor.setValue(0);
     this.audioModulatorLow.gain.setValue(GAIN_DEFAULT);
     
-    this.audioModulatorLow.minFreq.setValue(0);
     this.audioModulatorLow.maxFreq.setValue(MAX_FREQ_LOW);
+    this.audioModulatorLow.minFreq.setValue(0);    
     
     this.audioModulatorLow.start();
   }
@@ -242,8 +242,8 @@ public static class LEDomeAudioParameterManager implements LXParameterListener, 
     this.audioModulatorMid.floor.setValue(0);
     this.audioModulatorMid.gain.setValue(GAIN_DEFAULT);
     
-    this.audioModulatorMid.minFreq.setValue(MIN_FREQ_MID);
     this.audioModulatorMid.maxFreq.setValue(MAX_FREQ_MID);
+    this.audioModulatorMid.minFreq.setValue(MIN_FREQ_MID);    
     
     this.audioModulatorMid.start();
   }
@@ -253,10 +253,10 @@ public static class LEDomeAudioParameterManager implements LXParameterListener, 
     this.lx.engine.modulation.addModulator(this.audioModulatorHigh);
     this.audioModulatorHigh.threshold.setValue(1);
     this.audioModulatorHigh.floor.setValue(0);
-    this.audioModulatorHigh.gain.setValue(GAIN_DEFAULT);
+    this.audioModulatorHigh.gain.setValue(GAIN_DEFAULT);    
     
-    this.audioModulatorHigh.minFreq.setValue(MIN_FREQ_HIGH);
     this.audioModulatorHigh.maxFreq.setValue(this.audioModulatorFull.maxFreq.range.max);
+    this.audioModulatorHigh.minFreq.setValue(MIN_FREQ_HIGH);
     
     this.audioModulatorHigh.start();
   }
@@ -313,7 +313,8 @@ public static class LEDomeAudioParameterManager implements LXParameterListener, 
   private void removeAudioModulatorsFromPattern(LXPattern pattern) {    
     println("Removing audio modulations from " + pattern.getLabel());
     for(LXCompoundModulation compoundModulation: this.currentModulations) {
-      compoundModulation.dispose();
+      //compoundModulation.dispose();
+      this.lx.engine.modulation.removeModulation(compoundModulation);
     }
     
     this.currentModulations.clear();

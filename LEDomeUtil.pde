@@ -92,8 +92,9 @@ public class TwinkleLayer extends LXLayer {
   private final float E = exp(1);
   private SinLFO[] twinklers = new SinLFO[lx.total];
   private boolean[] twinkleBits;
-  
+    
   private BoundedParameter twinkleRate;
+  private BoundedParameter maxBrightness;
   
   public TwinkleLayer(LX lx, LXDeviceComponent pattern) {
     this(lx, pattern, new BoundedParameter("RATE", 2.5, 0.5, 12));
@@ -105,9 +106,14 @@ public class TwinkleLayer extends LXLayer {
   }
   
   public TwinkleLayer(LX lx, LXDeviceComponent pattern, BoundedParameter twinkleRate, boolean[] twinkleBits) {
+    this(lx, pattern, twinkleRate, twinkleBits, new BoundedParameter("TWBR", 100, 1, 100));    
+  }
+  
+  public TwinkleLayer(LX lx, LXDeviceComponent pattern, BoundedParameter twinkleRate, boolean[] twinkleBits, BoundedParameter maxBrightness) {
     super(lx, pattern);
     this.twinkleRate = twinkleRate;
     this.twinkleBits = twinkleBits;
+    this.maxBrightness = maxBrightness;
     this.initTwinklers();
   }
   
@@ -120,9 +126,9 @@ public class TwinkleLayer extends LXLayer {
       // If we've been told not to twinkle this index, don't
       if (!this.twinkleBits[p.index]) { continue; }
             
-      double currentBrightness = LXColor.b(colors[p.index]);
+      double currentBrightness = Math.min(LXColor.b(colors[p.index]), maxBrightness.getValuef());
       double twinkle = norm(-exp(twinklers[p.index].getValuef()), -1/E, -E);
-      double brightness = currentBrightness + (twinkle * (100 - currentBrightness));      
+      double brightness = currentBrightness + (twinkle * (maxBrightness.getValuef() - currentBrightness));    
       colors[p.index] = LXColor.hsb(LXColor.h(colors[p.index]), LXColor.s(colors[p.index]), brightness);
     }    
   }
