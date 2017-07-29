@@ -35,7 +35,7 @@ public class Dancers extends LEDomePattern implements LXParameterListener {
     addParameter(blurParam);
     
     this.setBeatGate();
-    this.lx.engine.modulation.addModulator(beatGate);
+    addModulator(beatGate);
     beatGate.trigger();
     beatGate.gate.addListener(this);
     

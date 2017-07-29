@@ -70,11 +70,12 @@ class EdgeIteratorTest extends LEDomePattern {
 }
  
 public class LayerDemoPattern extends LEDomePattern {  
-  private final BoundedParameter colorSpread = new BoundedParameter("Clr", 0.5, 0, 3);
+  private final LEDomeAudioParameterFull colorSpread = new LEDomeAudioParameterFull("Clr", 0.5, 0, 3);
   private final BoundedParameter stars = new BoundedParameter("Stars", 100, 0, 100);
   
   public LayerDemoPattern(LX lx) {
     super(lx);        
+    colorSpread.setModulationRange(.6);
     addParameter(colorSpread);
     addParameter(stars);
     addLayer(new CircleLayer(lx));
