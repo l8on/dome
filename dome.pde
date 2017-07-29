@@ -59,7 +59,7 @@ LEDome model;
 LXStudio lx;
 
 LXPattern[] patterns(P3LX lx) {
-  return new LXPattern[] {          
+  return new LXPattern[] {    
     // Create New Pattern Instances Below HERE
     new ShadyWaffle(lx),
     
@@ -80,6 +80,7 @@ LXPattern[] patterns(P3LX lx) {
     new SpotLights(lx),
     new JumpRopes(lx),
     new Explosions(lx),
+    new DomeEQ(lx),
     new SnakeApple(lx),
     new Snakes(lx),    
     new HeartsBeat(lx),
@@ -91,14 +92,14 @@ LXPattern[] patterns(P3LX lx) {
     new Stargaze(lx),
 
     // Kristján
-    new Disco(lx),    
+    new Disco(lx),
 
     // pld
     new Spiral(lx),
     
     // rohan
-    new Sunshine(lx),
-    new SunshineHalf(lx),
+    //new Sunshine(lx),
+    //new SunshineHalf(lx),
 
     // Test Patterns
     new LayerDemoPattern(lx),

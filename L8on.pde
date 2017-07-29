@@ -188,7 +188,7 @@ public class HeartsBeat extends LEDomePattern {
   public void resetHeartSaturation(int i) {
     this.heartSaturations[i].setPeriod(getRate());
     this.heartSaturations[i].setBasis(random(0.02, 0.15));
-    this.heartSaturations[i].start(); //<>// //<>//
+    this.heartSaturations[i].start(); //<>//
   }
   
   public void run(double deltaMs) {
@@ -521,8 +521,8 @@ public class Explosions extends LEDomePattern {
   private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 50, 10, 80);
   
   private LEDomeAudioParameterFull rateParameter = new LEDomeAudioParameterFull("RATE", 8000.0, 8000.0, 750.0);
+  
   private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.69);
-
   private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
   
   private LEDomeAudioBeatGate beatGate = new LEDomeAudioBeatGate("XBEAT", lx);
@@ -1859,7 +1859,7 @@ public class AudioBelts extends LEDomePattern {
   private float midBeltY = 23.26;
   private float trebleBeltY = model.yMax - (1.25 * FEET);
   
-  private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.4);
+  private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.5);
   private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
   
   private BoundedParameter maxBrightnessParameter = new BoundedParameter("BRIG", 70, 0, 100);
@@ -1923,5 +1923,63 @@ public class AudioBelts extends LEDomePattern {
         setColor(p.index, 0);        
       }
     }
-  }   
+  }
+}
+
+public class DomeEQ extends LEDomePattern {
+  private GraphicMeter meter;
+  private BandGate bandGate = new BandGate(lx);
+  private final int ORIGIN_POINT_INDEX = 8;
+  private final int MAX_POINT_INDEX = 544;
+  private double originAzimuth = model.points[ORIGIN_POINT_INDEX].azimuth;
+  private double projectedMaxAzimuth;
+  
+  private BoundedParameter brightnessParam = new BoundedParameter("BRIG", 60, 10, 100);
+  
+  private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.69);
+  private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
+  private LXModulator huePeriod = new SinLFO(10000, 20000, 60000);
+  private LXModulator hueModulator = new SinLFO(0, 360, huePeriod);
+  
+  private final double GAIN = 6;
+  
+  public DomeEQ(LX lx) {
+    super(lx);
+    this.meter = bandGate.meter;
+    this.originAzimuth = model.points[ORIGIN_POINT_INDEX].azimuth;  
+    this.projectedMaxAzimuth = this.projectAzimuth(model.points[MAX_POINT_INDEX].azimuth);
+    
+    addParameter(brightnessParam);
+    
+    addParameter(blurParameter);
+    addLayer(blurLayer);
+    
+    addModulator(huePeriod).start();
+    addModulator(hueModulator).start();
+    
+    bandGate.gain.setValue(GAIN);
+    addModulator(bandGate).start();    
+  }
+  
+  public void run(double deltaMs) {   
+    for (LXPoint p : model.points) {
+      if (p.yn <= this.bandGate.getBand(this.getBandIndex(p))) {    
+        float hue = (hueModulator.getValuef() + (p.yn * 360.0)) % 360.0;
+        setColor(p.index, LX.hsb(hue, 100, brightnessParam.getValuef()));
+      } else {
+        setColor(p.index, 0);
+      }
+    }
+  }
+  
+  private int getBandIndex(LXPoint p) {
+    double projectedAzimuth = this.projectAzimuth(p.azimuth);
+    double normalizedPosition = LXUtils.constrain(projectedAzimuth / projectedMaxAzimuth, 0.0, 1);
+    double bandIndex = LXUtils.constrain(normalizedPosition * this.meter.numBands, 0.0, this.meter.numBands - 1);
+    return (int)bandIndex;
+  }
+  
+  private double projectAzimuth(double azimuth) {
+    return (azimuth - originAzimuth + LX.TWO_PI) % LX.TWO_PI;
+  }
 }

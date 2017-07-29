@@ -23,15 +23,15 @@ public class HueTestPattern extends LXPattern {
   }
 }
 
-public class FaceIteratorTest extends LEDomePattern {
+public class FaceIteratorTest extends LEDomePattern implements LXParameterListener {
   private final SawLFO currIndex = new SawLFO(0, ((LEDome)model).faces.size(), ((LEDome)model).faces.size() * 300);
   private final BoundedParameter selectedFace = new BoundedParameter("SEL", 0, 0, ((LEDome)model).faces.size() - 1);
   
   public FaceIteratorTest(LX lx) {
     super(lx);     
-    
-    addParameter(selectedFace);
-    addModulator(currIndex).start();     
+        
+    addParameter(selectedFace);    
+    addModulator(currIndex).start();
   }
   
   public void run(double deltaMs) {
@@ -40,9 +40,7 @@ public class FaceIteratorTest extends LEDomePattern {
     
     for(int i = 0; i < model.faces.size(); i++) {
       LEDomeFace face = model.faces.get(i);
-      if(!face.hasLights()) {
-        continue;
-      }
+      if(!face.hasLights()) { continue; }
       
       float bv = (i == index || i == selectedIndex) ? 100.0 : 0.0;
      
@@ -51,6 +49,32 @@ public class FaceIteratorTest extends LEDomePattern {
       }
     }
   }
+  
+  public void onParameterChanged(LXParameter parameter) {
+    if (parameter != this.selectedFace) { return; }
+    
+    int selectedIndex = (int) selectedFace.getValuef();    
+    LEDomeFace face = model.faces.get(selectedIndex);    
+    if(!face.hasLights()) { return; }
+    
+    println("Face stats for " + selectedIndex);
+    println("Center x: " + face.xf());
+    println("Center y: " + face.yf());
+    println("Center z: " + face.zf());
+    
+    for(LXPoint p: face.points) {
+      println("Point index: " + p.index);
+      println("  x: " + p.x);
+      println("  y: " + p.y);
+      println("  z: " + p.z);
+      println("  theta: " + p.theta);
+      println("  azimuth: " + p.azimuth);
+    }
+    
+    println();
+  }
+  
+  
 }
 
 class EdgeIteratorTest extends LEDomePattern {
