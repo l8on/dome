@@ -131,13 +131,23 @@ public class HeartsBeat extends LEDomePattern {
   private SinLFO[] heartBeats = new SinLFO[NUM_HEARTS];
   private SinLFO[] heartSaturations = new SinLFO[NUM_HEARTS];
   private BoundedParameter rateParam = new BoundedParameter("RATE", 2.5, 0.5, 12);
-  private BoundedParameter brightnessParam = new BoundedParameter("BRIG", 90, 50, 100);  
+  private BoundedParameter brightnessParam = new BoundedParameter("BRIG", 90, 50, 100);
+  private LEDomeAudioParameter[] brightnessParams = new LEDomeAudioParameter[] {
+    new LEDomeAudioParameterLow("BRLW", 50, 50, 100),
+    new LEDomeAudioParameterMid("BRMD", 50, 50, 100),
+    new LEDomeAudioParameterHigh("BRHG", 50, 50, 100)
+  };
   
   public HeartsBeat(LX lx) {
     super(lx);    
 
     addParameter(rateParam);
     addParameter(brightnessParam);
+    
+    for (LEDomeAudioParameter brightnessParameter : brightnessParams) {
+      brightnessParameter.setModulationRange(.8);
+      addParameter(brightnessParameter);
+    }
     initHeartModulators();
   }
   
@@ -196,7 +206,7 @@ public class HeartsBeat extends LEDomePattern {
         colors[p.index] = LX.hsb(
           this.heartColors[0].getValuef() % 360.0,
           this.heartSaturations[0].getValuef(), 
-          this.brightnessParam.getValuef()
+          this.brightnessParams[0].getValuef()
         );
       }
     }
@@ -206,7 +216,7 @@ public class HeartsBeat extends LEDomePattern {
         colors[p.index] = LX.hsb(
           this.heartColors[0].getValuef(), 
           this.heartSaturations[0].getValuef(),
-          this.heartBeats[0].getValuef() * this.brightnessParam.getValuef()
+          this.heartBeats[0].getValuef() * this.brightnessParams[0].getValuef()
         );
       }
     }
@@ -216,7 +226,7 @@ public class HeartsBeat extends LEDomePattern {
         colors[p.index] = LX.hsb(
           this.heartColors[1].getValuef(), 
           this.heartSaturations[1].getValuef(),
-          this.brightnessParam.getValuef()
+          this.brightnessParams[1].getValuef()
         ); 
       }
     }
@@ -226,7 +236,8 @@ public class HeartsBeat extends LEDomePattern {
         colors[p.index] = LX.hsb(
           this.heartColors[1].getValuef(), 
           this.heartSaturations[1].getValuef(), 
-          this.heartBeats[1].getValuef() * this.brightnessParam.getValuef());
+          this.heartBeats[1].getValuef() * this.brightnessParams[1].getValuef()
+        );
       }
     }
     
@@ -235,7 +246,7 @@ public class HeartsBeat extends LEDomePattern {
         colors[p.index] = LX.hsb(
           this.heartColors[2].getValuef(), 
           this.heartSaturations[2].getValuef(),
-          this.brightnessParam.getValuef()
+          this.brightnessParams[2].getValuef()
         ); 
       }
     }
@@ -245,7 +256,7 @@ public class HeartsBeat extends LEDomePattern {
         colors[p.index] = LX.hsb(
           this.heartColors[2].getValuef(), 
           this.heartSaturations[2].getValuef(),
-          this.heartBeats[1].getValuef() * this.brightnessParam.getValuef()
+          this.heartBeats[1].getValuef() * this.brightnessParams[2].getValuef()
         );
       }
     }
