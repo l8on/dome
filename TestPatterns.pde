@@ -25,22 +25,26 @@ public class HueTestPattern extends LXPattern {
 
 public class FaceIteratorTest extends LEDomePattern {
   private final SawLFO currIndex = new SawLFO(0, ((LEDome)model).faces.size(), ((LEDome)model).faces.size() * 300);
+  private final BoundedParameter selectedFace = new BoundedParameter("SEL", 0, 0, ((LEDome)model).faces.size() - 1);
+  
   public FaceIteratorTest(LX lx) {
     super(lx);     
     
+    addParameter(selectedFace);
     addModulator(currIndex).start();     
   }
   
   public void run(double deltaMs) {
     int index = (int) currIndex.getValuef();
+    int selectedIndex = (int) selectedFace.getValuef();
     
     for(int i = 0; i < model.faces.size(); i++) {
       LEDomeFace face = model.faces.get(i);
       if(!face.hasLights()) {
-        continue;  
+        continue;
       }
       
-      float bv = (i == index) ? 100.0 : 0.0;
+      float bv = (i == index || i == selectedIndex) ? 100.0 : 0.0;
      
       for(LXPoint p : face.points) {
         colors[p.index] = LX.hsb(120, 90, bv);    
@@ -51,19 +55,23 @@ public class FaceIteratorTest extends LEDomePattern {
 
 class EdgeIteratorTest extends LEDomePattern {
   private final SawLFO currIndex = new SawLFO(0, ((LEDome)model).edges.size(), ((LEDome)model).edges.size() * 200);
+  private final BoundedParameter selectedEdge = new BoundedParameter("SEL", 0, 0, ((LEDome)model).edges.size() - 1);
   
   public EdgeIteratorTest(LX lx) {
     super(lx);
     
+    addParameter(selectedEdge);
     addModulator(currIndex).start();     
   }
   
   public void run(double deltaMs) {
     int index = (int) currIndex.getValuef();
+    int selectedIndex = (int) selectedEdge.getValuef();
     LEDomeEdge edge = this.model.edges.get(index);
+    LEDomeEdge selectedEdge = this.model.edges.get(selectedIndex);
     
     for(LXPoint p : model.points) {
-      float bv = edge.onEdge(p) ? 100.0 : 0.0;
+      float bv = (edge.onEdge(p) || selectedEdge.onEdge(p)) ? 100.0 : 0.0;
       colors[p.index] = LX.hsb(120, 90, bv);  
     }
   }

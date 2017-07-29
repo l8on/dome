@@ -188,7 +188,7 @@ public class HeartsBeat extends LEDomePattern {
   public void resetHeartSaturation(int i) {
     this.heartSaturations[i].setPeriod(getRate());
     this.heartSaturations[i].setBasis(random(0.02, 0.15));
-    this.heartSaturations[i].start(); //<>//
+    this.heartSaturations[i].start(); //<>// //<>//
   }
   
   public void run(double deltaMs) {
