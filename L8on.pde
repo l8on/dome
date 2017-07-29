@@ -603,8 +603,7 @@ public class Explosions extends LEDomePattern {
         new_radius_env.setEase(QuadraticEnvelope.Ease.OUT);
         WB_Point new_center = model.randomFaceCenter();
         addModulator(new_radius_env);
-        BandGate explosionGate = (this.explosions.size() % 2 == 1) ? this.beatGate : this.clapGate;
-        println("the explosion gate is", explosionGate);
+        BandGate explosionGate = (this.explosions.size() % 2 == 1) ? this.beatGate : this.clapGate;        
         this.explosions.add(
           new L8onExplosion(new_radius_env, explosionGate.gate, stroke_width, new_center.xf(), new_center.yf(), new_center.zf())
         );
