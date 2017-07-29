@@ -53,12 +53,13 @@ public class ShadyWaffle extends LEDomePattern {
     24, 25, 56, 27, 28, 58
   };
  
-  private BoundedParameter rateParam = new BoundedParameter("TWNK", 2.5, 0.5, 12);
+  private LEDomeAudioParameterFull rateParam = new LEDomeAudioParameterFull("TWNK", 6, 6, 0.75);
   private TwinkleLayer twinkleLayer = new TwinkleLayer(lx, this, rateParam);
   
   public ShadyWaffle(LX lx) {
     super(lx);
 
+    rateParam.setModulationRange(1);
     addParameter(rateParam);
     addLayer(twinkleLayer);    
   }  
@@ -506,14 +507,17 @@ public class Explosions extends LEDomePattern {
   // Used to store info about each explosion.
   // See L8onUtil.pde for the definition.
   private List<L8onExplosion> explosions = new ArrayList<L8onExplosion>();
-  private final SinLFO saturationModulator = new SinLFO(70.0, 90.0, 20 * SECONDS);
-  private BoundedParameter numExplosionsParameter = new BoundedParameter("NUM", 2.0, 1.0, 30.0);
+  private final SinLFO saturationModulator = new SinLFO(80.0, 100.0, 20 * SECONDS);
+  private BoundedParameter numExplosionsParameter = new BoundedParameter("NUM", 4.0, 1.0, 30.0);
   private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 50, 10, 80);
-
-  private BoundedParameter rateParameter = new BoundedParameter("RATE", 4000.0, 500.0, 20000.0);
+  
+  private LEDomeAudioParameterFull rateParameter = new LEDomeAudioParameterFull("RATE", 8000.0, 8000.0, 750.0);
   private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.69);
 
   private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
+  
+  private LEDomeAudioBeatGate beatGate = new LEDomeAudioBeatGate("XBEAT", lx);
+  private LEDomeAudioClapGate clapGate = new LEDomeAudioClapGate("XCLAP", lx);
 
   public Explosions(LX lx) {
     super(lx);
@@ -521,12 +525,15 @@ public class Explosions extends LEDomePattern {
     addParameter(numExplosionsParameter);
     addParameter(brightnessParameter);
 
+    rateParameter.setModulationRange(1);
     addParameter(rateParameter);
     addParameter(blurParameter);
 
     addLayer(blurLayer);
 
     addModulator(saturationModulator).start();
+    addModulator(beatGate).start();
+    addModulator(clapGate).start();
 
     initExplosions();
   }
@@ -555,9 +562,7 @@ public class Explosions extends LEDomePattern {
     color c;
     float hue_value = 0.0;
     float sat_value = saturationModulator.getValuef();
-    float brightness_value = brightnessParameter.getValuef();
-    float min_hv;
-    float max_hv;
+    float brightness_value = brightnessParameter.getValuef();    
 
     for (LXPoint p : model.points) {
       int num_explosions_in = 0;
@@ -569,21 +574,7 @@ public class Explosions extends LEDomePattern {
 
         if(explosion.onExplosion(p.x, p.y, p.z)) {
           num_explosions_in++;
-
-          if(num_explosions_in == 1) {
-            hue_value = explosion.hue_value;
-          } if(num_explosions_in == 2) {
-            // Blend new color with previous color.
-            min_hv = min(hue_value, explosion.hue_value);
-            max_hv = max(hue_value, explosion.hue_value);
-            hue_value = (min_hv * 2.0 + max_hv / 2.0) / 2.0;
-          } else {
-            // Jump color by 180 before blending again.
-            hue_value = LXUtils.wrapdistf(0, hue_value + 180, 360);
-            min_hv = min(hue_value, explosion.hue_value);
-            max_hv = max(hue_value, explosion.hue_value);
-            hue_value = (min_hv * 2.0 + max_hv / 2.0) / 2.0;
-          }
+          hue_value = LEDomeUtil.natural_hue_blend(explosion.hue_value, hue_value, num_explosions_in);
         }
       }
 
@@ -612,8 +603,10 @@ public class Explosions extends LEDomePattern {
         new_radius_env.setEase(QuadraticEnvelope.Ease.OUT);
         WB_Point new_center = model.randomFaceCenter();
         addModulator(new_radius_env);
+        BandGate explosionGate = (this.explosions.size() % 2 == 1) ? this.beatGate : this.clapGate;
+        println("the explosion gate is", explosionGate);
         this.explosions.add(
-          new L8onExplosion(new_radius_env, stroke_width, new_center.xf(), new_center.yf(), new_center.zf())
+          new L8onExplosion(new_radius_env, explosionGate.gate, stroke_width, new_center.xf(), new_center.yf(), new_center.zf())
         );
       }
     } else {
@@ -626,7 +619,7 @@ public class Explosions extends LEDomePattern {
   private void assignNewCenter(L8onExplosion explosion) {
     float stroke_width = this.new_stroke_width();
     WB_Point new_center = model.randomFaceCenter();
-    float chill_time = (3.0 + random(7)) * SECONDS;
+    float chill_time = (15.0 + random(15)) * SECONDS;
     QuadraticEnvelope new_radius_env = new QuadraticEnvelope(0.0, model.xRange, rateParameter);
     new_radius_env.setEase(QuadraticEnvelope.Ease.OUT);
 
@@ -1680,6 +1673,8 @@ public class ExplosionEffect extends LEDomeEffect {
   private BoundedParameter delayParameter = new BoundedParameter("DELAY", 1000.0, 10.0, 3000.0);    
   private BoundedParameter strokeParameter;
   
+  private LEDomeAudioClapGate clapGate = new LEDomeAudioClapGate(lx);
+  
   public class ExplosionLayer {    
     QuadraticEnvelope boom;
     L8onExplosion explosion;
@@ -1694,7 +1689,7 @@ public class ExplosionEffect extends LEDomeEffect {
       addModulator(boom);
       
       WB_Point new_center = model.randomFaceCenter();
-      explosion = new L8onExplosion(boom, strokeParameter.getValuef(), new_center.xf(), new_center.yf(), new_center.zf());
+      explosion = new L8onExplosion(boom, clapGate.gate, strokeParameter.getValuef(), new_center.xf(), new_center.yf(), new_center.zf());
       trigger();
     }
 

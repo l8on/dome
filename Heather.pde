@@ -1,11 +1,18 @@
-public class Dancers extends LEDomePattern {
+public class Dancers extends LEDomePattern implements LXParameterListener {
+   
+  private LEDomeAudioParameter[] dancerBrightnesses = new LEDomeAudioParameter[] {
+    new LEDomeAudioParameterFull("BR0", 40, 10, 95),
+    new LEDomeAudioParameterLow("BR1", 40, 10, 95),
+    new LEDomeAudioParameterMid("BR2", 40, 10, 95),
+    new LEDomeAudioParameterHigh("BR3", 40, 10, 95),
+  };
   
-  private LEDomeAudioParameterLow brightnessParam = new LEDomeAudioParameterLow("BRIG", 55, 30, 95);
-  private BoundedParameter speedParam  = new BoundedParameter("SPD", 2000, 6000, 500);
+  private BoundedParameter speedParam  = new BoundedParameter("SPD", 6000, 6000, 1000);
 
-  private BoundedParameter blurParam = new BoundedParameter("BLUR", 0, 0, .75);
+  private BoundedParameter blurParam = new BoundedParameter("BLUR", .3, 0, .75);
 
-  private BlurLayer blurLayer = new BlurLayer(lx, this, blurParam);  
+  private BlurLayer blurLayer = new BlurLayer(lx, this, blurParam);
+  protected BandGate beatGate;
   
   private SawLFO[] dancerModulators = new SawLFO[] {
      new SawLFO(DANCER_MIN_POSITION, DANCER_MAX_POSITION, speedParam),
@@ -15,23 +22,28 @@ public class Dancers extends LEDomePattern {
   }; 
  
   private Dancer[] dancers = {
-    new Dancer(dancerModulators[0], 0, 72, 266, 265, 264, 234, 285, 232, 281, 263, 257, new int[] {252, 278, 250, 253}, new int[] {242, 243}, new int[] {269, 270}, new int[] {244, 247}, new int[] {239, 267}, new int[] {241, 238}, new int[] {272, 273}),
-    new Dancer(dancerModulators[1], 90, 64, 171, 173, 172, 143, 176, 138, 196, 135, 165, new int[] {159, 158, 157, 163}, new int[] {119, 147}, new int[] {153, 185}, new int[] {134, 117}, new int[] {151, 154}, new int[] {149, 150}, new int[] {184, 187}),
-    new Dancer(dancerModulators[2], 180, 84, 114, 116, 115, 83, 113, 72, 109, 75, 105, new int[] {98, 99, 97, 103}, new int[] {87, 59}, new int[] {125, 93}, new int[] {57, 65}, new int[] {91, 94}, new int[] {89, 90}, new int[] {124, 127}),
-    new Dancer(dancerModulators[3], 270, 79, 51, 53, 52, 23, 56, 15, 70, 12, 45, new int[] {9, 44, 40, 43}, new int [] {0, 5}, new int[] {30, 35}, new int[] {3, 8}, new int[] {28, 31}, new int[] {2, 27}, new int[] {34, 37}) 
+    new Dancer(dancerModulators[0], dancerBrightnesses[0], 0, 72, 266, 265, 264, 234, 285, 232, 281, 263, 257, new int[] {252, 278, 250, 253}, new int[] {242, 243}, new int[] {269, 270}, new int[] {244, 247}, new int[] {239, 267}, new int[] {241, 238}, new int[] {272, 273}),
+    new Dancer(dancerModulators[1], dancerBrightnesses[1], 90, 64, 171, 173, 172, 143, 176, 138, 196, 135, 165, new int[] {159, 158, 157, 163}, new int[] {119, 147}, new int[] {153, 185}, new int[] {134, 117}, new int[] {151, 154}, new int[] {149, 150}, new int[] {184, 187}),
+    new Dancer(dancerModulators[2], dancerBrightnesses[2], 180, 84, 114, 116, 115, 83, 113, 72, 109, 75, 105, new int[] {98, 99, 97, 103}, new int[] {87, 59}, new int[] {125, 93}, new int[] {57, 65}, new int[] {91, 94}, new int[] {89, 90}, new int[] {124, 127}),
+    new Dancer(dancerModulators[3], dancerBrightnesses[3], 270, 79, 51, 53, 52, 23, 56, 15, 70, 12, 45, new int[] {9, 44, 40, 43}, new int [] {0, 5}, new int[] {30, 35}, new int[] {3, 8}, new int[] {28, 31}, new int[] {2, 27}, new int[] {34, 37}) 
   };
 
   public Dancers(LX lx) {
     super(lx);
-
-    brightnessParam.setModulationPolarity(LXParameter.Polarity.BIPOLAR);
-    addParameter(speedParam);
-    addParameter(brightnessParam);
-    addParameter(blurParam);    
+    
+    addParameter(speedParam);    
+    addParameter(blurParam);
+    
+    this.setBeatGate();
+    this.lx.engine.modulation.addModulator(beatGate);
+    beatGate.trigger();
+    beatGate.gate.addListener(this);
     
     addLayer(blurLayer);
         
     for(Dancer curDancer : dancers) {
+      ((LEDomeAudioParameter)curDancer.brightnessParameter).setModulationRange(.6);
+      addParameter(curDancer.brightnessParameter);
       addModulator(curDancer.positionModulator).start();
     }    
   }
@@ -51,7 +63,7 @@ public class Dancers extends LEDomePattern {
         colors[p.index] = LX.hsb(
           curDancer.hue,
           100,
-          brightnessParam.getValuef()
+          curDancer.brightnessParameter.getValuef()
         );
       } 
     
@@ -60,7 +72,7 @@ public class Dancers extends LEDomePattern {
           colors[p.index] = LX.hsb(
             curDancer.hue,
             100, 
-            brightnessParam.getValuef()
+            curDancer.brightnessParameter.getValuef()
           );
         }
       }  
@@ -69,10 +81,49 @@ public class Dancers extends LEDomePattern {
         colors[headPoint] = LX.hsb(
           curDancer.hue,
           100, 
-          brightnessParam.getValuef()
+          curDancer.brightnessParameter.getValuef()
         );
       }
     }
+  }
+  
+  public void onParameterChanged(LXParameter parameter) {
+    // TODO connect audio params when stuff is enabled
+    if (this.beatGate == null) { return; }
+    if (parameter != this.beatGate.gate) { return; }
+    
+    if (!beatGate.gate.getValueb()) { return; }
+    
+    for (LXModulator dancerModulator: this.dancerModulators) {
+      float currValue = dancerModulator.getValuef();
+      int newValue = (int)((currValue + 1) % DANCER_MAX_POSITION);
+      dancerModulator.setValue(newValue);
+    }
+  }
+  
+  protected void setBeatGate() {
+   this.beatGate = new BandGate(lx);  
+  }
+}
+
+public class BeatDancers extends Dancers {
+  public BeatDancers(LX lx) {
+    super(lx);
+  }    
+
+  protected void setBeatGate() {
+    this.beatGate = new LEDomeAudioBeatGate("DNCBEAT", lx);
+  }
+}
+
+public class ClapDancers extends Dancers {
+   
+  public ClapDancers(LX lx) {
+    super(lx);
+  }
+
+  protected void setBeatGate() {
+    this.beatGate = new LEDomeAudioClapGate("DNCBEAT", lx);
   }
 }
 
@@ -82,6 +133,7 @@ int DANCER_MAX_POSITION = 4;
 
 public class Dancer {
   public LXModulator positionModulator;
+  public BoundedParameter brightnessParameter;
   
   public float hue;
   
@@ -112,6 +164,7 @@ public class Dancer {
   
   public Dancer(    
     LXModulator positionModulator,
+    BoundedParameter brightnessParameter,
     float hue,
     int torsoFace,
     int bottomHead,
@@ -134,6 +187,7 @@ public class Dancer {
     int[] rightLegLeftRun 
   ) {
     this.positionModulator = positionModulator;
+    this.brightnessParameter = brightnessParameter;
     this.hue = hue;
     this.torsoFace = torsoFace;
     this.bottomHead = bottomHead;

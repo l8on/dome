@@ -59,11 +59,7 @@ LEDome model;
 LXStudio lx;
 
 LXPattern[] patterns(P3LX lx) {
-  return new LXPattern[] {    
-    new L8onMixColor(lx),
-    
-    new AudioBelts(lx),
-    
+  return new LXPattern[] {          
     // Create New Pattern Instances Below HERE
     new ShadyWaffle(lx),
     
@@ -75,9 +71,12 @@ LXPattern[] patterns(P3LX lx) {
     new Breather(lx),
 
     // Heather
-    new Dancers(lx),
+    new BeatDancers(lx),
+    new ClapDancers(lx),
     
     // L8on
+    new L8onMixColor(lx),
+    new AudioBelts(lx),
     new SpotLights(lx),
     new JumpRopes(lx),
     new Explosions(lx),

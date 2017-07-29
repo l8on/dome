@@ -239,7 +239,7 @@ public class SnakeLayer extends LXLayer {
     float distToTravel = dist(firstHeadPoint.x, firstHeadPoint.y, firstHeadPoint.z, secondHeadPoint.x, secondHeadPoint.y, secondHeadPoint.z);
     return max(distToTravel / (snakeSpeed.getValuef() / SECONDS), 0.0);      
   }
-} //<>// //<>// //<>//
+} //<>//
 
 /*
  * A container to keep state of the different 3d waves in the color remix.
@@ -370,7 +370,7 @@ public class L8onFaceLife {
 /**
  * Contains the current state of an explosion.
  */
-public class L8onExplosion {
+public class L8onExplosion implements LXParameterListener {
   float center_x;
   float center_y;
   float center_z;  
@@ -379,11 +379,16 @@ public class L8onExplosion {
   float chill_time;
   float time_chillin;
 
-  private LXModulator radius_modulator;
+  private BooleanParameter trigger_parameter;
+  private LXModulator radius_modulator;  
   private boolean radius_modulator_triggered = false;
 
-  public L8onExplosion(LXModulator radius_modulator, float stroke_width, float center_x, float center_y, float center_z) {
+  public L8onExplosion(LXModulator radius_modulator, BooleanParameter trigger_parameter, float stroke_width, float center_x, float center_y, float center_z) {
     this.setRadiusModulator(radius_modulator, stroke_width);
+    
+    this.trigger_parameter = trigger_parameter;
+    this.trigger_parameter.addListener(this);
+    
     this.center_x = center_x;
     this.center_y = center_y;
     this.center_z = center_z;
@@ -448,6 +453,14 @@ public class L8onExplosion {
     float point_dist = this.distanceFromCenter(x, y, z);
 
     return (point_dist >= min_dist && point_dist <= max_dist);  
+  }
+  
+  public void onParameterChanged(LXParameter parameter) {    
+    if (!(parameter == this.trigger_parameter)) { return; }
+        
+    if (this.trigger_parameter.getValueb() && this.isFinished()) {            
+      this.setChillTime(0);
+    }
   }
 }
 

@@ -154,6 +154,81 @@ public class LEDomeAudioParameterHigh extends LEDomeAudioParameter {
   }
 }
 
+/**
+ * Use this to get a beat gate that has been configured to be very sensitive to
+ * the bass beat of the audio input.
+ */
+public class LEDomeAudioBeatGate extends BandGate {
+  final float DEFAULT_GAIN = 7;
+  final float DEFAULT_THRESHOLD = .5;
+  final float DEFAULT_FLOOR = .88;
+  
+  public LEDomeAudioBeatGate(LX lx) {
+    this("Beat", lx);
+  }
+
+  public LEDomeAudioBeatGate(String label, LX lx) {
+    this(label, lx.engine.audio.meter);
+  }
+  
+  public LEDomeAudioBeatGate(String label, GraphicMeter meter) {
+    super(label, meter);
+    this.gain.setValue(DEFAULT_GAIN);
+    this.threshold.setValue(DEFAULT_THRESHOLD);
+    this.floor.setValue(DEFAULT_FLOOR);    
+  }
+  
+  public LEDomeAudioBeatGate(GraphicMeter meter, float minHz, float maxHz) {
+    this("Beat", meter);
+    setFrequencyRange(minHz, maxHz);
+  }
+  
+  public LEDomeAudioBeatGate(String label, GraphicMeter meter, int minHz, int maxHz) {
+    this(label, meter);
+    setFrequencyRange(minHz, maxHz);
+  }  
+}
+
+/**
+ * Use this to get a beat gate that has been configured to be very sensitive to
+ * the bass beat of the audio input.
+ */
+public class LEDomeAudioClapGate extends BandGate {
+  final float DEFAULT_GAIN = 7;
+  final float DEFAULT_THRESHOLD = .5;
+  final float DEFAULT_FLOOR = .88;
+  final float CLAP_MIN_FREQ = 2200;
+  final float CLAP_MAX_FREQ = 2800;
+  
+  public LEDomeAudioClapGate(LX lx) {
+    this("Clap", lx);
+  }
+
+  public LEDomeAudioClapGate(String label, LX lx) {
+    this(label, lx.engine.audio.meter);
+  }
+  
+  public LEDomeAudioClapGate(String label, GraphicMeter meter) {
+    super(label, meter);        
+    this.gain.setValue(DEFAULT_GAIN);
+    this.threshold.setValue(DEFAULT_THRESHOLD);
+    this.floor.setValue(DEFAULT_FLOOR);
+    
+    this.maxFreq.setValue(CLAP_MAX_FREQ);
+    this.minFreq.setValue(CLAP_MIN_FREQ);
+  }
+  
+  public LEDomeAudioClapGate(GraphicMeter meter, float minHz, float maxHz) {
+    this("Clap", meter);
+    setFrequencyRange(minHz, maxHz);
+  }
+  
+  public LEDomeAudioClapGate(String label, GraphicMeter meter, int minHz, int maxHz) {
+    this(label, meter);
+    setFrequencyRange(minHz, maxHz);
+  }  
+}
+
 public static class LEDomeAudioParameterManager implements LXParameterListener, LXChannel.Listener {
   private LX lx;  
   private BooleanParameter audioInputEnabled;  
