@@ -130,8 +130,7 @@ public class HeartsBeat extends LEDomePattern {
   private SinLFO[] heartColors = new SinLFO[NUM_HEARTS];
   private SinLFO[] heartBeats = new SinLFO[NUM_HEARTS];
   private SinLFO[] heartSaturations = new SinLFO[NUM_HEARTS];
-  private BoundedParameter rateParam = new BoundedParameter("RATE", 2.5, 0.5, 12);
-  private BoundedParameter brightnessParam = new BoundedParameter("BRIG", 90, 50, 100);
+  private BoundedParameter rateParam = new BoundedParameter("RATE", 2.5, 0.5, 12);  
   private LEDomeAudioParameter[] brightnessParams = new LEDomeAudioParameter[] {
     new LEDomeAudioParameterLow("BRLW", 50, 50, 100),
     new LEDomeAudioParameterMid("BRMD", 50, 50, 100),
@@ -141,8 +140,7 @@ public class HeartsBeat extends LEDomePattern {
   public HeartsBeat(LX lx) {
     super(lx);    
 
-    addParameter(rateParam);
-    addParameter(brightnessParam);
+    addParameter(rateParam);    
     
     for (LEDomeAudioParameter brightnessParameter : brightnessParams) {
       brightnessParameter.setModulationRange(.8);
