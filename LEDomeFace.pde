@@ -152,6 +152,22 @@ public static class LEDomeEdge {
     return retPoint;
   }
   
+  public LXPoint farthestPoint(float x, float y, float z) {
+    float max_dist = 0;
+    LXPoint retPoint = this.points.get(0);
+    
+    for(LXPoint p : this.points) {
+      float curr_dist = dist(p.x, p.y, p.z, x, y, z);
+      
+      if(curr_dist > max_dist) {
+        max_dist = curr_dist;
+        retPoint = p;
+      }
+    }
+    
+    return retPoint;
+  }
+  
   public LXPoint closestVertexPoint(float x, float y, float z) {
     float min_dist = 1000 * FEET;
     LXPoint retPoint = this.points.get(0);    

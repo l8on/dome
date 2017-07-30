@@ -500,6 +500,7 @@ public class Snakes extends LEDomePattern {
   
     if ((int)this.numSnakes.getValue() < this.snakes.size()) {
       for(int i = (this.snakes.size() - 1); i >= (int)this.numSnakes.getValue(); i--) {
+        removeLayer(this.snakes.get(i));
         this.snakes.remove(i);
       }
     } else {
@@ -1981,5 +1982,56 @@ public class DomeEQ extends LEDomePattern {
   
   private double projectAzimuth(double azimuth) {
     return (azimuth - originAzimuth + LX.TWO_PI) % LX.TWO_PI;
+  }
+}
+
+public class ThunderStorm extends LEDomePattern {
+ 
+  List<LightningBolt> lightningBolts = new ArrayList<LightningBolt>();
+  
+  BoundedParameter numBolts = new BoundedParameter("NUM", 4, 1, 20);
+  BoundedParameter branchLength = new BoundedParameter("LNTH", 8, 5, 12);
+  BoundedParameter strikeDuration = new BoundedParameter("STRK", 500, 200, 1000);
+  BoundedParameter cooldownDuration = new BoundedParameter("COOL", 4500, 1000, 10000);
+  BoundedParameter chillDuration = new BoundedParameter("CHILL", 20000, 100, 30000);
+  LEDomeAudioClapGate clapGate = new LEDomeAudioClapGate(lx);
+  LEDomeAudioBeatGate beatGate = new LEDomeAudioBeatGate(lx);
+  
+  public ThunderStorm(LX lx) {
+    super(lx);
+    
+    addParameter(numBolts);
+    addParameter(branchLength);
+    addParameter(strikeDuration);
+    addParameter(cooldownDuration);
+    addParameter(chillDuration);
+    
+    addModulator(clapGate).start();
+    addModulator(beatGate).start();
+    
+    this.calibrateBolts();
+  }
+  
+  public void run(double deltaMs) {
+    this.calibrateBolts();
+    setColors(0);
+  }
+  
+  public void calibrateBolts() {
+    if ((int)this.numBolts.getValue() == this.lightningBolts.size()) { return; }
+  
+    if ((int)this.numBolts.getValue() < this.lightningBolts.size()) {
+      for(int i = (this.lightningBolts.size() - 1); i >= (int)this.numBolts.getValue(); i--) {
+        removeLayer(this.lightningBolts.get(i));
+        this.lightningBolts.remove(i);
+      }
+    } else {
+      for(int i = 0; i < ((int)this.numBolts.getValuef() - this.lightningBolts.size()); i++) {
+        BandGate triggerGate = (lightningBolts.size() % 2 == 1) ? clapGate : beatGate;
+        LightningBolt lightning = new LightningBolt(lx, branchLength, strikeDuration, cooldownDuration, chillDuration, triggerGate.gate);
+        this.lightningBolts.add(lightning);
+        addLayer(lightning);
+      }
+    }
   }
 }

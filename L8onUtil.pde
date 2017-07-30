@@ -370,7 +370,7 @@ public class L8onFaceLife {
 /**
  * Contains the current state of an explosion.
  */
-public class L8onExplosion implements LXParameterListener {
+public class L8onExplosion implements LXParameterListener {  
   float center_x;
   float center_y;
   float center_z;  
@@ -678,5 +678,260 @@ public class L8onHeartLight {
     coordinateSystem.setZ(this.sphere.getCenter());
         
     return coordinateSystem;
+  }
+}
+
+public class LightningBolt extends LXLayer implements LXParameterListener {
+  HE_Vertex originVertex;
+  List<LEDomeEdge> adjacentEdges = new ArrayList<LEDomeEdge>();
+  List<LEDomeEdge> allEdges = new ArrayList<LEDomeEdge>();
+  List<List<LEDomeEdge>> branches = new ArrayList<List<LEDomeEdge>>();
+  
+  BoundedParameter branchLength;
+  BoundedParameter strikeDuration;
+  BoundedParameter cooldownDuration;
+  BoundedParameter chillDuration;
+  BooleanParameter triggerParameter;
+  
+  LinearEnvelope strikeModulator;
+  QuadraticEnvelope cooldownModulator;
+  LinearEnvelope chillModulator;
+  
+  private final int BRANCH_COUNT = 3;
+  
+  private static final int PHASE_STRIKE = 0;
+  private static final int PHASE_COOLDOWN = 1;
+  private static final int PHASE_CHILL = 2;
+  
+  // Radians
+  private static final float MAX_ANGLE = 2;
+  private static final float MIN_ANGLE = PI / 3.0;
+    
+  private Random randomPointIndex = new Random();
+  private int currentPhase = 0;
+  private float hue = 0;
+  
+  public LightningBolt(LX lx) {
+    this(
+      lx,
+      new BoundedParameter("LNTH", 4, 4, 4),
+      new BoundedParameter("STRK", 100, 0, 10000),
+      new BoundedParameter("COOL", 1000, 1, 10000),
+      new BoundedParameter("CHILL", 10000, 1, 30000),
+      new BooleanParameter("TRIG", false)
+    );
+  }
+  
+  public LightningBolt(LX lx, BoundedParameter branchLength, BoundedParameter strikeDuration, BoundedParameter cooldownDuration, BoundedParameter chillDuration, BooleanParameter triggerParameter) {
+    super(lx);    
+    this.branchLength = branchLength;
+    this.strikeDuration = strikeDuration;
+    this.cooldownDuration = cooldownDuration;
+    this.chillDuration = chillDuration;
+    
+    this.triggerParameter = triggerParameter;
+    this.triggerParameter.addListener(this);
+    
+    this.initializeModulators();
+  }
+  
+  public void onParameterChanged(LXParameter parameter) {
+    if (!(parameter == this.triggerParameter)) { return; }
+   
+    if (this.currentPhase == PHASE_CHILL && this.triggerParameter.getValueb()) { this.reset(); }
+  }
+    
+  public void run(double deltaMs) {
+    switch(this.currentPhase) {
+      case PHASE_STRIKE:
+        // We just finished the phase, move on.
+        if (this.strikeModulator.finished()) {
+          this.strikeModulator.reset();
+          this.currentPhase++;
+        } else {        
+          // We haven't yet triggered the modulator, we just entered the phase.
+          if (!this.strikeModulator.isRunning()) {
+            this.strike();
+          }
+          
+          this.drawStrike();
+          break;
+        }
+        
+      case PHASE_COOLDOWN:
+        if (this.cooldownModulator.finished()) {
+          this.cooldownModulator.reset();
+          this.currentPhase++;
+          return;
+        }
+        if (!this.cooldownModulator.isRunning()) {
+          this.cooldownModulator.trigger();          
+        }
+        this.drawCooldowm();
+        break;
+      
+      case PHASE_CHILL:
+        if (this.chillModulator.finished()) {
+          this.chillModulator.reset();          
+          this.currentPhase = PHASE_STRIKE;
+          return;
+        }
+        if (!this.chillModulator.isRunning()) {
+          this.chillModulator.trigger();
+          this.chillModulator.randomBasis();
+        }
+        break;        
+    }
+  }
+  
+  public void drawStrike() {
+    int maxBranchIndex = (int)this.strikeModulator.getValue();
+    
+    for(List<LEDomeEdge> branch: branches) {
+      for(int i = 0; i <= maxBranchIndex; i++) {
+        if (i >= branch.size()) { continue; }
+        
+        for (LXPoint p: branch.get(i).points) {
+          setColor(p.index, LX.hsb(this.hue, 100, 100));  
+        }
+      }
+    }
+  }
+  
+  public void drawCooldowm() {
+    for(LEDomeEdge edge: this.allEdges) {
+      for (LXPoint p: edge.points) {
+        setColor(p.index, LX.hsb(this.hue, 100 * this.cooldownModulator.getValuef(), 100 * this.cooldownModulator.getValuef()));  
+      }
+    }
+  }
+  
+  public void initializeModulators() {
+    this.strikeModulator = new LinearEnvelope("STRK", 0, this.branchLength, this.strikeDuration);
+    this.cooldownModulator = new QuadraticEnvelope("COOL", 1, 0, this.cooldownDuration);
+    this.cooldownModulator.setEase(QuadraticEnvelope.Ease.OUT);
+    this.chillModulator = new LinearEnvelope("CHIL", 0, 1, this.chillDuration);
+    
+    addModulator(this.strikeModulator);
+    addModulator(this.cooldownModulator);
+    addModulator(this.chillModulator);
+  }
+  
+  private void reset() {
+    this.strikeModulator.reset();
+    this.cooldownModulator.reset();    
+    this.chillModulator.reset();    
+    this.currentPhase = PHASE_STRIKE;
+  }
+  
+  private void strike() {
+    this.adjacentEdges.clear();
+    this.allEdges.clear();
+    this.branches.clear();
+    
+    this.hue = randomPointIndex.nextFloat() * 360;
+    this.initializeBranches();
+    for(List<LEDomeEdge> branch: this.branches) {
+      this.buildBranch(branch);
+    }
+        
+    this.strikeModulator.trigger();    
+  }
+  
+  private void initializeBranches() {
+    // Find a new center point for the lightning stike
+    LXPoint newCenterPoint = model.points[randomPointIndex.nextInt(model.points.length)];
+    this.originVertex = ((LEDome)model).closestVertex(newCenterPoint);
+    List<HE_Halfedge> neighbors = originVertex.getHalfedgeStar();    
+    Collections.shuffle(neighbors);
+        
+    for(HE_Halfedge he_edge : neighbors) {
+      // Skip edges without labels
+      if (he_edge.getLabel() < 0) { continue; }
+
+      // Find the LEDomeEdge with the correct label. 
+      LEDomeEdge edge = ((LEDome)model).edges.get(he_edge.getLabel());
+
+      // Continue if the edge doesn't have lights
+      if (edge == null) { continue; }
+      
+      int adjacentLabel = he_edge.getPair().getLabel();
+      if(adjacentLabel >= 0) {
+        LEDomeEdge adjacentEdge = ((LEDome)model).edges.get(he_edge.getPair().getLabel());
+        if (adjacentEdge != null) { this.adjacentEdges.add(adjacentEdge); }
+      }      
+
+      // Create the list of edges that will make up the branches starting with this edge.
+      List<LEDomeEdge> branch = new ArrayList<LEDomeEdge>();
+      branch.add(edge);
+      this.allEdges.add(edge);
+      this.branches.add(branch);
+      
+      // Stop creating branches if we have enough.
+      if(this.branches.size() >= BRANCH_COUNT) {
+        break;
+      }
+    }
+  }
+  
+  private void buildBranch(List<LEDomeEdge> branch) {    
+    float prevX = originVertex.xf();
+    float prevY = originVertex.yf();
+    float prevZ = originVertex.zf();
+    LEDomeEdge prevEdge = branch.get(0);    
+    
+    while(true) {
+      LXPoint farthestPoint = prevEdge.farthestPoint(prevX, prevY, prevZ);
+      LEDomeEdge edge = this.findNextBranchEdge(prevEdge, farthestPoint);
+      // No edge found, break;
+      if (edge == null) { break; }
+      
+      branch.add(edge);
+      this.allEdges.add(edge);
+      
+      // We've reached the end of the branch, break
+      if(branch.size() >= (int)this.branchLength.getValue()) {
+        break;
+      }
+           
+      prevEdge = edge;
+      prevX = farthestPoint.x;
+      prevY = farthestPoint.y;
+      prevX = farthestPoint.z;
+    }
+  }
+  
+  private LEDomeEdge findNextBranchEdge(LEDomeEdge prevEdge, LXPoint farthestPoint) {    
+    HE_Vertex nextVertex = ((LEDome)model).closestVertex(farthestPoint);
+    
+    List<HE_Halfedge> neighbors = nextVertex.getHalfedgeStar();
+    Collections.shuffle(neighbors);
+    
+    for(HE_Halfedge he_edge : neighbors) {
+      // Skip edges without labels
+      if (he_edge.getLabel() < 0) { continue; }
+
+      // Find the LEDomeEdge with the correct label. 
+      LEDomeEdge edge = ((LEDome)model).edges.get(he_edge.getLabel());
+
+      // Continue if the edge doesn't have lights
+      if (edge == null) { continue; }
+      
+      // Do not add already existing edges
+      if (this.allEdges.contains(edge) || this.adjacentEdges.contains(edge)) { continue; }
+      
+      float angleBetweenEdges = ((LEDome)model).angleBetweenEdges(prevEdge, edge);
+      if (angleBetweenEdges < MIN_ANGLE || angleBetweenEdges > MAX_ANGLE) { continue; }      
+      
+      int adjacentLabel = he_edge.getPair().getLabel();
+      if(adjacentLabel >= 0) {
+        LEDomeEdge adjacentEdge = ((LEDome)model).edges.get(he_edge.getPair().getLabel());
+        if (adjacentEdge != null) { this.adjacentEdges.add(adjacentEdge); }
+      }
+      
+      return edge;
+    }
+    
+    return null;
   }
 }
