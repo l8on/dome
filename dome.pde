@@ -120,14 +120,14 @@ LXStudio.UI lxUI = null;
 // TODO: get C-Media audio card and create class to manage input
 
 void settings() {
-  size(1024, 768, P3D);    
-  noSmooth();  
+  size(1024, 768, P3D);  
 }
 
 void setup() { 
   surface.setResizable(true);
-  surface.setSize(displayWidth, displayHeight);
-  textSize(6);
+  if (RENDER_3D) {
+    surface.setSize(displayWidth, displayHeight);
+  }  
 
   // Create LEDome instance
   model = new LEDome();
@@ -149,6 +149,8 @@ void setup() {
       lxUI = ui;
       if (RENDER_3D) {
         ui.preview.addComponent(new UIDome());
+      } else {
+        ui.removeLayer(ui.preview);  
       }
     }
   };
