@@ -5,13 +5,19 @@ public class Beachball extends LEDomePattern {
   private BoundedParameter rateParam = new BoundedParameter("RATE", 3600, 1800, 6000);
   private BoundedParameter blurParam = new BoundedParameter("BLUR", 0.1, 0.01, 1.0);
 
+  private LEDomeAudioParameterFull fullVolume = new LEDomeAudioParameterFull("FF", 5, 0, 100);
+
   private final SawLFO angle   = new SawLFO(0, 360, rateParam);
 
   public String getName() { return "Beachball"; }
   public Beachball(LX lx) {
     super(lx);
+
+    fullVolume.setModulationRange(1);
+
     addParameter(rateParam);
     addParameter(blurParam);
+    addParameter(fullVolume);
     addModulator(angle).start();
     drawBeachball();
   }
@@ -33,7 +39,7 @@ public class Beachball extends LEDomePattern {
 
       double hue        = (pixelAngle) % 360;
       double saturation = (stripe % 2 == 0) ? 75  : 100;
-      double brightness = (stripe % 2 == 0) ? 100 : 75;
+      double brightness = (stripe % 2 == 0) ? 100 : fullVolume.getValuef();
 
       int newColor = LXColor.hsb(hue, saturation, brightness);
       colors[p.index] = LXColor.lerp(colors[p.index], newColor, blurParam.getValue());
