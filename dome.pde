@@ -145,9 +145,11 @@ void setup() {
     
     @Override
     protected void onUIReady(LXStudio lx, LXStudio.UI ui) {
-      // The UI is now ready, can add custom UI components if desired      
-      ui.preview.addComponent(new UIDome());
-      lxUI = ui;   
+      // The UI is now ready, can add custom UI components if desired
+      lxUI = ui;
+      if (RENDER_3D) {
+        ui.preview.addComponent(new UIDome());
+      }
     }
   };
   
@@ -170,7 +172,9 @@ void setup() {
   lx.palette.hueMode.setValue(2);
   
   // Set the audio input to be on by default
-  lx.engine.audio.enabled.setValue(true);
+  if (RENDER_3D) {
+    lx.engine.audio.enabled.setValue(true);
+  }
 }
 
 void setupPatterns() {

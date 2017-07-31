@@ -1,7 +1,7 @@
 public class ShadyWaffle extends LEDomePattern { 
   private int PINK = LX.hsb(330, 59, 50);
   
-  private int[] PINK_EDGES = { 
+  private int[] PINK_EDGES = {  
     // Pentagon opposite door, left 
     127, 130, 109, 103, 106,
     // Pentagon opposite door, right
@@ -1968,7 +1968,7 @@ public class DomeEQ extends LEDomePattern {
         float hue = (hueModulator.getValuef() + (p.yn * 360.0)) % 360.0;
         setColor(p.index, LX.hsb(hue, 100, brightnessParam.getValuef()));
       } else {
-        setColor(p.index, 0);
+        setColor(p.index, LX.hsb(0, 0, 1));
       }
     }
   }

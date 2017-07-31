@@ -100,7 +100,7 @@ public static class LEDomeFace {
   }
 }
 
-public static class LEDomeEdge {  
+public static class LEDomeEdge {
   public HE_Halfedge he_halfedge;
   public LEDomeFace ledome_face;
   public List<LXPoint> points;  
