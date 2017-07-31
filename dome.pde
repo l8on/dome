@@ -52,7 +52,7 @@ import javax.sound.midi.MidiUnavailableException;
 // The raspberry pi can't render 3d out of the box.
 // Set RENDER_3D to false to avoid using OpenGL.
 // TODO: see if this is true any more with processing 3
-final static boolean RENDER_3D = true;
+final static boolean RENDER_3D = false;
 final static int AUTO_TRANSITION_SECONDS = 30;
 
 LEDome model;
