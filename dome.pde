@@ -190,7 +190,7 @@ void setup() {
   lx.palette.hueMode.setValue(2);
   
   // Set the audio input to be on by default
-  if (RENDER_3D) {
+  if (cableCreationTargetDataLine != null || RENDER_3D) {
     lx.engine.audio.enabled.setValue(true);
   }
 }
@@ -224,7 +224,7 @@ TargetDataLine findCableCreationTargetDataLine(AudioFormat  format) {
   for (Mixer.Info mixerInfo : mixers) {
     System.out.println("Found Mixer: " + mixerInfo);
     System.out.println("Mixer name: " + mixerInfo.getName());
-    if(mixerInfo.getName().equals("CableCreation")) { 
+    if(mixerInfo.getName().startsWith("CableCreation")) { 
       System.out.println("Found CableCreation mixer");
       cableCreationMixer = AudioSystem.getMixer(mixerInfo);
       Line.Info[] lines = cableCreationMixer.getTargetLineInfo(info);
