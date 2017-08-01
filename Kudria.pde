@@ -9,7 +9,7 @@ public class PointHeightComparator implements Comparator<LXPoint> {
 
 public class Fire extends LEDomePattern {
   public String getName() { return "Fire"; }
-  private final int numSlices = 4;
+  private final int numSlices = 8;
   private final ArrayList<TreeSet> slices = new ArrayList<TreeSet>();
 
   public Fire(LX lx) {
@@ -50,8 +50,8 @@ public class Fire extends LEDomePattern {
       slices.add(slice);
     }
     for (LXPoint p : model.points) {
-      float pixelAngle = (p.azimuth * (PI / 4.0));
-      int sliceIndex = floor(pixelAngle % numSlices);
+      float pixelAngle = (p.azimuth * (180.0 / PI)) % 360;
+      int sliceIndex = floor(numSlices * (pixelAngle / 360));
       slices.get(sliceIndex).add(p);
     }
   }
