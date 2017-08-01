@@ -30,6 +30,14 @@ import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.Random;
 
+
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.Line;
+import javax.sound.sampled.Mixer;
+import javax.sound.sampled.TargetDataLine;
+import javax.sound.sampled.LineUnavailableException;
 import javax.sound.midi.ShortMessage;
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiUnavailableException;
@@ -127,7 +135,10 @@ void setup() {
   surface.setResizable(true);
   if (RENDER_3D) {
     surface.setSize(displayWidth, displayHeight);
-  }  
+  }        
+    
+  final AudioFormat format = new AudioFormat(44100, 16, 1, true, false);
+  final TargetDataLine cableCreationTargetDataLine = findCableCreationTargetDataLine(format);
 
   // Create LEDome instance
   model = new LEDome();
@@ -141,6 +152,11 @@ void setup() {
       // Create the NDB output manager
       outputManager = new LEDomeOutputManager(lx);  
       outputManager.addLXOutputForNDB();
+      
+      if (cableCreationTargetDataLine != null) {
+        LXAudioInput cableCreationInput = createCableCreationAudioInput(format, cableCreationTargetDataLine);
+        lx.engine.audio.changeInput(cableCreationInput);
+      }
     }
     
     @Override
@@ -197,6 +213,45 @@ void setupPatterns() {
 
 void setupEffects() {
   lx.addEffects(effects(lx));  
+}
+
+TargetDataLine findCableCreationTargetDataLine(AudioFormat  format) {
+  DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);  
+  TargetDataLine.Info cableCreationTargetInfo = null;
+  Mixer cableCreationMixer = null;
+  Mixer.Info[] mixers = AudioSystem.getMixerInfo();    
+  
+  for (Mixer.Info mixerInfo : mixers) {
+    System.out.println("Found Mixer: " + mixerInfo);
+    System.out.println("Mixer name: " + mixerInfo.getName());
+    if(mixerInfo.getName().equals("CableCreation")) { 
+      System.out.println("Found CableCreation mixer");
+      cableCreationMixer = AudioSystem.getMixer(mixerInfo);
+      Line.Info[] lines = cableCreationMixer.getTargetLineInfo(info);
+      cableCreationTargetInfo = (TargetDataLine.Info) lines[0];
+      break;
+    }
+  }
+  
+  if(cableCreationTargetInfo == null || cableCreationMixer == null) { 
+    return null; 
+  }
+  
+  try {
+    return (TargetDataLine) cableCreationMixer.getLine(cableCreationTargetInfo);
+  } catch(LineUnavailableException x) {
+    System.err.println(x.getLocalizedMessage());
+    return null;
+  }
+}
+
+LXAudioInput createCableCreationAudioInput(AudioFormat format, final TargetDataLine cableCreationTargetDataLine) {
+  return new LXAudioInput(format) {
+    @Override
+    protected TargetDataLine getTargetDataLine(DataLine.Info info) throws LineUnavailableException {
+      return cableCreationTargetDataLine;
+    }
+  };    
 }
 
 void setupMidiDevices() {

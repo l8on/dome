@@ -242,12 +242,12 @@ public static class LEDomeAudioParameterManager implements LXParameterListener, 
   public static final double MODULATOR_RANGE_DEFAULT = .3;
   public static final double GAIN_DEFAULT = 6;
       
-  public static final double MAX_FREQ_LOW = 216;
+  public static final double MAX_FREQ_LOW = 200;
 
   public static final double MIN_FREQ_MID = 216;
-  public static final double MAX_FREQ_MID = 2360;
+  public static final double MAX_FREQ_MID = 2200;
 
-  public static final double MIN_FREQ_HIGH = 2360;  
+  public static final double MIN_FREQ_HIGH = 2200;  
 
   public LEDomeAudioParameterManager(LX lx, BooleanParameter audioInputEnabled) {
     this.lx = lx;
