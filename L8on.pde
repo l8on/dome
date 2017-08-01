@@ -1989,7 +1989,7 @@ public class ThunderStorm extends LEDomePattern {
  
   List<LightningBolt> lightningBolts = new ArrayList<LightningBolt>();
   
-  BoundedParameter numBolts = new BoundedParameter("NUM", 4, 1, 20);
+  BoundedParameter numBolts = new BoundedParameter("NUM", 5, 2, 20);
   BoundedParameter branchLength = new BoundedParameter("LNTH", 8, 5, 12);
   BoundedParameter strikeDuration = new BoundedParameter("STRK", 500, 200, 1000);
   BoundedParameter cooldownDuration = new BoundedParameter("COOL", 4500, 1000, 10000);

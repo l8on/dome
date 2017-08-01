@@ -792,7 +792,7 @@ public class LightningBolt extends LXLayer implements LXParameterListener {
         if (i >= branch.size()) { continue; }
         
         for (LXPoint p: branch.get(i).points) {
-          setColor(p.index, LX.hsb(this.hue, 100, 100));  
+          setColor(p.index, LX.hsb(this.hue, 40, 100));  
         }
       }
     }
@@ -801,7 +801,7 @@ public class LightningBolt extends LXLayer implements LXParameterListener {
   public void drawCooldowm() {
     for(LEDomeEdge edge: this.allEdges) {
       for (LXPoint p: edge.points) {
-        setColor(p.index, LX.hsb(this.hue, 100 * this.cooldownModulator.getValuef(), 100 * this.cooldownModulator.getValuef()));  
+        setColor(p.index, LX.hsb(this.hue, 40 * this.cooldownModulator.getValuef(), 100 * this.cooldownModulator.getValuef()));  
       }
     }
   }
