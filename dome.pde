@@ -71,6 +71,7 @@ LXPattern[] patterns(P3LX lx) {
     // BKudria
     new Beachball(lx),
     new Breather(lx),
+    new Fire(lx),
 
     // Heather
     new BeatDancers(lx),

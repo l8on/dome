@@ -1,3 +1,62 @@
+import java.util.TreeSet;
+import java.util.Comparator;
+
+public class PointHeightComparator implements Comparator<LXPoint> {
+  public int compare(LXPoint p1, LXPoint p2) {
+    return new Float(p1.y).compareTo(p2.y + random(-1, 1));
+  }
+}
+
+public class Fire extends LEDomePattern {
+  public String getName() { return "Fire"; }
+  private final int numSlices = 4;
+  private final ArrayList<TreeSet> slices = new ArrayList<TreeSet>();
+
+  public Fire(LX lx) {
+    super(lx);
+    println(numSlices);
+    computeSlices();
+  }
+
+  public void run(double deltaMs) { computeFire(); drawFire(); }
+
+  public void drawFire() {
+    double yMin = model.yMin;
+    double yMax = model.yMax;
+    double yRange = model.yMax - model.yMin;
+    for (int sliceIndex = 0; sliceIndex < numSlices; sliceIndex++) {
+      TreeSet<LXPoint> slice = slices.get(sliceIndex);
+      for (LXPoint p : slice) {
+        // LXPoint p = (LXPoint) slicePoint;
+        double hue        = ((double)sliceIndex / (double)numSlices) * 360;
+        // println(sliceIndex);
+        // println(numSlices);
+        // println(hue);
+        // println();
+        double saturation = 100; //* ((p.y - yMin) / yMax);
+        int pColor = LXColor.hsb(hue, saturation, 100);
+        colors[p.index] = pColor;
+      }
+    }
+  }
+
+  private void computeFire() {
+
+  }
+
+  private void computeSlices() {
+    for (int i = 0; i < numSlices; i++) {
+      TreeSet<LXPoint> slice = new TreeSet<LXPoint>(new PointHeightComparator());
+      slices.add(slice);
+    }
+    for (LXPoint p : model.points) {
+      float pixelAngle = (p.azimuth * (PI / 4.0));
+      int sliceIndex = floor(pixelAngle % numSlices);
+      slices.get(sliceIndex).add(p);
+    }
+  }
+}
+
 public class Beachball extends LEDomePattern {
   private final int stripeSize = 360 / 10;
   private final int maxTwist   = 24;
