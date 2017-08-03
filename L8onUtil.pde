@@ -380,7 +380,7 @@ public class L8onExplosion implements LXParameterListener {
   float time_chillin;
 
   private BooleanParameter trigger_parameter;
-  private LXModulator radius_modulator;  
+  public LXModulator radius_modulator;  
   private boolean radius_modulator_triggered = false;
 
   public L8onExplosion(LXModulator radius_modulator, BooleanParameter trigger_parameter, float stroke_width, float center_x, float center_y, float center_z) {

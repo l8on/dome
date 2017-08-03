@@ -1,17 +1,17 @@
-public class ShadyWaffle extends LEDomePattern { 
+public class ShadyWaffle extends LEDomePattern {
   private int PINK = LX.hsb(330, 59, 50);
-  
-  private int[] PINK_EDGES = {  
-    // Pentagon opposite door, left 
+
+  private int[] PINK_EDGES = {
+    // Pentagon opposite door, left
     127, 130, 109, 103, 106,
     // Pentagon opposite door, right
     187, 190, 166, 196, 163,
     // Pentagon left
     217, 247, 250, 232, 262,
     // Pentagon right
-    40, 37, 67, 46, 70, 
+    40, 37, 67, 46, 70,
     // Top
-    85, 145, 205, 289, 25, 
+    85, 145, 205, 289, 25
   }; 
     
   private int YELLOW = LX.hsb(61, 90, 50);
@@ -263,7 +263,7 @@ public class HeartsBeat extends LEDomePattern {
 
 public class SnakeApple extends LEDomePattern {
   // Used to store info about each explosion.
-  // See L8onUtil.pde for the definition.  
+  // See L8onUtil.pde for the definition.
   private List<Apple> apples = new ArrayList<Apple>();
   private List<Integer> appleIndices = new ArrayList<Integer>();
   private Random appleRandom = new Random();
@@ -1991,7 +1991,7 @@ public class ThunderStorm extends LEDomePattern {
   
   BoundedParameter numBolts = new BoundedParameter("NUM", 5, 2, 20);
   BoundedParameter branchLength = new BoundedParameter("LNTH", 8, 5, 12);
-  BoundedParameter strikeDuration = new BoundedParameter("STRK", 500, 200, 1000);
+  BoundedParameter strikeDuration = new BoundedParameter("STRK", 400, 200, 800);
   BoundedParameter cooldownDuration = new BoundedParameter("COOL", 4500, 1000, 10000);
   BoundedParameter chillDuration = new BoundedParameter("CHILL", 20000, 100, 30000);
   LEDomeAudioClapGate clapGate = new LEDomeAudioClapGate(lx);
@@ -2032,6 +2032,86 @@ public class ThunderStorm extends LEDomePattern {
         this.lightningBolts.add(lightning);
         addLayer(lightning);
       }
+    }
+  }
+}
+
+public class SunriseSunsetRainbow extends LEDomePattern {
+  LXProjection projection = new LXProjection(model);
+  SawLFO sunPosition = new SawLFO(0, TWO_PI, 24000);
+  LEDomeAudioParameterFull colorSpread = new LEDomeAudioParameterFull("COLOR", .25, .25, 1);
+  
+  private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.69);
+  private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
+  
+  public SunriseSunsetRainbow(LX lx) {
+    super(lx);
+    addModulator(sunPosition).start();
+    
+    addParameter(colorSpread);
+    colorSpread.setModulationRange(1);
+    
+    addParameter(blurParameter);
+    addLayer(blurLayer);
+  }
+  
+  public void run(double deltaMs) {
+    projection.reset();
+    projection.rotateZ(sunPosition.getValuef());    
+    
+    int i = 0;
+    for(LXVector v: projection) {      
+      if(v.y > 0) {
+        float yn = (v.y - model.yMin) / model.yRange;        
+        float hue = (lx.palette.getHuef() + ((360 * colorSpread.getValuef() * yn))) % 360;
+        setColor(i, LX.hsb(hue, 100, 100 * yn));  
+      } else {
+        setColor(i, 0);
+      }
+      i++;
+    }
+  }
+}
+
+public class SunriseSunsetReal extends LEDomePattern {
+  LXProjection projection = new LXProjection(model);
+  SawLFO sunPosition = new SawLFO(0, TWO_PI, 24000);  
+  
+  float COLOR_SPREAD = 0.6;
+  private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.69);
+  private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
+  
+  private LEDomeAudioParameterLow sunRadius = new LEDomeAudioParameterLow("RAD", 1, 1, 9);
+  
+  public SunriseSunsetReal(LX lx) {
+    super(lx);
+    addModulator(sunPosition).start();
+    
+    addParameter(sunRadius);
+    sunRadius.setModulationRange(1);
+    
+    addParameter(blurParameter);
+    addLayer(blurLayer);
+  }
+  
+  public void run(double deltaMs) {
+    projection.reset();
+    projection.rotateZ(sunPosition.getValuef());    
+    
+    int i = 0;
+    for(LXVector v: projection) {      
+      if(v.y > 0) {
+        if (model.yMax - v.y < sunRadius.getValuef()) {
+          setColor(i, LX.hsb(120, 0, 100));
+        } else {
+          float yn = (v.y - model.yMin) / model.yRange;        
+          float hue = (360 * COLOR_SPREAD * yn) % 360;        
+          setColor(i, LX.hsb(hue, 100, 100 * yn));
+        }
+      } else {
+        setColor(i, 0);
+      }
+      i++;
     }
   }
 }

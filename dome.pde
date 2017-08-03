@@ -68,8 +68,6 @@ LXStudio lx;
 
 LXPattern[] patterns(P3LX lx) {
   return new LXPattern[] {
-    new ThunderStorm(lx),
-    
     // Create New Pattern Instances Below HERE
     new ShadyWaffle(lx),
     
@@ -95,7 +93,10 @@ LXPattern[] patterns(P3LX lx) {
     new Snakes(lx),    
     new HeartsBeat(lx),
     new DarkLights(lx),
-    new Life(lx),    
+    new Life(lx),
+    new ThunderStorm(lx),
+    new SunriseSunsetReal(lx),
+    new SunriseSunsetRainbow(lx),
     
     // Cackler
     new ColorSpiral(lx),
@@ -136,9 +137,6 @@ void setup() {
   if (RENDER_3D) {
     surface.setSize(displayWidth, displayHeight);
   }        
-    
-  final AudioFormat format = new AudioFormat(44100, 16, 1, true, false);
-  final TargetDataLine cableCreationTargetDataLine = findCableCreationTargetDataLine(format);
 
   // Create LEDome instance
   model = new LEDome();
@@ -153,9 +151,12 @@ void setup() {
       outputManager = new LEDomeOutputManager(lx);  
       outputManager.addLXOutputForNDB();
       
-      if (cableCreationTargetDataLine != null) {
-        LXAudioInput cableCreationInput = createCableCreationAudioInput(format, cableCreationTargetDataLine);
-        lx.engine.audio.changeInput(cableCreationInput);
+      // Find CableCreation input if available and set by default
+      String[] deviceNames = lx.engine.audio.input.device.getOptions();
+      for (int i = 0; i < deviceNames.length; i++) {
+        if(deviceNames[i].startsWith("CableCreation")) {
+          lx.engine.audio.input.device.setValue(i);
+        }
       }
     }
     
@@ -189,8 +190,10 @@ void setup() {
   // Set the hue mode of the palette to cycle through all the colors.  
   lx.palette.hueMode.setValue(2);
   
+  ((LXChannel)lx.engine.getFocusedChannel()).transitionEnabled.setValue(true);
+  
   // Set the audio input to be on by default
-  if (cableCreationTargetDataLine != null || RENDER_3D) {
+  if (lx.engine.audio.input.device.getRange() > 0 || RENDER_3D) {
     lx.engine.audio.enabled.setValue(true);
   }
 }
@@ -243,15 +246,6 @@ TargetDataLine findCableCreationTargetDataLine(AudioFormat  format) {
     System.err.println(x.getLocalizedMessage());
     return null;
   }
-}
-
-LXAudioInput createCableCreationAudioInput(AudioFormat format, final TargetDataLine cableCreationTargetDataLine) {
-  return new LXAudioInput(format) {
-    @Override
-    protected TargetDataLine getTargetDataLine(DataLine.Info info) throws LineUnavailableException {
-      return cableCreationTargetDataLine;
-    }
-  };    
 }
 
 void setupMidiDevices() {
