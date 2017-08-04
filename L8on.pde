@@ -1226,10 +1226,10 @@ public class L8onMixColor extends LEDomePattern {
   final float WAVZ = 3.0;
   
   // Controls brightness of on lights
-  private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 50, 10, 80);
+  private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 60, 10, 85);
   private BoundedParameter saturationParameter = new BoundedParameter("SAT", 100, 0, 100);
   
-  private BoundedParameter blurParameter = new BoundedParameter("BLUR", .6);
+  private BoundedParameter blurParameter = new BoundedParameter("BLUR", .65);
   private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
 
   public L8onMixColor(LX  lx) {

@@ -190,7 +190,9 @@ void setup() {
   // Set the hue mode of the palette to cycle through all the colors.  
   lx.palette.hueMode.setValue(2);
   
-  ((LXChannel)lx.engine.getFocusedChannel()).transitionEnabled.setValue(true);
+  LXChannel channel = (LXChannel)lx.engine.getFocusedChannel(); 
+  channel.transitionEnabled.setValue(true);
+  channel.transitionTimeSecs.setValue(3);
   
   // Set the audio input to be on by default
   if (lx.engine.audio.input.device.getRange() > 0 || RENDER_3D) {
