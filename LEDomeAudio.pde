@@ -387,8 +387,7 @@ public static class LEDomeAudioParameterManager implements LXParameterListener, 
   
   private void removeAudioModulatorsFromPattern(LXPattern pattern) {    
     println("Removing audio modulations from " + pattern.getLabel());
-    for(LXCompoundModulation compoundModulation: this.currentModulations) {
-      //compoundModulation.dispose();
+    for(LXCompoundModulation compoundModulation: this.currentModulations) {      
       this.lx.engine.modulation.removeModulation(compoundModulation);
     }
     
