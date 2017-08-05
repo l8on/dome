@@ -228,10 +228,10 @@ public class KorgNanoKontrol2MidiListener implements LXMidiListener, LXChannel.L
            
  public void controlChangeReceived(MidiControlChange cc) {   
    // Wire up specific buttons.
-   // Bind does not work for toggling as the value toggle both ways on each key press.
+   // Bind does not work for toggling as the value toggles both ways on each key press.
    switch(cc.getCC()) {
-     case KorgNanoKontrol2.MARKER_SET:
-       //if (cc.getValue() > 0) { ndbOutputParameter.toggle(); }
+     case KorgNanoKontrol2.MARKER_SET:   
+       if (cc.getValue() > 0) { lx.engine.audio.enabled.toggle(); }
        break;
      case KorgNanoKontrol2.MARKER_LEFT:
      case KorgNanoKontrol2.TRACK_LEFT:
@@ -248,9 +248,14 @@ public class KorgNanoKontrol2MidiListener implements LXMidiListener, LXChannel.L
        break;
      case KorgNanoKontrol2.R_BUTTON_8:
        if (cc.getValue() > 0) {
-         for(LXPattern pattern: lx.getPatterns()) {  
-           if (!(pattern instanceof LEDomePattern)) { continue; }
-           ((LEDomePattern)pattern).reset(); 
+         for(LXPattern pattern: lx.getPatterns()) {          
+           if (pattern instanceof LEDomePattern) { 
+             ((LEDomePattern)pattern).reset(); 
+           } else {
+             for(LXParameter param: pattern.getParameters()) {
+               param.reset();  
+             }
+           }
          }
        }
        break;      
@@ -311,62 +316,3 @@ public class KorgNanoKontrol2MidiListener implements LXMidiListener, LXChannel.L
  
  public void indexChanged(LXChannel channel) {}
 }
-
-/**
- * The LEDomeMidiListener connects the midi controller to the interface.
- */
-//public class KorgNanoKontrol2ChannelListener implements LXChannel.Listener {
-// LX lx;
-
-// public KorgNanoKontrol2ChannelListener(LX lx) {
-//   this.lx = lx;
-// }
- 
-// public void effectAdded(LXBus channel, LXEffect effect) {   
-//   if (nanoKontrol2 == null) { return; }
-
-//   nanoKontrol2.unbindEffectSliders();
-//   nanoKontrol2.bindSlidersToEffect(effect);
-// } 
-           
-// public void effectRemoved(LXBus channel, LXEffect effect) {
-// } 
-
-// public void faderTransitionDidChange(LXChannel channel, LXTransition faderTransition) {
-// } 
-           
-// public void patternAdded(LXChannel channel, LXPattern pattern) {
-// } 
-           
-// public void patternDidChange(LXChannel channel, LXPattern pattern) {
-//   if (nanoKontrol2 == null) { return; }
-      
-//   nanoKontrol2.unbindPatternKnobsAndSliders();
-//   nanoKontrol2.bindKnobsAndSlidersToPattern(pattern);
-// } 
-           
-// public void patternRemoved(LXChannel channel, LXPattern pattern) {
-// } 
-           
-// public void patternWillChange(LXChannel channel, LXPattern pattern, LXPattern nextPattern) {
-// }
-//}
-
-///**
-// * The LEDomeMidiListener connects the midi controller to the interface.
-// */
-//public class KorgNanoKontrol2EffectParameterListener implements LXParameterListener { 
-//  private LXEffect effect; 
-
-//  public KorgNanoKontrol2EffectParameterListener(LXEffect effect) {   
-//    this.effect = effect;
-//  }
- 
-//  public void onParameterChanged(LXParameter parameter) {
-//    // Expecting the boolean parameter that returns true if the effect is on.   
-//    if (((BooleanParameter)parameter).getValueb()) {
-//      nanoKontrol2.unbindSliders();
-//      nanoKontrol2.bindSlidersToEffect(this.effect);
-//    }
-//  }
-//}

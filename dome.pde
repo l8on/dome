@@ -181,7 +181,7 @@ void setup() {
   
   if (RENDER_3D) {
     lx.engine.output.enabled.setValue(false);    
-  } else { 
+  } else {
     // Start up network output immediately if no 3d
     lx.engine.output.enabled.setValue(true);
     lx.enableAutoTransition(AUTO_TRANSITION_SECONDS);
@@ -250,22 +250,16 @@ TargetDataLine findCableCreationTargetDataLine(AudioFormat  format) {
   }
 }
 
-void setupMidiDevices() {
-  //LXMidiInput korgNanoControl2Input = null;
-  ////LXMidiInput korgNanoControl2Input = lx.engine.midi.matchInput(KorgNanoKontrol2.DEVICE_NAMES);
-  //if (korgNanoControl2Input == null) {
-  //  println("Midi Remote not connected");
-  //  return;
-  //}
+void setupMidiDevices() {  
+  LXMidiInput korgNanoControl2Input = lx.engine.midi.matchInput(KorgNanoKontrol2.DEVICE_NAMES);
+  if (korgNanoControl2Input == null) {
+    println("Midi Remote not connected");
+    return;
+  }
   
-  //nanoKontrol2 = new KorgNanoKontrol2(korgNanoControl2Input);
-  //korgNanoControl2Input.addListener(new KorgNanoKontrol2MidiListener(lx, nanoKontrol2));
-  //lx.engine.getDefaultChannel().addListener(new KorgNanoKontrol2MidiListener(lx, nanoKontrol2));
-
-  // Listen to each effect to connect the last 4 sliders to the latest effect.
-  //for (LXEffect effect: lx.engine.getEffects()) {
-  //  effect.enabled.addListener(new KorgNanoKontrol2EffectParameterListener(effect));  
-  //}  
+  nanoKontrol2 = new KorgNanoKontrol2(korgNanoControl2Input);
+  korgNanoControl2Input.addListener(new KorgNanoKontrol2MidiListener(lx, nanoKontrol2));
+  lx.engine.getDefaultChannel().addListener(new KorgNanoKontrol2MidiListener(lx, nanoKontrol2));
 }
 
 

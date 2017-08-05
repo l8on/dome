@@ -2104,8 +2104,9 @@ public class SunriseSunsetReal extends LEDomePattern {
         if (model.yMax - v.y < sunRadius.getValuef()) {
           setColor(i, LX.hsb(120, 0, 100));
         } else {
-          float yn = (v.y - model.yMin) / model.yRange;        
-          float hue = (360 * COLOR_SPREAD * yn) % 360;        
+          float yn = (v.y - model.yMin) / model.yRange;
+          // 350 is a night sunsetty color of red
+          float hue = (350 + (360 * COLOR_SPREAD * yn)) % 360;        
           setColor(i, LX.hsb(hue, 100, 100 * yn));
         }
       } else {
