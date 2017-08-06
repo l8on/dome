@@ -262,7 +262,7 @@ public class HeartsBeat extends LEDomePattern {
 }
 
 public class SnakeApple extends LEDomePattern {
-  // Used to store info about each explosion.
+  // Used to store info about each apple.
   // See L8onUtil.pde for the definition.
   private List<Apple> apples = new ArrayList<Apple>();
   private List<Integer> appleIndices = new ArrayList<Integer>();
@@ -640,6 +640,144 @@ public class Explosions extends LEDomePattern {
 
   public float new_stroke_width() {
     return 3 * INCHES + random(6 * INCHES);
+  }
+}
+
+public class Darksplosions extends LEDomePattern {
+  // Used to store info about each explosion.
+  // See L8onUtil.pde for the definition.
+  private List<L8onExplosion> explosions = new ArrayList<L8onExplosion>();
+  private final SinLFO saturationModulator = new SinLFO(95.0, 100.0, 20 * SECONDS);
+  private BoundedParameter numExplosionsParameter = new BoundedParameter("NUM", 10.0, 4.0, 30.0);
+  private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 50, 10, 80);
+  private SawLFO hueModulator = new SawLFO(0, 360, 15 * SECONDS);
+  
+  private LEDomeAudioParameterFull rateParameter = new LEDomeAudioParameterFull("RATE", 8000.0, 8000.0, 750.0);
+  
+  private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.69);
+  private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
+  
+  private LEDomeAudioBeatGate beatGate = new LEDomeAudioBeatGate("XBEAT", lx);
+  private LEDomeAudioClapGate clapGate = new LEDomeAudioClapGate("XCLAP", lx);
+
+  public Darksplosions(LX lx) {
+    super(lx);
+
+    addParameter(numExplosionsParameter);
+    addParameter(brightnessParameter);
+
+    rateParameter.setModulationRange(1);
+    addParameter(rateParameter);
+    addParameter(blurParameter);
+
+    addLayer(blurLayer);
+
+    addModulator(saturationModulator).start();
+    addModulator(hueModulator).start();
+    addModulator(beatGate).start();
+    addModulator(clapGate).start();
+
+    initExplosions();
+  }
+
+  public void run(double deltaMs) {
+    initExplosions();
+
+    float base_hue = lx.palette.getHuef();
+    float wave_hue_diff = (float) (360.0 / this.explosions.size());
+
+    for(L8onExplosion explosion : this.explosions) {
+      if (explosion.isChillin((float)deltaMs)) {
+        continue;
+      }
+ 
+      explosion.hue_value = (float)(base_hue % 360.0);
+      base_hue += wave_hue_diff;
+
+      if (!explosion.hasExploded()) {
+        explosion.explode();
+      } else if (explosion.isFinished()) {
+        assignNewCenter(explosion);
+      }
+    }
+
+    color c;
+    float hue_value = 0.0;
+    float sat_value = saturationModulator.getValuef();
+    float brightness_value = brightnessParameter.getValuef();    
+
+    for (LXPoint p : model.points) {
+      int num_explosions_in = 0;
+
+      for(L8onExplosion explosion : this.explosions) {
+        if(explosion.isChillin(0)) {
+          continue;
+        }
+
+        if(explosion.onExplosion(p.x, p.y, p.z)) {
+          num_explosions_in++;
+          hue_value = LEDomeUtil.natural_hue_blend(explosion.hue_value, hue_value, num_explosions_in);
+        }
+      }
+
+      if(num_explosions_in > 0) {
+        c = LX.hsb(hue_value, sat_value, 0);
+      } else {        
+        float indexNormal = (float)p.index / (float)model.points.length;
+        float hue = (hueModulator.getValuef() + 360 * indexNormal) % 360;        
+        c = LX.hsb(hue, sat_value, brightness_value);
+      }
+
+      colors[p.index] = c;
+    }
+  }
+
+  private void initExplosions() {
+    int num_explosions = (int) numExplosionsParameter.getValue();
+
+    if (this.explosions.size() == num_explosions) {
+      return;
+    }
+
+    if (this.explosions.size() < num_explosions) {
+      for(int i = 0; i < (num_explosions - this.explosions.size()); i++) {
+        float stroke_width = this.new_stroke_width();
+        QuadraticEnvelope new_radius_env = new QuadraticEnvelope(0.0, model.xRange + (model.zRange/2), rateParameter);
+        new_radius_env.setEase(QuadraticEnvelope.Ease.OUT);
+        WB_Point new_center = model.randomFaceCenter();
+        addModulator(new_radius_env);
+        BandGate explosionGate = (this.explosions.size() % 2 == 1) ? this.beatGate : this.clapGate;        
+        this.explosions.add(
+          new L8onExplosion(new_radius_env, explosionGate.gate, stroke_width, new_center.xf(), new_center.yf(), new_center.zf())
+        );
+      }
+    } else {
+      for(int i = (this.explosions.size() - 1); i >= num_explosions; i--) {
+        this.explosions.remove(i);
+      }
+    }
+  }
+
+  private void assignNewCenter(L8onExplosion explosion) {
+    float stroke_width = this.new_stroke_width();
+    WB_Point new_center = model.randomFaceCenter();
+    float chill_time = (15.0 + random(15)) * SECONDS;
+    QuadraticEnvelope new_radius_env = new QuadraticEnvelope(0.0, model.xRange + (model.zRange/2), rateParameter);
+    new_radius_env.setEase(QuadraticEnvelope.Ease.OUT);
+
+    explosion.setCenter(new_center.xf(), new_center.yf(), new_center.zf());
+    removeModulator(explosion.radius_modulator);
+    addModulator(new_radius_env);
+    explosion.setRadiusModulator(new_radius_env, stroke_width);
+    explosion.setChillTime(chill_time);
+  }
+
+  public float new_stroke_width() {
+    return 1 * FEET + random(2 * FEET);
+  }
+  
+  public float new_chill_time() {
+    return (1 + random(5)) * SECONDS;
   }
 }
 
@@ -1226,10 +1364,10 @@ public class L8onMixColor extends LEDomePattern {
   final float WAVZ = 3.0;
   
   // Controls brightness of on lights
-  private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 50, 10, 80);
+  private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 60, 10, 85);
   private BoundedParameter saturationParameter = new BoundedParameter("SAT", 100, 0, 100);
   
-  private BoundedParameter blurParameter = new BoundedParameter("BLUR", .6);
+  private BoundedParameter blurParameter = new BoundedParameter("BLUR", .65);
   private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
 
   public L8onMixColor(LX  lx) {
@@ -1989,7 +2127,7 @@ public class ThunderStorm extends LEDomePattern {
  
   List<LightningBolt> lightningBolts = new ArrayList<LightningBolt>();
   
-  BoundedParameter numBolts = new BoundedParameter("NUM", 5, 2, 20);
+  BoundedParameter numBolts = new BoundedParameter("NUM", 10, 5, 25);
   BoundedParameter branchLength = new BoundedParameter("LNTH", 8, 5, 12);
   BoundedParameter strikeDuration = new BoundedParameter("STRK", 400, 200, 800);
   BoundedParameter cooldownDuration = new BoundedParameter("COOL", 4500, 1000, 10000);
@@ -2104,8 +2242,9 @@ public class SunriseSunsetReal extends LEDomePattern {
         if (model.yMax - v.y < sunRadius.getValuef()) {
           setColor(i, LX.hsb(120, 0, 100));
         } else {
-          float yn = (v.y - model.yMin) / model.yRange;        
-          float hue = (360 * COLOR_SPREAD * yn) % 360;        
+          float yn = (v.y - model.yMin) / model.yRange;
+          // 350 is a night sunsetty color of red
+          float hue = (350 + (360 * COLOR_SPREAD * yn)) % 360;        
           setColor(i, LX.hsb(hue, 100, 100 * yn));
         }
       } else {

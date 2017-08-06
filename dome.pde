@@ -67,7 +67,7 @@ LEDome model;
 LXStudio lx;
 
 LXPattern[] patterns(P3LX lx) {
-  return new LXPattern[] {
+  return new LXPattern[] {    
     // Create New Pattern Instances Below HERE
     new ShadyWaffle(lx),
     
@@ -88,6 +88,7 @@ LXPattern[] patterns(P3LX lx) {
     new SpotLights(lx),
     new JumpRopes(lx),
     new Explosions(lx),
+    new Darksplosions(lx),
     new DomeEQ(lx),
     new SnakeApple(lx),
     new Snakes(lx),    
@@ -181,7 +182,7 @@ void setup() {
   
   if (RENDER_3D) {
     lx.engine.output.enabled.setValue(false);    
-  } else { 
+  } else {
     // Start up network output immediately if no 3d
     lx.engine.output.enabled.setValue(true);
     lx.enableAutoTransition(AUTO_TRANSITION_SECONDS);
@@ -190,7 +191,9 @@ void setup() {
   // Set the hue mode of the palette to cycle through all the colors.  
   lx.palette.hueMode.setValue(2);
   
-  ((LXChannel)lx.engine.getFocusedChannel()).transitionEnabled.setValue(true);
+  LXChannel channel = (LXChannel)lx.engine.getFocusedChannel(); 
+  channel.transitionEnabled.setValue(true);
+  channel.transitionTimeSecs.setValue(3);
   
   // Set the audio input to be on by default
   if (lx.engine.audio.input.device.getRange() > 0 || RENDER_3D) {
@@ -248,22 +251,16 @@ TargetDataLine findCableCreationTargetDataLine(AudioFormat  format) {
   }
 }
 
-void setupMidiDevices() {
-  //LXMidiInput korgNanoControl2Input = null;
-  ////LXMidiInput korgNanoControl2Input = lx.engine.midi.matchInput(KorgNanoKontrol2.DEVICE_NAMES);
-  //if (korgNanoControl2Input == null) {
-  //  println("Midi Remote not connected");
-  //  return;
-  //}
+void setupMidiDevices() {  
+  LXMidiInput korgNanoControl2Input = lx.engine.midi.matchInput(KorgNanoKontrol2.DEVICE_NAMES);
+  if (korgNanoControl2Input == null) {
+    println("Midi Remote not connected");
+    return;
+  }
   
-  //nanoKontrol2 = new KorgNanoKontrol2(korgNanoControl2Input);
-  //korgNanoControl2Input.addListener(new KorgNanoKontrol2MidiListener(lx, nanoKontrol2));
-  //lx.engine.getDefaultChannel().addListener(new KorgNanoKontrol2MidiListener(lx, nanoKontrol2));
-
-  // Listen to each effect to connect the last 4 sliders to the latest effect.
-  //for (LXEffect effect: lx.engine.getEffects()) {
-  //  effect.enabled.addListener(new KorgNanoKontrol2EffectParameterListener(effect));  
-  //}  
+  nanoKontrol2 = new KorgNanoKontrol2(korgNanoControl2Input);
+  korgNanoControl2Input.addListener(new KorgNanoKontrol2MidiListener(lx, nanoKontrol2));
+  lx.engine.getDefaultChannel().addListener(new KorgNanoKontrol2MidiListener(lx, nanoKontrol2));
 }
 
 
