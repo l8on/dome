@@ -67,7 +67,7 @@ LEDome model;
 LXStudio lx;
 
 LXPattern[] patterns(P3LX lx) {
-  return new LXPattern[] {
+  return new LXPattern[] {    
     // Create New Pattern Instances Below HERE
     new ShadyWaffle(lx),
     
@@ -88,6 +88,7 @@ LXPattern[] patterns(P3LX lx) {
     new SpotLights(lx),
     new JumpRopes(lx),
     new Explosions(lx),
+    new Darksplosions(lx),
     new DomeEQ(lx),
     new SnakeApple(lx),
     new Snakes(lx),    
