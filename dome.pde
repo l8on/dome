@@ -254,8 +254,28 @@ TargetDataLine findCableCreationTargetDataLine(AudioFormat  format) {
   }
 }
 
-void setupMidiDevices() {  
-  LXMidiInput korgNanoControl2Input = lx.engine.midi.matchInput(KorgNanoKontrol2.DEVICE_NAMES);
+void setupMidiDevices() {
+  MidiDevice.Info[] deviceInfos = MidiSystem.getMidiDeviceInfo();
+  println("There are " + deviceInfos.length + " midi devices");
+  
+  for (MidiDevice.Info deviceInfo : CoreMidiDeviceProvider.getMidiDeviceInfo()) {
+  //for (MidiDevice.Info deviceInfo : MidiSystem.getMidiDeviceInfo()) {
+    println("Here be a midi device: " + deviceInfo.getName());
+    //try {
+    //  MidiDevice device = MidiSystem.getMidiDevice(deviceInfo);
+    //  println("Here be a midi device: " + deviceInfo);
+    //  //if (device.getMaxTransmitters() != 0) {
+    //  //  mutableInputs.add(new LXMidiInput(LXMidiEngine.this, device));
+    //  //}
+    //  //if (device.getMaxReceivers() != 0) {
+    //  //  mutableOutputs.add(new LXMidiOutput(LXMidiEngine.this, device));
+    //  //}
+    //} catch (MidiUnavailableException mux) {
+    //  mux.printStackTrace();
+    //}
+  }
+  
+  LXMidiInput korgNanoControl2Input = lx.engine.midi.matchInput(KorgNanoKontrol2.DEVICE_NAMES);  
   if (korgNanoControl2Input == null) {
     println("Midi Remote not connected");
     return;
@@ -264,6 +284,9 @@ void setupMidiDevices() {
   nanoKontrol2 = new KorgNanoKontrol2(korgNanoControl2Input);
   korgNanoControl2Input.addListener(new KorgNanoKontrol2MidiListener(lx, nanoKontrol2));
   lx.engine.getDefaultChannel().addListener(new KorgNanoKontrol2MidiListener(lx, nanoKontrol2));
+  nanoKontrol2.getInput().open();
+  
+  println("The device is connected?");
 }
 
 

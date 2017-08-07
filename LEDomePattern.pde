@@ -12,6 +12,7 @@ public abstract class LEDomePattern extends LXPattern {
    */
   public LEDomePattern reset() {
     for (LXParameter parameter : getParameters()) {
+      if (!(parameter instanceof LXListenableNormalizedParameter)) { continue; }
       parameter.reset();
     }
     onReset();    
