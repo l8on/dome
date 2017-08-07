@@ -554,11 +554,11 @@ public class Explosions extends LEDomePattern {
     float base_hue = lx.palette.getHuef();
     float wave_hue_diff = (float) (360.0 / this.explosions.size());
 
-    for(L8onExplosion explosion : this.explosions) {
+    for (L8onExplosion explosion : this.explosions) {
       if (explosion.isChillin((float)deltaMs)) {
         continue;
       }
- 
+
       explosion.hue_value = (float)(base_hue % 360.0);
       base_hue += wave_hue_diff;
 
@@ -607,7 +607,7 @@ public class Explosions extends LEDomePattern {
     }
 
     if (this.explosions.size() < num_explosions) {
-      for(int i = 0; i < (num_explosions - this.explosions.size()); i++) {
+      for (int i = 0; i < (num_explosions - this.explosions.size()); i++) {
         float stroke_width = this.new_stroke_width();
         QuadraticEnvelope new_radius_env = new QuadraticEnvelope(0.0, model.xRange, rateParameter);
         new_radius_env.setEase(QuadraticEnvelope.Ease.OUT);
@@ -616,10 +616,10 @@ public class Explosions extends LEDomePattern {
         BandGate explosionGate = (this.explosions.size() % 2 == 1) ? this.beatGate : this.clapGate;        
         this.explosions.add(
           new L8onExplosion(new_radius_env, explosionGate.gate, stroke_width, new_center.xf(), new_center.yf(), new_center.zf())
-        );
+          );
       }
     } else {
-      for(int i = (this.explosions.size() - 1); i >= num_explosions; i--) {
+      for (int i = (this.explosions.size() - 1); i >= num_explosions; i--) {
         this.explosions.remove(i);
       }
     }
@@ -701,27 +701,25 @@ public class Darksplosions extends LEDomePattern {
       }
     }
 
-    color c;
-    float hue_value = 0.0;
+    color c;    
     float sat_value = saturationModulator.getValuef();
     float brightness_value = brightnessParameter.getValuef();    
 
     for (LXPoint p : model.points) {
-      int num_explosions_in = 0;
+      boolean is_on_explosion = false;
 
-      for(L8onExplosion explosion : this.explosions) {
-        if(explosion.isChillin(0)) {
+      for (L8onExplosion explosion : this.explosions) {
+        if (explosion.isChillin(0)) {
           continue;
         }
 
-        if(explosion.onExplosion(p.x, p.y, p.z)) {
-          num_explosions_in++;
-          hue_value = LEDomeUtil.natural_hue_blend(explosion.hue_value, hue_value, num_explosions_in);
+        if (explosion.onExplosion(p.x, p.y, p.z)) {
+          is_on_explosion = true;          
         }
       }
 
-      if(num_explosions_in > 0) {
-        c = LX.hsb(hue_value, sat_value, 0);
+      if (is_on_explosion) {
+        c = LX.hsb(0, 0, 0);
       } else {        
         float indexNormal = (float)p.index / (float)model.points.length;
         float hue = (hueModulator.getValuef() + 360 * indexNormal) % 360;        
@@ -740,7 +738,7 @@ public class Darksplosions extends LEDomePattern {
     }
 
     if (this.explosions.size() < num_explosions) {
-      for(int i = 0; i < (num_explosions - this.explosions.size()); i++) {
+      for (int i = 0; i < (num_explosions - this.explosions.size()); i++) {
         float stroke_width = this.new_stroke_width();
         QuadraticEnvelope new_radius_env = new QuadraticEnvelope(0.0, model.xRange + (model.zRange/2), rateParameter);
         new_radius_env.setEase(QuadraticEnvelope.Ease.OUT);
@@ -749,10 +747,10 @@ public class Darksplosions extends LEDomePattern {
         BandGate explosionGate = (this.explosions.size() % 2 == 1) ? this.beatGate : this.clapGate;        
         this.explosions.add(
           new L8onExplosion(new_radius_env, explosionGate.gate, stroke_width, new_center.xf(), new_center.yf(), new_center.zf())
-        );
+          );
       }
     } else {
-      for(int i = (this.explosions.size() - 1); i >= num_explosions; i--) {
+      for (int i = (this.explosions.size() - 1); i >= num_explosions; i--) {
         this.explosions.remove(i);
       }
     }
@@ -775,7 +773,7 @@ public class Darksplosions extends LEDomePattern {
   public float new_stroke_width() {
     return 1 * FEET + random(2 * FEET);
   }
-  
+
   public float new_chill_time() {
     return (1 + random(5)) * SECONDS;
   }
@@ -797,7 +795,7 @@ public class SpotLights extends LEDomePattern {
   private BoundedParameter restParameter = new BoundedParameter("REST", 2000.0, 1.0, 10000.0);
   private BoundedParameter delayParameter = new BoundedParameter("DELAY", 0, 0.0, 2000.0);
   private BoundedParameter minDistParameter = new BoundedParameter("DIST", 100.0, 10.0, model.xRange);
-  
+
   private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.69);
 
   private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
@@ -829,13 +827,13 @@ public class SpotLights extends LEDomePattern {
     float wave_hue_diff = (float) (360.0 / this.spotlights.size());
     float dist_from_dest;
 
-    for(L8onSpotLight spotlight : this.spotlights) {
+    for (L8onSpotLight spotlight : this.spotlights) {
       spotlight.hue_value = base_hue;
       base_hue += wave_hue_diff;
       dist_from_dest = spotlight.distFromDestination();
 
       if (dist_from_dest < 0.01) {
-        if(spotlight.time_at_dest_ms > restParameter.getValuef()) {
+        if (spotlight.time_at_dest_ms > restParameter.getValuef()) {
           // Will set a new destination if first guess is greater than min distance.
           // Otherwise, will keep object as is and try again next tick.
           spotlight.tryNewDestination();
@@ -860,30 +858,16 @@ public class SpotLights extends LEDomePattern {
     for (LXPoint p : model.points) {
       int num_spotlights_in = 0;
 
-      for(L8onSpotLight spotlight : this.spotlights) {
+      for (L8onSpotLight spotlight : this.spotlights) {
         float dist_from_spotlight = dist(spotlight.center_x, spotlight.center_y, spotlight.center_z, p.x, p.y, p.z);
 
-        if(dist_from_spotlight <= spotlight_radius) {
+        if (dist_from_spotlight <= spotlight_radius) {
           num_spotlights_in++;
-
-          if(num_spotlights_in == 1) {
-            hue_value = spotlight.hue_value;
-          } if(num_spotlights_in == 2) {
-            // Blend new color with previous color.
-            min_hv = min(hue_value, spotlight.hue_value);
-            max_hv = max(hue_value, spotlight.hue_value);
-            hue_value = (min_hv * 2.0 + max_hv / 2.0) / 2.0;
-          } else {
-            // Jump color by 180 before blending again.
-            hue_value = LXUtils.wrapdistf(0, hue_value + 180, 360);
-            min_hv = min(hue_value, spotlight.hue_value);
-            max_hv = max(hue_value, spotlight.hue_value);
-            hue_value = (min_hv * 2.0 + max_hv / 2.0) / 2.0;
-          }
+          hue_value = LEDomeUtil.natural_hue_blend(spotlight.hue_value, hue_value, num_spotlights_in);
         }
       }
 
-      if(num_spotlights_in > 0) {
+      if (num_spotlights_in > 0) {
         c = LX.hsb(hue_value, sat_value, brightness_value);
       } else {
         c = colors[p.index];
@@ -906,16 +890,16 @@ public class SpotLights extends LEDomePattern {
     if (this.spotlights.size() < num_spotlights) {
       float min_dist = minDistParameter.getValuef();
 
-      for(int i = 0; i < (num_spotlights - this.spotlights.size()); i++) {
+      for (int i = 0; i < (num_spotlights - this.spotlights.size()); i++) {
         this.spotlights.add(
-          new L8onSpotLight(model.sphere,
-                            model.xMin + random(model.xRange), model.yMin + random(model.yRange), model.zMin + random(model.zRange),
-                            model.yMin + random(model.yRange), model.yMin + random(model.yRange), model.zMin + random(model.zRange),
-                            min_dist)
-        );
+          new L8onSpotLight(model.sphere, 
+          model.xMin + random(model.xRange), model.yMin + random(model.yRange), model.zMin + random(model.zRange), 
+          model.yMin + random(model.yRange), model.yMin + random(model.yRange), model.zMin + random(model.zRange), 
+          min_dist)
+          );
       }
     } else {
-      for(int i = (this.spotlights.size() - 1); i >= num_spotlights; i--) {
+      for (int i = (this.spotlights.size() - 1); i >= num_spotlights; i--) {
         this.spotlights.remove(i);
       }
     }
@@ -940,7 +924,7 @@ public class DarkLights extends LEDomePattern {
   private BoundedParameter restParameter = new BoundedParameter("REST", 2000.0, 1.0, 10000.0);
   private BoundedParameter delayParameter = new BoundedParameter("DELAY", 0, 0.0, 2000.0);
   private BoundedParameter minDistParameter = new BoundedParameter("DIST", 100.0, 10.0, model.xRange);
-  
+
   private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.55);
 
   private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
@@ -971,18 +955,18 @@ public class DarkLights extends LEDomePattern {
     int effectiveIndex;    
     float dist_from_dest;
     boolean is_on_spotlight = false;
-    
+
     float hue;
     float saturation = saturationModulator.getValuef();
     float brightness = brightnessParameter.getValuef();    
     float spotlight_radius = radiusParameter.getValuef();
 
     initL8onSpotlights();
-    for(L8onSpotLight spotlight : this.spotlights) {            
+    for (L8onSpotLight spotlight : this.spotlights) {            
       dist_from_dest = spotlight.distFromDestination();
 
       if (dist_from_dest < 0.01) {
-        if(spotlight.time_at_dest_ms > restParameter.getValuef()) {
+        if (spotlight.time_at_dest_ms > restParameter.getValuef()) {
           // Will set a new destination if first guess is greater than min distance.
           // Otherwise, will keep object as is and try again next tick.
           spotlight.tryNewDestination();
@@ -1114,17 +1098,18 @@ public class HeartExplosions extends LEDomePattern {
     for (LXPoint p : model.points) {
       int num_explosions_in = 0;
 
-      for(L8onHeartExplosion heart : this.hearts) {
-        if(heart.isChillin(0)) {
+      for (L8onHeartExplosion heart : this.hearts) {
+        if (heart.isChillin(0)) {
           continue;
         }
 
-        if(heart.onHeart(p.x, p.y, p.z)) {
+        if (heart.onHeart(p.x, p.y, p.z)) {
           num_explosions_in++;
 
-          if(num_explosions_in == 1) {
+          if (num_explosions_in == 1) {
             hue_value = heart.hue_value;
-          } if(num_explosions_in == 2) {
+          } 
+          if (num_explosions_in == 2) {
             // Blend new color with previous color.
             min_hv = min(hue_value, heart.hue_value);
             max_hv = max(hue_value, heart.hue_value);
@@ -1292,7 +1277,7 @@ public class HeartLights extends LEDomePattern {
         }
       }
 
-      if(num_spotlights_in > 0) {
+      if (num_spotlights_in > 0) {
         c = LX.hsb(hue_value, sat_value, brightness_value);
       } else {
         c = colors[p.index];
@@ -1551,7 +1536,7 @@ public class Life extends LEDomePattern {
     for (L8onFaceLife face_life : this.face_lives) {
       LEDomeFace face = this.faces.get(face_life.index);
 
-      if(shouldLightFace(face_life)) {
+      if (shouldLightFace(face_life)) {
         lightLiveFace(face, face_life, deltaMs);
       } else if (face.hasLights()) {
         lightDeadFace(face, face_life, deltaMs);
@@ -1559,7 +1544,7 @@ public class Life extends LEDomePattern {
     }
 
     // If we have landed in a static state, randomize faces.
-    if(!any_changes_this_run) {
+    if (!any_changes_this_run) {
       randomizeFaceStates();
       time_since_last_run = 0;
       return;
@@ -1871,7 +1856,8 @@ public class ExplosionEffect extends LEDomeEffect {
     addParameter(saturationParameter);
     addParameter(rateParameter);
     addParameter(delayParameter);
-    addParameter(strokeParameter);; 
+    addParameter(strokeParameter);
+    ;
   }
 
   public void onEnable() {    
@@ -1898,52 +1884,54 @@ public class ExplosionEffect extends LEDomeEffect {
 public class JumpRopes extends LEDomePattern {
   
   final SinLFO thAmt = new SinLFO(0, 50, startModulator(new SinLFO(5000, 19000, 27000)));
-  
+  private FixedParameter blurParameter = new FixedParameter(.65);
+  private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
+
   private LEDomeAudioParameterLow falloffLow = new LEDomeAudioParameterLow("LOW", 600, 600, 100);
   private LEDomeAudioParameterMid falloffMid = new LEDomeAudioParameterMid("MID", 600, 600, 100);
   private LEDomeAudioParameterHigh falloffHigh = new LEDomeAudioParameterHigh("HIGH", 600, 600, 100);
   private LEDomeAudioParameterFull falloffFull = new LEDomeAudioParameterFull("FULL", 600, 600, 100);
   private LEDomeAudioParameter[] clockFalloffs = new LEDomeAudioParameter[] {
-    falloffLow,
-    falloffMid,
-    falloffHigh,
+    falloffLow, 
+    falloffMid, 
+    falloffHigh, 
     falloffFull
   };
-  
+
   JumpRopes(LX lx) {
     super(lx);
     falloffLow.setModulationRange(1);
     falloffMid.setModulationRange(1);
     falloffHigh.setModulationRange(1);
     falloffFull.setModulationRange(1);
-    
+
     addParameter(falloffLow);
     addParameter(falloffMid);
     addParameter(falloffHigh);
     addParameter(falloffFull);
 
-    
     for (int i = 0; i < 4; ++i) {
       addLayer(new JumpRope(lx, i, clockFalloffs[i]));
-    } 
+    }    
     startModulator(thAmt.randomBasis());
+    addLayer(blurLayer);
   }
-  
+
   public class JumpRope extends LXLayer {
-    
+
     final SawLFO angle = new SawLFO(
       0, 
-      TWO_PI,
+      TWO_PI, 
       startModulator(new SinLFO(random(4000, 7000), random(19000, 21000), random(17000, 31000)).randomBasis())
-    );
-    
+      );
+
     final SinLFO falloffLFO = new SinLFO(200, 500, random(17000, 21000));
     LEDomeAudioParameter falloffParam;
-    
+
     final SinLFO xSpr = new SinLFO(0, 2, random(10000, 29000));
-    
+
     final int i;
-    
+
     JumpRope(LX lx, int i, LEDomeAudioParameter falloffParam) {
       super(lx);
       this.i = i;
@@ -2072,34 +2060,34 @@ public class DomeEQ extends LEDomePattern {
   private final int MAX_POINT_INDEX = 544;
   private double originAzimuth = model.points[ORIGIN_POINT_INDEX].azimuth;
   private double projectedMaxAzimuth;
-  
+
   private BoundedParameter brightnessParam = new BoundedParameter("BRIG", 60, 10, 100);
-  
+
   private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.69);
   private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
   private LXModulator huePeriod = new SinLFO(10000, 20000, 60000);
   private LXModulator hueModulator = new SinLFO(0, 360, huePeriod);
-  
+
   private final double GAIN = 6;
-  
+
   public DomeEQ(LX lx) {
     super(lx);
     this.meter = bandGate.meter;
     this.originAzimuth = model.points[ORIGIN_POINT_INDEX].azimuth;  
     this.projectedMaxAzimuth = this.projectAzimuth(model.points[MAX_POINT_INDEX].azimuth);
-    
+
     addParameter(brightnessParam);
-    
+
     addParameter(blurParameter);
     addLayer(blurLayer);
-    
+
     addModulator(huePeriod).start();
     addModulator(hueModulator).start();
-    
+
     bandGate.gain.setValue(GAIN);
-    addModulator(bandGate).start();    
+    addModulator(bandGate).start();
   }
-  
+
   public void run(double deltaMs) {   
     for (LXPoint p : model.points) {
       if (p.yn <= this.bandGate.getBand(this.getBandIndex(p))) {    

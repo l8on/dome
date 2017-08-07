@@ -169,7 +169,7 @@ public static class KorgNanoKontrol2 extends LXMidiRemote {
   }
   
   public KorgNanoKontrol2 bindKnobsAndSlidersToPattern(LXPattern pattern) {
-    List<LXParameter> patternParameters = (List) pattern.getParameters();
+    List<LXParameter> patternParameters = new ArrayList<LXParameter>(pattern.getParameters());
     if(patternParameters.size() == 0) { return this; }
     
     int numKnobs = min(KorgNanoKontrol2.KNOBS.length, patternParameters.size());
