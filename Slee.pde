@@ -2,6 +2,9 @@ public class ClockPattern extends LXPattern {
   
   final SinLFO thAmt = new SinLFO(0, 50, startModulator(new SinLFO(5000, 19000, 27000)));
   
+  private FixedParameter blurParameter = new FixedParameter(.65);
+  private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
+  
   private LEDomeAudioParameterLow falloffLow = new LEDomeAudioParameterLow("LOW", 600, 600, 100);
   private LEDomeAudioParameterMid falloffMid = new LEDomeAudioParameterMid("MID", 600, 600, 100);
   private LEDomeAudioParameterHigh falloffHigh = new LEDomeAudioParameterHigh("HIGH", 600, 600, 100);
@@ -28,7 +31,8 @@ public class ClockPattern extends LXPattern {
     for (int i = 0; i < 4; ++i) {
       addLayer(new ClockLayer(lx, i, clockFalloffs[i]));
     }
-    startModulator(thAmt.randomBasis());
+    startModulator(thAmt.randomBasis());    
+    addLayer(blurLayer);
   }
   
   public class ClockLayer extends LXLayer {

@@ -1,5 +1,7 @@
 public static class KorgNanoKontrol2 extends LXMidiRemote {
-
+  private static final boolean DEBUG = true;
+  private int channelIndex = -1;
+  
   public static final int SLIDER_1 = 0;
   public static final int SLIDER_2 = 1;
   public static final int SLIDER_3 = 2;
@@ -55,7 +57,7 @@ public static class KorgNanoKontrol2 extends LXMidiRemote {
 
   public static final int[] R_BUTTONS = { R_BUTTON_1, R_BUTTON_2, R_BUTTON_3, R_BUTTON_4, R_BUTTON_5, R_BUTTON_6, R_BUTTON_7, R_BUTTON_8 };
 
-  public static final String[] DEVICE_NAMES = { "SLIDER/KNOB", "nanoKONTROL2", "NANOKONTROL2", };
+  public static final String[] DEVICE_NAMES = { "CoreMIDI4J - SLIDER/KNOB", "nanoKONTROL2", "NANOKONTROL2", "SLIDER/KNOB" };
 
   public static final int TRACK_LEFT = 58;
   public static final int TRACK_RIGHT = 59;
@@ -75,7 +77,7 @@ public static class KorgNanoKontrol2 extends LXMidiRemote {
   
   public static boolean hasName(String name) {    
     for(String deviceName: DEVICE_NAMES) {
-      if (name.contains(deviceName)) {        
+      if (name.contains(deviceName)) { 
         return true;
       }
     }
@@ -85,6 +87,7 @@ public static class KorgNanoKontrol2 extends LXMidiRemote {
 
   public KorgNanoKontrol2(LXMidiInput input) {
     super(input);
+    println("Input created! " + input.getName());    
   }
 
   public KorgNanoKontrol2 bindSlider(LXParameter parameter, int slider) {
@@ -98,6 +101,14 @@ public static class KorgNanoKontrol2 extends LXMidiRemote {
     }
 
     return this;
+  }
+  
+  private int getChannelIndex() {
+    if (this.channelIndex < 0) {
+      this.channelIndex = 0;
+    }
+    
+    return this.channelIndex;
   }
   
   public KorgNanoKontrol2 unbindPatternSliders() {
@@ -169,18 +180,42 @@ public static class KorgNanoKontrol2 extends LXMidiRemote {
   }
   
   public KorgNanoKontrol2 bindKnobsAndSlidersToPattern(LXPattern pattern) {
-    List<LXParameter> patternParameters = (List) pattern.getParameters();
-    if(patternParameters.size() == 0) { return this; }
+    List<LXParameter> patternParameters = new ArrayList<LXParameter>(pattern.getParameters());
     
-    int numKnobs = min(KorgNanoKontrol2.KNOBS.length, patternParameters.size());
-    int numSliders = min(KorgNanoKontrol2.SLIDERS.length, patternParameters.size() - KorgNanoKontrol2.KNOBS.length);
-
-    for(int i = 0; i < numKnobs; i++) {
-      this.bindKnob(patternParameters.get(i), i);
+    if (DEBUG) {
+      println("Attempting to bind knobs and sliders to pattern: " + pattern.getLabel());
+      println("The pattern has this many parameters: " + patternParameters.size());
+      println("Is my channel enabled? : " + this.getInput().enabled.getValueb());
     }
     
-    for(int j = 0; j < numSliders; j++) {
-      this.bindSlider(patternParameters.get(j + numKnobs), j);
+    if(patternParameters.size() == 0) { return this; }
+    
+    int maxKnobs = KorgNanoKontrol2.KNOBS.length;
+    int maxSliders = KorgNanoKontrol2.SLIDERS.length;    
+    int knobIndex = 0;
+    int sliderIndex = 0;
+    
+    for(LXParameter parameter: patternParameters) {
+      if (!(parameter instanceof LXListenableNormalizedParameter)) {
+        if (DEBUG) {
+          println("Skipping parameter, not instance of LXListenableNormalizedParameter: " + parameter.getLabel());
+        }
+        continue;
+      }
+      
+      if (knobIndex < maxKnobs) {
+        if (DEBUG) {
+          println("Binding knob " +  knobIndex + " to " + parameter.getLabel());
+        }
+        this.bindKnob(parameter, knobIndex);
+        knobIndex++;
+      } else if (sliderIndex < maxSliders) {
+        if (DEBUG) {
+          println("Binding slider " +  sliderIndex + " to " + parameter.getLabel());
+        }
+        this.bindSlider(parameter, sliderIndex);
+        sliderIndex++;
+      }
     }
     
     return this;
@@ -192,25 +227,13 @@ public static class KorgNanoKontrol2 extends LXMidiRemote {
     
     return this;
   }
-  
-  public KorgNanoKontrol2 bindSlidersToEffect(LXEffect effect) {
-    List<LXParameter> effectParameters = (List) effect.getParameters();
-    if(effectParameters.size() == 0) { return this; }
-        
-    int numSliders = min(4, effectParameters.size());
-
-    for(int i = 0; i < numSliders; i++) {
-      this.bindSlider(effectParameters.get(i), i + 4);
-    }
-    return this;
-  }
 }
   
 /**
  * The LEDomeMidiListener connects the midi controller to the interface.
  */
 public class KorgNanoKontrol2MidiListener implements LXMidiListener, LXChannel.Listener {
-  private boolean DEBUG = false;   
+  private boolean DEBUG = true;   
   private LX lx;
   private KorgNanoKontrol2 nanoKontrol2;
  
@@ -253,6 +276,7 @@ public class KorgNanoKontrol2MidiListener implements LXMidiListener, LXChannel.L
              ((LEDomePattern)pattern).reset(); 
            } else {
              for(LXParameter param: pattern.getParameters()) {
+               if (!(param instanceof LXListenableNormalizedParameter)) { continue; }
                param.reset();  
              }
            }
@@ -304,6 +328,7 @@ public class KorgNanoKontrol2MidiListener implements LXMidiListener, LXChannel.L
  public void patternDidChange(LXChannel channel, LXPattern pattern) {
    if (nanoKontrol2 == null) { return; }
       
+   println("The focused Channel index is: " + ((LXChannel)lx.engine.getFocusedChannel()).getIndex());
    nanoKontrol2.unbindPatternKnobsAndSliders();
    nanoKontrol2.bindKnobsAndSlidersToPattern(pattern);
  } 

@@ -56,14 +56,14 @@ public class OffLayer extends LXLayer {
 
 
 public class BlurLayer extends LXLayer {
-  public final BoundedParameter amount;
+  public final LXParameter amount;
   private final int[] blurBuffer;
 
   public BlurLayer(LX lx, LXDeviceComponent pattern) {
     this(lx, pattern, new BoundedParameter("BLUR", 0));
   }
 
-  public BlurLayer(LX lx, LXDeviceComponent pattern, BoundedParameter amount) {    
+  public BlurLayer(LX lx, LXDeviceComponent pattern, LXParameter amount) {    
     super(lx, pattern); 
     this.amount = amount;
     this.blurBuffer = new int[lx.total];
