@@ -87,12 +87,13 @@ LXPattern[] patterns(P3LX lx) {
     
     // L8on
     new L8onMixColor(lx),
-    new AudioBelts(lx),
+    new DomeInvertEQ(lx),    
     new SpotLights(lx),
     new JumpRopes(lx),
     new Explosions(lx),
     new Darksplosions(lx),
     new DomeEQ(lx),
+    new AudioBelts(lx),
     new SnakeApple(lx),
     new Snakes(lx),    
     new HeartsBeat(lx),

@@ -2122,6 +2122,65 @@ public class DomeEQ extends LEDomePattern {
   }
 }
 
+public class DomeInvertEQ extends LEDomePattern {
+  private GraphicMeter meter;
+  private BandGate bandGate = new BandGate(lx);
+  private final int ORIGIN_POINT_INDEX = 8;
+  private final int MAX_POINT_INDEX = 544;
+  private double originAzimuth = model.points[ORIGIN_POINT_INDEX].azimuth;
+  private double projectedMaxAzimuth;
+
+  private BoundedParameter brightnessParam = new BoundedParameter("BRIG", 60, 10, 100);
+
+  private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.69);
+  private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
+  private LXModulator huePeriod = new SinLFO(10000, 20000, 60000);
+  private LXModulator hueModulator = new SinLFO(0, 360, huePeriod);
+
+  private final double GAIN = 6;
+
+  public DomeInvertEQ(LX lx) {
+    super(lx);
+    this.meter = bandGate.meter;
+    this.originAzimuth = model.points[ORIGIN_POINT_INDEX].azimuth;  
+    this.projectedMaxAzimuth = this.projectAzimuth(model.points[MAX_POINT_INDEX].azimuth);
+
+    addParameter(brightnessParam);
+
+    addParameter(blurParameter);
+    addLayer(blurLayer);
+
+    addModulator(huePeriod).start();
+    addModulator(hueModulator).start();
+
+    bandGate.gain.setValue(GAIN);
+    addModulator(bandGate).start();
+  }
+
+  public void run(double deltaMs) {   
+    for (LXPoint p : model.points) {
+      float yn = 1 - p.yn;
+      if (yn <= this.bandGate.getBand(this.getBandIndex(p))) {
+        float hue = (hueModulator.getValuef() + (yn * 360.0)) % 360.0;
+        setColor(p.index, LX.hsb(hue, 100, brightnessParam.getValuef()));
+      } else {
+        setColor(p.index, LX.hsb(0, 0, 1));
+      }
+    }
+  }
+
+  private int getBandIndex(LXPoint p) {
+    double projectedAzimuth = this.projectAzimuth(p.azimuth);
+    double normalizedPosition = LXUtils.constrain(projectedAzimuth / projectedMaxAzimuth, 0.0, 1);
+    double bandIndex = LXUtils.constrain(normalizedPosition * this.meter.numBands, 0.0, this.meter.numBands - 1);
+    return (int)bandIndex;
+  }
+
+  private double projectAzimuth(double azimuth) {
+    return (azimuth - originAzimuth + LX.TWO_PI) % LX.TWO_PI;
+  }
+}
+
 public class ThunderStorm extends LEDomePattern {
 
   List<LightningBolt> lightningBolts = new ArrayList<LightningBolt>();
