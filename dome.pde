@@ -62,9 +62,8 @@ import javax.sound.midi.MidiUnavailableException;
 
 // The raspberry pi can't render 3d out of the box.
 // Set RENDER_3D to false to avoid using OpenGL.
-// TODO: see if this is true any more with processing 3
 final static boolean RENDER_3D = false;
-final static int AUTO_TRANSITION_SECONDS = 30;
+final static int AUTO_TRANSITION_SECONDS = 45;
 
 LEDome model;
 LXStudio lx;
@@ -87,12 +86,13 @@ LXPattern[] patterns(P3LX lx) {
     
     // L8on
     new L8onMixColor(lx),
-    new AudioBelts(lx),
+    new DomeInvertEQ(lx),    
     new SpotLights(lx),
     new JumpRopes(lx),
     new Explosions(lx),
     new Darksplosions(lx),
     new DomeEQ(lx),
+    new AudioBelts(lx),
     new SnakeApple(lx),
     new Snakes(lx),    
     new HeartsBeat(lx),
