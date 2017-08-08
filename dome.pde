@@ -64,7 +64,7 @@ import javax.sound.midi.MidiUnavailableException;
 // Set RENDER_3D to false to avoid using OpenGL.
 // TODO: see if this is true any more with processing 3
 final static boolean RENDER_3D = true;
-final static int AUTO_TRANSITION_SECONDS = 30;
+final static int AUTO_TRANSITION_SECONDS = 45;  
 
 LEDome model;
 LXStudio lx;

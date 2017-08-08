@@ -11,7 +11,7 @@ public class Disco extends LEDomePattern {
 
   private Random random = new Random();
 
-  public BoundedParameter tempo = new BoundedParameter("TPO", 6000, 4000, 12000);
+  public LEDomeAudioParameterFull tempo = new LEDomeAudioParameterFull("TPO", 6000, 5000, 12000);
   private TriangleLFO beat = new TriangleLFO(0.0, 1.0, tempo);
 
   public String getName() { return "Disco"; }
@@ -35,7 +35,8 @@ public class Disco extends LEDomePattern {
     for (int i = 0; i < SET_COUNT; i++) {
       for (LEDomeFace face : this.faceSets.get(i)) {
         for (LXPoint p : face.points) {
-          colors[p.index] = LXColor.hsb(HUE_SEPARATION * i + HUE_SEPARATION / 2, 100, 100 * (1 - beat.getValue()));
+          float hue = (lx.palette.getHuef() + (HUE_SEPARATION * i + HUE_SEPARATION / 2)) % 360;
+          colors[p.index] = LXColor.hsb(hue, 100, 100 * (1 - beat.getValue()));
         }
       }
     }
