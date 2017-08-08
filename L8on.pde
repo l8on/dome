@@ -1,4 +1,4 @@
-public class ShadyWaffle extends LEDomePattern { //<>// //<>// //<>//
+public class ShadyWaffle extends LEDomePattern { //<>// //<>// //<>// //<>//
   private int PINK = LX.hsb(330, 59, 50);
 
   private int[] PINK_EDGES = {
@@ -143,7 +143,7 @@ public class HeartsBeat extends LEDomePattern {
     addParameter(rateParam);    
 
     for (LEDomeAudioParameter brightnessParameter : brightnessParams) {
-      brightnessParameter.setModulationRange(.8);
+      brightnessParameter.setModulationRange(.4);
       addParameter(brightnessParameter);
     }
     initHeartModulators();
@@ -1997,7 +1997,7 @@ public class AudioBelts extends LEDomePattern {
   private float midBeltY = 23.26;
   private float trebleBeltY = model.yMax - (1.25 * FEET);
 
-  private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.5);
+  private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.69);
   private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
 
   private BoundedParameter maxBrightnessParameter = new BoundedParameter("BRIG", 70, 0, 100);
@@ -2245,7 +2245,7 @@ public class SunriseSunsetReal extends LEDomePattern {
         } else {
           float yn = (v.y - model.yMin) / model.yRange;
           // 350 is a night sunsetty color of red
-          float hue = (350 + (360 * COLOR_SPREAD * yn)) % 360;        
+          float hue = (320 + (360 * COLOR_SPREAD * yn)) % 360;        
           setColor(i, LX.hsb(hue, 100, 100 * yn));
         }
       } else {

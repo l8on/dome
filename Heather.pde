@@ -1,15 +1,15 @@
 public class Dancers extends LEDomePattern implements LXParameterListener {
    
   private LEDomeAudioParameter[] dancerBrightnesses = new LEDomeAudioParameter[] {
-    new LEDomeAudioParameterFull("BR0", 40, 10, 95),
-    new LEDomeAudioParameterLow("BR1", 40, 10, 95),
-    new LEDomeAudioParameterMid("BR2", 40, 10, 95),
-    new LEDomeAudioParameterHigh("BR3", 40, 10, 95),
+    new LEDomeAudioParameterFull("BR0", 45, 10, 95),
+    new LEDomeAudioParameterLow("BR1", 45, 10, 95),
+    new LEDomeAudioParameterMid("BR2", 45, 10, 95),
+    new LEDomeAudioParameterHigh("BR3", 45, 10, 95),
   };
   
   private BoundedParameter speedParam  = new BoundedParameter("SPD", 6000, 6000, 1000);
 
-  private BoundedParameter blurParam = new BoundedParameter("BLUR", .3, 0, .75);
+  private BoundedParameter blurParam = new BoundedParameter("BLUR", .4, 0, .75);
 
   private BlurLayer blurLayer = new BlurLayer(lx, this, blurParam);
   protected BandGate beatGate;
@@ -42,7 +42,7 @@ public class Dancers extends LEDomePattern implements LXParameterListener {
     addLayer(blurLayer);
         
     for(Dancer curDancer : dancers) {
-      ((LEDomeAudioParameter)curDancer.brightnessParameter).setModulationRange(.6);
+      ((LEDomeAudioParameter)curDancer.brightnessParameter).setModulationRange(.35);
       addParameter(curDancer.brightnessParameter);
       addModulator(curDancer.positionModulator).start();
     }    
