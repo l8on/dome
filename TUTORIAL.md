@@ -27,9 +27,10 @@ From the top:
 
 The LEDome software uses (x, y, z) coordinates -- x is left-right, y is up-down, and z is forward-back. 
 To figure out the position of a point relative to where it is in the model, you can use model.xMax or model.xMin 
-(same for y and z) in the formula (p.x-model.xMin)/(model.xMax-model.xMin). The model is centered at (0,0,0).
-Each LXPoint in the points array (which ultimately stores the LED colors each iteration) has attributes x, y, and z. 
-Each LEDomeFace has xf(), yf(), zf() methods to get coordinates as floats, and xd(), yf(), zd() methods to get the 
+(same for y and z) in the formula `(p.x - model.xMin) / (model.xMax - model.xMin)`. 
+The model is centered at (0, 0, 0), thouh there are a few points below 0 on the y axis.
+Each `LXPoint` in the points array (which ultimately stores the LED colors each iteration) has attributes `x`, `y`, and `z`. 
+Each `LEDomeFace` has `xf()`, `yf()`, `zf()` methods to get coordinates as floats, and `xd()`, `yf()`, `zd()` methods to get the 
 coordinates as doubles. The methods align with the coordinate methods exposed by HE_Mesh - the library that generates 
 the geodesic shape.
 
@@ -37,10 +38,10 @@ the geodesic shape.
 
 Patterns (algorithmic behaviors for the LEDs on the dome) are kept in individual artists files. 
 Other than the need to have globally unique names, artists are free to create any patterns and utility classes they like. 
-An instance of your pattern is added to list in dome.pde. If you want to poke around in them, the data models for the 
-dome are in the `LEDome.pde` and `LEDomeFace.pde` files. 
+An instance of your pattern is added to list in `dome.pde`. If you want to poke around in them, the data models for the 
+dome are in the `LEDome.pde` and `LEDomeFace.pde` files.
 
-To write a pattern, first declare a new class which extends the LEDomePattern class and call `super(lx)` in its constructor:
+To write a pattern, first declare a new class which extends the `LEDomePattern` class and call `super(lx)` in its constructor:
 ```java
 class HelloWorldPattern extends LEDomePattern {
 	public HelloWorldPattern(LX lx){
@@ -49,7 +50,7 @@ super(lx);
 }
 ```
 
-`LEDomePattern` is a simple subclass of `LXPattern`, so anything it supports LEDomePattern supports.
+`LEDomePattern` is a simple subclass of `LXPattern`, so anything `LXPattern` supports, `LEDomePattern` supports.
 It adds features specific for LEDome: `LEDomePattern` knows that its model is an instance of LEDome, 
 and exposes a reset method that resets all parameters to their start values.
 
