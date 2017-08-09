@@ -44,9 +44,7 @@ dome are in the `LEDome.pde` and `LEDomeFace.pde` files.
 To write a pattern, first declare a new class which extends the `LEDomePattern` class and call `super(lx)` in its constructor:
 ```java
 class HelloWorldPattern extends LEDomePattern {
-	public HelloWorldPattern(LX lx){
-super(lx);
-}
+	public HelloWorldPattern(LX lx) { super(lx); }
 }
 ```
 
@@ -226,4 +224,3 @@ class UnsubtleColorPattern extends LEDomePattern {
   }
 }
 ```
-
