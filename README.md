@@ -6,7 +6,7 @@ The model of the dome is generated using [HE_Mesh](https://github.com/wblut/HE_M
 The Lights are driven with Mark Slee's wonderful [LX](https://github.com/heronarts/LX) ([docs](http://lx.studio/api/)) library.
 
 # instructions
-Read [the tutorial](https://github.com/l8on/dome/TUTORIAL.md) for more detailed examples and instructions.
+Read [the tutorial](https://github.com/l8on/dome/blob/master/TUTORIAL.md) for more detailed examples and instructions.
 
 # contributing
 Contributions are hella encouraged.
