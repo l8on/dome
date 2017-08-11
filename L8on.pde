@@ -1,4 +1,4 @@
-public class ShadyWaffle extends LEDomePattern { //<>// //<>//
+public class ShadyWaffle extends LEDomePattern { //<>// //<>// //<>//
   private int PINK = LX.hsb(330, 59, 50);
 
   private int[] PINK_EDGES = {

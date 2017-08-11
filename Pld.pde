@@ -5,28 +5,32 @@ public class Spiral extends LEDomePattern {
   private final BoundedParameter faceVariation = new BoundedParameter("Face", 0, 0, 2);
   private final BoundedParameter numTrails = new BoundedParameter("Trails", 4, 1, 4);
   private final BoundedParameter solidFaces = new BoundedParameter("Solid", 0, 0, 1);
+  
+  private LEDomeAudioParameterLow spiralPeriod = new LEDomeAudioParameterLow("SpiralPeriod", numFaces * 100, numFaces * 100, numFaces * 50); 
 
   public Spiral(LX lx) {
-    super(lx); 
+    super(lx);     
     addParameter(tail);
     addParameter(offset);
     addParameter(faceVariation);
     addParameter(numTrails);
     addParameter(solidFaces);
-    addLayer(new SpiralLayer(lx));    
+    addParameter(spiralPeriod);
+    addLayer(new SpiralLayer(lx, spiralPeriod));    
   }
 
   public void run(double deltaMs) {
     // The layers run automatically
   }
 
-  private class SpiralLayer extends LXLayer {
-    private final TriangleLFO currIndex = new TriangleLFO(0, numFaces, numFaces * 100);
+  private class SpiralLayer extends LXLayer {      
+    private final TriangleLFO currIndex;
     private final TriangleLFO minBright = new TriangleLFO(10, 25, numFaces * 25);
     private HashMap<Integer, Float> trailToHue = new HashMap();
 
-    private SpiralLayer(LX lx) {
+    private SpiralLayer(LX lx, LXParameter spiralPeriod) {
       super(lx);
+      currIndex = new TriangleLFO(0, numFaces, spiralPeriod);
       addModulator(currIndex).start();
       addModulator(minBright).start();
     }
