@@ -1,4 +1,4 @@
-public class ShadyWaffle extends LEDomePattern { //<>// //<>// //<>// //<>//
+public class ShadyWaffle extends LEDomePattern { //<>//
   private int PINK = LX.hsb(330, 59, 50);
 
   private int[] PINK_EDGES = {
@@ -1989,6 +1989,9 @@ public class AudioBelts extends LEDomePattern {
   private LEDomeAudioParameterMid midHeight = new LEDomeAudioParameterMid("MH", 3 * INCHES, 3 * INCHES, 1.5 * FEET);
   private LEDomeAudioParameterHigh trebleHeight = new LEDomeAudioParameterHigh("HH", 3 * INCHES, 3 * INCHES, 2 * FEET);
 
+  LXProjection projection = new LXProjection(model);
+  SinLFO sunPosition = new SinLFO( -PI/2, PI/2, 48000);
+
   private double BASS_MODULATION_RANGE = 1;
   private double MID_MODULATION_RANGE = 1;
   private double TREBLE_MODULATION_RANGE = 1;
@@ -1997,7 +2000,7 @@ public class AudioBelts extends LEDomePattern {
   private float midBeltY = 23.26;
   private float trebleBeltY = model.yMax - (1.25 * FEET);
 
-  private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.69);
+  private FixedParameter blurParameter = new FixedParameter(0.69);
   private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
 
   private BoundedParameter maxBrightnessParameter = new BoundedParameter("BRIG", 70, 0, 100);
@@ -2009,48 +2012,47 @@ public class AudioBelts extends LEDomePattern {
     super(lx);
     bassHeight.setModulationRange(BASS_MODULATION_RANGE);
     midHeight.setModulationRange(MID_MODULATION_RANGE);
-    trebleHeight.setModulationRange(TREBLE_MODULATION_RANGE);    
+    trebleHeight.setModulationRange(TREBLE_MODULATION_RANGE);
 
     addParameter(bassHeight);
     addParameter(midHeight);
     addParameter(trebleHeight);
-
+    addParameter(maxBrightnessParameter);
+    
+    addModulator(sunPosition).trigger();
+    
     twinkleRate.setModulationRange(1);
     addParameter(twinkleRate);
-    addParameter(maxBrightnessParameter);
-    addLayer(twinkleLayer);
+    addLayer(twinkleLayer);    
 
-    addParameter(blurParameter);
     addLayer(blurLayer);
   }
 
   public void run(double deltaMs) {
-    //setColors(0); 
+    //setColors(0);
+    projection.reset();
+    projection.rotateZ(sunPosition.getValuef());    
+    
     float bassHue = lx.palette.getHuef();
     float midHue = (bassHue + 120) % 360;
     float trebleHue = (midHue + 120) % 360;
-
-    for (LXPoint p : model.points) {
+    
+    for (LXVector p : projection) {
       int numBelts = 0;
       float pointHue = LXColor.h(colors[p.index]);
-
-      //if (dist(p.x, p.y, p.z, p.x, bassBeltY, p.z) <= bassHeight.getValuef()) {
+      
       if (dist(p.x, p.y, p.z, p.x, bassBeltY, p.z) <= bassHeight.getValuef()) {
         numBelts++;
         pointHue = LEDomeUtil.natural_hue_blend(bassHue, pointHue, numBelts);
         //setColor(p.index, LX.hsb(bassHue, 100, 30));
-      }
-      //if (dist(p.x, p.y, p.z, p.x, midBeltY, p.z) <= midHeight.getValuef()) {
+      }      
       if (dist(p.x, p.y, p.z, p.x, midBeltY, p.z) <= midHeight.getValuef()) {
         numBelts++;
-        pointHue = LEDomeUtil.natural_hue_blend(midHue, pointHue, numBelts);
-        //setColor(p.index, LX.hsb(midHue, 100, 30));
+        pointHue = LEDomeUtil.natural_hue_blend(midHue, pointHue, numBelts);       
       }
-      //if (dist(p.x, p.y, p.z, p.x, trebleBeltY, p.z) <= trebleHeight.getValuef()) {
       if (dist(p.x, p.y, p.z, p.x, trebleBeltY, p.z) <= trebleHeight.getValuef()) {
         numBelts++;
         pointHue = LEDomeUtil.natural_hue_blend(trebleHue, pointHue, numBelts);
-        //setColor(p.index, LX.hsb(trebleHue, 100, 30));
       }
 
       if (numBelts > 0) {
@@ -2241,6 +2243,7 @@ public class SunriseSunsetRainbow extends LEDomePattern {
 
   private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.69);
   private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
+  private float lastAngle;
 
   public SunriseSunsetRainbow(LX lx) {
     super(lx);
@@ -2251,16 +2254,18 @@ public class SunriseSunsetRainbow extends LEDomePattern {
 
     addParameter(blurParameter);
     addLayer(blurLayer);
+    lastAngle = sunPosition.getValuef();
   }
 
-  public void run(double deltaMs) {
-    projection.reset();
-    projection.rotateZ(sunPosition.getValuef());    
+  public void run(double deltaMs) {    
+    float rotationAmount = LXUtils.wrapdistf(this.lastAngle, sunPosition.getValuef(), TWO_PI);
+    projection.rotateZ(rotationAmount);
+    this.lastAngle = sunPosition.getValuef();
 
     int i = 0;
-    for (LXVector v : projection) {      
+    for (LXVector v : projection) {
       if (v.y > 0) {
-        float yn = (v.y - model.yMin) / model.yRange;        
+        float yn = (v.y - model.yMin) / model.yRange;
         float hue = (lx.palette.getHuef() + ((360 * colorSpread.getValuef() * yn))) % 360;
         setColor(i, LX.hsb(hue, 100, 100 * yn));
       } else {
@@ -2274,6 +2279,7 @@ public class SunriseSunsetRainbow extends LEDomePattern {
 public class SunriseSunsetReal extends LEDomePattern {
   LXProjection projection = new LXProjection(model);
   SawLFO sunPosition = new SawLFO(0, TWO_PI, 24000);  
+  private float lastAngle;
 
   float COLOR_SPREAD = 0.6;
   private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.69);
@@ -2290,11 +2296,14 @@ public class SunriseSunsetReal extends LEDomePattern {
 
     addParameter(blurParameter);
     addLayer(blurLayer);
+    
+    this.lastAngle = sunPosition.getValuef();
   }
 
   public void run(double deltaMs) {
-    projection.reset();
-    projection.rotateZ(sunPosition.getValuef());    
+    float rotationAmount = LXUtils.wrapdistf(this.lastAngle, sunPosition.getValuef(), TWO_PI);
+    projection.rotateZ(rotationAmount);
+    this.lastAngle = sunPosition.getValuef();
 
     int i = 0;
     for (LXVector v : projection) {      
@@ -2303,14 +2312,34 @@ public class SunriseSunsetReal extends LEDomePattern {
           setColor(i, LX.hsb(120, 0, 100));
         } else {
           float yn = (v.y - model.yMin) / model.yRange;
-          // 350 is a night sunsetty color of red
-          float hue = (320 + (360 * COLOR_SPREAD * yn)) % 360;        
+          // 320 is a night sunsetty color of red
+          float hue = (320 + (360 * COLOR_SPREAD * yn)) % 360;
           setColor(i, LX.hsb(hue, 100, 100 * yn));
         }
       } else {
         setColor(i, 0);
       }
       i++;
+    }
+  }
+}
+
+public class ColorPattern extends LEDomePattern {
+  private final LEDomeAudioParameterFull colorChangeSpeed = new LEDomeAudioParameterFull("SPD",  10000, 20000, 5000);
+  private final SinLFO whatColor = new SinLFO(0, 360, colorChangeSpeed);
+
+  public ColorPattern(LX lx) {
+    super(lx);
+    addParameter(colorChangeSpeed);
+    addModulator(whatColor).trigger();
+  }
+
+  public void run(double deltaMs){
+    for (LXPoint p : model.points) {
+      float h = whatColor.getValuef();
+      int s = 100;
+      int b = 70;
+      colors[p.index] = LX.hsb(h, s, b);
     }
   }
 }
