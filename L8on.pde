@@ -1,4 +1,4 @@
-public class ShadyWaffle extends LEDomePattern { //<>// //<>// //<>//
+public class ShadyWaffle extends LEDomePattern { //<>// //<>// //<>// //<>//
   private int PINK = LX.hsb(330, 59, 50);
 
   private int[] PINK_EDGES = {
@@ -1512,7 +1512,7 @@ public class Life extends LEDomePattern {
   // Controls the probability of a mutation in the cycleOfLife
   private LEDomeAudioParameterMid mutationParameter = new LEDomeAudioParameterMid("MUT", 0.03, 0.0, 0.2);
   // Controls the saturation.
-  private LEDomeAudioParameterFull saturationParameter = new LEDomeAudioParameterFull("SAT", 65.0, 0.0, 100.0);
+  private LEDomeAudioParameterFull saturationParameter = new LEDomeAudioParameterFull("SAT", 70.0, 0, 100.0);
 
   private BoundedParameter neighborCountParameter = new BoundedParameter("NEIG", 0.0, -2.0, 2.0);
 
@@ -1550,8 +1550,7 @@ public class Life extends LEDomePattern {
     any_changes_this_run = false;
     new_lives = new ArrayList<Boolean>(this.faces.size());
 
-    saturationParameter.setModulationPolarity(LXParameter.Polarity.BIPOLAR);
-
+    mutationParameter.setModulationRange(.6);
     addParameter(rateParameter);
     addParameter(mutationParameter);
     addParameter(saturationParameter);
@@ -1619,6 +1618,7 @@ public class Life extends LEDomePattern {
         bv
         );
     }
+    
   }
 
   /**

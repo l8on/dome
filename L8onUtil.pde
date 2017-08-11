@@ -239,7 +239,7 @@ public class SnakeLayer extends LXLayer {
     float distToTravel = dist(firstHeadPoint.x, firstHeadPoint.y, firstHeadPoint.z, secondHeadPoint.x, secondHeadPoint.y, secondHeadPoint.z);
     return max(distToTravel / (snakeSpeed.getValuef() / SECONDS), 0.0);      
   }
-} //<>// //<>// //<>//
+} //<>// //<>// //<>// //<>//
 
 /*
  * A container to keep state of the different 3d waves in the color remix.
