@@ -70,7 +70,7 @@ LEDome model;
 LXStudio lx;
 
 LXPattern[] patterns(P3LX lx) {
-  return new LXPattern[] {    
+  return new LXPattern[] {        
     // Create New Pattern Instances Below HERE
     new ShadyWaffle(lx),
     
@@ -87,8 +87,8 @@ LXPattern[] patterns(P3LX lx) {
     
     // L8on
     new L8onMixColor(lx),
-    new DomeInvertEQ(lx),    
     new SpotLights(lx),
+    new DomeInvertEQ(lx),        
     new JumpRopes(lx),
     new Explosions(lx),
     new Darksplosions(lx),
@@ -282,7 +282,7 @@ void setupMidiDevices() {
     return;
   }
   
-  nanoKontrol2 = new KorgNanoKontrol2(korgNanoControl2Input);
+  nanoKontrol2 = new KorgNanoKontrol2(korgNanoControl2Input, lx);
   korgNanoControl2Input.addListener(new KorgNanoKontrol2MidiListener(lx, nanoKontrol2));
   lx.engine.getDefaultChannel().addListener(new KorgNanoKontrol2MidiListener(lx, nanoKontrol2));
   nanoKontrol2.getInput().open();

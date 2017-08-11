@@ -1,6 +1,7 @@
 public static class KorgNanoKontrol2 extends LXMidiRemote {
   private static final boolean DEBUG = true;
   private int channelIndex = -1;
+  private LX lx;
   
   public static final int SLIDER_1 = 0;
   public static final int SLIDER_2 = 1;
@@ -77,7 +78,7 @@ public static class KorgNanoKontrol2 extends LXMidiRemote {
   
   public static boolean hasName(String name) {    
     for(String deviceName: DEVICE_NAMES) {
-      if (name.contains(deviceName)) { 
+      if (name.contains(deviceName)) {
         return true;
       }
     }
@@ -85,8 +86,9 @@ public static class KorgNanoKontrol2 extends LXMidiRemote {
     return false;
   }
 
-  public KorgNanoKontrol2(LXMidiInput input) {
+  public KorgNanoKontrol2(LXMidiInput input, LX lx) {
     super(input);
+    this.lx = lx;
     println("Input created! " + input.getName());    
   }
 
@@ -203,6 +205,13 @@ public static class KorgNanoKontrol2 extends LXMidiRemote {
         continue;
       }
       
+      if (lx.engine.audio.enabled.getValueb() && (parameter instanceof LEDomeAudioParameter)) {
+        if (DEBUG) {
+          println("Skipping parameter, audio enabled and is LEDomeAudioParameter: " + parameter.getLabel());
+        }
+        continue;
+      }
+      
       if (knobIndex < maxKnobs) {
         if (DEBUG) {
           println("Binding knob " +  knobIndex + " to " + parameter.getLabel());
@@ -215,6 +224,9 @@ public static class KorgNanoKontrol2 extends LXMidiRemote {
         }
         this.bindSlider(parameter, sliderIndex);
         sliderIndex++;
+      } else {
+        // We have bound all we can bind
+        break;
       }
     }
     

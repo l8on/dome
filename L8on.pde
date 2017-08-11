@@ -1,4 +1,4 @@
-public class ShadyWaffle extends LEDomePattern { //<>//
+public class ShadyWaffle extends LEDomePattern { //<>// //<>//
   private int PINK = LX.hsb(330, 59, 50);
 
   private int[] PINK_EDGES = {
@@ -799,8 +799,12 @@ public class SpotLights extends LEDomePattern {
 
   private final SinLFO saturationModulator = new SinLFO(75.0, 95.0, 20 * SECONDS);
 
-  // Controls the radius of the spotlights.
-  private BoundedParameter radiusParameter = new LEDomeAudioParameterLow("RAD", 2.0 * FEET, 1.0, model.xRange / 2.0);
+  // Controls the radius of the spotlights.  
+  private LEDomeAudioParameter[] radiusParameters =  new LEDomeAudioParameter[] {
+    new LEDomeAudioParameterLow("RLOW", 1.75 * FEET, 1.0, model.xRange / 2.0),
+    new LEDomeAudioParameterMid("RMID", 1.75 * FEET, 1.0, model.xRange / 2.0),
+    new LEDomeAudioParameterLow("RHGH", 1.75 * FEET, 1.0, model.xRange / 2.0)
+  };
   private BoundedParameter numLightsParameter = new BoundedParameter("NUM", 3.0, 1.0, 30.0);
   private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 50, 10, 80);
 
@@ -814,8 +818,7 @@ public class SpotLights extends LEDomePattern {
 
   public SpotLights(LX lx) {
     super(lx);
-
-    addParameter(radiusParameter);
+    
     addParameter(numLightsParameter);
     addParameter(brightnessParameter);
 
@@ -828,13 +831,17 @@ public class SpotLights extends LEDomePattern {
     addLayer(blurLayer);
 
     addModulator(saturationModulator).start();
+    
+    for (LEDomeAudioParameter radParam: radiusParameters) {
+      radParam.setModulationRange(.5);
+      addParameter(radParam);
+    }
 
     initL8onSpotlights();
   }
 
   public void run(double deltaMs) {
-    initL8onSpotlights();
-    float spotlight_radius = radiusParameter.getValuef();
+    initL8onSpotlights();    
     float base_hue = lx.palette.getHuef();
     float wave_hue_diff = (float) (360.0 / this.spotlights.size());
     float dist_from_dest;
@@ -868,9 +875,12 @@ public class SpotLights extends LEDomePattern {
     for (LXPoint p : model.points) {
       int num_spotlights_in = 0;
 
+      int spotlightIndex = 0;
       for (L8onSpotLight spotlight : this.spotlights) {
+        float spotlight_radius = radiusParameters[spotlightIndex % radiusParameters.length].getValuef();
         float dist_from_spotlight = dist(spotlight.center_x, spotlight.center_y, spotlight.center_z, p.x, p.y, p.z);
-
+        spotlightIndex++;
+        
         if (dist_from_spotlight <= spotlight_radius) {
           num_spotlights_in++;
           hue_value = LEDomeUtil.natural_hue_blend(spotlight.hue_value, hue_value, num_spotlights_in);
@@ -925,8 +935,13 @@ public class DarkLights extends LEDomePattern {
   private final SinLFO saturationModulator = new SinLFO(75.0, 95.0, 20 * SECONDS);
   private final SawLFO currIndex = new SawLFO(0, faceCount, 5000);
 
-  // Controls the radius of the spotlights.
-  private CompoundParameter radiusParameter = new LEDomeAudioParameterLow("RAD", 2.2 * FEET, 1.0, model.xRange / 2.0);
+  // Controls the radii of the spotlights.
+  private LEDomeAudioParameter[] radiusParameters =  new LEDomeAudioParameter[] {
+    new LEDomeAudioParameterLow("RLOW", 2.0 * FEET, 1.0, model.xRange / 2.0),
+    new LEDomeAudioParameterMid("RMID", 2.0 * FEET, 1.0, model.xRange / 2.0),
+    new LEDomeAudioParameterLow("RHGH", 2.0 * FEET, 1.0, model.xRange / 2.0)
+  };
+    
   private BoundedParameter numLightsParameter = new BoundedParameter("NUM", 12.0, 1.0, 50.0);
   private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 50, 10, 80);
 
@@ -941,8 +956,7 @@ public class DarkLights extends LEDomePattern {
 
   public DarkLights(LX lx) {
     super(lx);
-
-    addParameter(radiusParameter);
+    
     addParameter(numLightsParameter);
     addParameter(brightnessParameter);
 
@@ -956,6 +970,11 @@ public class DarkLights extends LEDomePattern {
 
     addModulator(saturationModulator).start();
     addModulator(currIndex).start();
+    
+    for (LEDomeAudioParameter radParam: radiusParameters) {
+      radParam.setModulationRange(.5);
+      addParameter(radParam);
+    }
 
     initL8onSpotlights();
   }
@@ -969,10 +988,9 @@ public class DarkLights extends LEDomePattern {
     float hue;
     float saturation = saturationModulator.getValuef();
     float brightness = brightnessParameter.getValuef();    
-    float spotlight_radius = radiusParameter.getValuef();
 
     initL8onSpotlights();
-    for (L8onSpotLight spotlight : this.spotlights) {            
+    for (L8onSpotLight spotlight : this.spotlights) {        
       dist_from_dest = spotlight.distFromDestination();
 
       if (dist_from_dest < 0.01) {
@@ -1001,8 +1019,11 @@ public class DarkLights extends LEDomePattern {
       for (LXPoint p : face.points) {
         is_on_spotlight = false;
 
-        for (L8onSpotLight spotlight : this.spotlights) {
+        int spotlightIndex = 0;
+        for (L8onSpotLight spotlight : this.spotlights) { 
+          float spotlight_radius = radiusParameters[spotlightIndex % radiusParameters.length].getValuef();
           float dist_from_spotlight = dist(spotlight.center_x, spotlight.center_y, spotlight.center_z, p.x, p.y, p.z);
+          spotlightIndex++;
 
           if (dist_from_spotlight <= spotlight_radius) {
             is_on_spotlight = true;
@@ -1489,15 +1510,15 @@ public class Life extends LEDomePattern {
   // Controls the rate of life algorithm ticks, in milliseconds
   private BoundedParameter rateParameter = new BoundedParameter("DELAY", 700, 0.0, 10 * SECONDS);
   // Controls the probability of a mutation in the cycleOfLife
-  private BoundedParameter mutationParameter = new LEDomeAudioParameterLow("MUT", 0.03, 0.0, 0.2);
+  private LEDomeAudioParameterMid mutationParameter = new LEDomeAudioParameterMid("MUT", 0.03, 0.0, 0.2);
   // Controls the saturation.
-  private LEDomeAudioParameterFull saturationParameter = new LEDomeAudioParameterFull("SAT", 50.0, 0.0, 100.0);
+  private LEDomeAudioParameterFull saturationParameter = new LEDomeAudioParameterFull("SAT", 65.0, 0.0, 100.0);
 
   private BoundedParameter neighborCountParameter = new BoundedParameter("NEIG", 0.0, -2.0, 2.0);
 
   // Alive probability ranges for randomization
-  public final double MIN_ALIVE_PROBABILITY = 0.3;
-  public final double MAX_ALIVE_PROBABILITY = 0.5;
+  public final double MIN_ALIVE_PROBABILITY = 0.45;
+  public final double MAX_ALIVE_PROBABILITY = 0.7;
 
   // The maximum brightness for an alive cell.
   public final float MAX_ALIVE_BRIGHTNESS = 75.0;
@@ -1735,23 +1756,15 @@ public class Life extends LEDomePattern {
     boolean before_alive = face_life.alive;
     boolean after_alive = before_alive;
     double mutation = Math.random();
-    int neighbor_count_delta = (int) neighborCountParameter.getValue();
-    int alive_min_neighbors = (2 + neighbor_count_delta);
-    int alive_max_neighbors = (3 + neighbor_count_delta);
-    int dead_to_alive_neighbors = (3 + neighbor_count_delta);
-
-    if (face.getNeighbors().size() > 9) {
-      neighbor_count_delta++;
-    }
-
-    if (face_life.alive) {
-      if (alive_neighbor_count < alive_min_neighbors || alive_neighbor_count > alive_max_neighbors) {
+    
+    if (face_life.alive) {      
+      if (alive_neighbor_count < 2 || alive_neighbor_count >= (face.getNeighbors().size() - 2)) {
         after_alive = false;
       } else {
         after_alive = true;
       }
-    } else {
-      if (alive_neighbor_count == dead_to_alive_neighbors) {
+    } else {      
+      if (alive_neighbor_count == 2 || alive_neighbor_count == (face.getNeighbors().size() - 1)) {
         after_alive = true;
       } else {
         after_alive = false;
@@ -2312,8 +2325,8 @@ public class SunriseSunsetReal extends LEDomePattern {
           setColor(i, LX.hsb(120, 0, 100));
         } else {
           float yn = (v.y - model.yMin) / model.yRange;
-          // 320 is a night sunsetty color of red
-          float hue = (320 + (360 * COLOR_SPREAD * yn)) % 360;
+          // 330 is a night sunsetty color of red
+          float hue = (330 + (360 * COLOR_SPREAD * yn)) % 360;
           setColor(i, LX.hsb(hue, 100, 100 * yn));
         }
       } else {
