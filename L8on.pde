@@ -1,4 +1,4 @@
-public class ShadyWaffle extends LEDomePattern { //<>// //<>// //<>// //<>//
+public class ShadyWaffle extends LEDomePattern { //<>// //<>// //<>// //<>// //<>//
   private int PINK = LX.hsb(330, 59, 50);
 
   private int[] PINK_EDGES = {
@@ -2099,6 +2099,7 @@ public class DomeEQ extends LEDomePattern {
   public DomeEQ(LX lx) {
     super(lx);
     this.meter = bandGate.meter;
+    
     this.originAzimuth = model.points[ORIGIN_POINT_INDEX].azimuth;  
     this.projectedMaxAzimuth = this.projectAzimuth(model.points[MAX_POINT_INDEX].azimuth);
 
@@ -2354,5 +2355,84 @@ public class ColorPattern extends LEDomePattern {
       int b = 70;
       colors[p.index] = LX.hsb(h, s, b);
     }
+  }
+}
+
+
+public class SurroundWave extends LEDomePattern {
+  private GraphicMeter meter;
+  private BandGate bandGate = new BandGate(lx);
+  LXProjection projection = new LXProjection(model);
+  
+  BoundedParameter rotatePeriod = new BoundedParameter("ROTP", 15000, 15000, 6000);
+  SinLFO waveOrigin = new SinLFO(0, TWO_PI, rotatePeriod);
+  
+  BoundedParameter wavePeriod = new BoundedParameter("WAVP", 12000, 12000, 6000);
+  SinLFO waveFloor = new SinLFO(model.yMin +  (.4 * model.yRange), model.yMin +  (.52 * model.yRange), wavePeriod);
+  
+  BoundedParameter numWavesPeriod = new BoundedParameter("NWVP", 12000, 12000, 6000);
+  SinLFO numWaves = new SinLFO(3, 5, numWavesPeriod);
+  
+  private BoundedParameter brightnessParam = new BoundedParameter("BRIG", 60, 10, 100);
+
+  float COLOR_SPREAD = 0.6;
+  private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.69);
+  private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
+
+  private LEDomeAudioParameterLow wave = new LEDomeAudioParameterLow("RAD", 1, 1, 9);
+
+  private final float GAIN = 6;
+  
+  public SurroundWave(LX lx) {
+    super(lx);
+    this.meter = bandGate.meter;
+    
+    addParameter(rotatePeriod);
+    addModulator(waveOrigin).start();
+    
+    addParameter(wavePeriod);
+    addModulator(waveFloor).start();
+        
+    addParameter(numWavesPeriod);
+    addModulator(numWaves).start();
+    
+    addParameter(brightnessParam);
+
+    addParameter(blurParameter);
+    addLayer(blurLayer);
+    
+    bandGate.gain.setValue(GAIN);
+    addModulator(bandGate).start();
+  }
+
+  public void run(double deltaMs) {    
+
+    //int i = 0;
+    for (LXPoint p : model.points) {
+      double projectedAzimuth = this.projectAzimuth(p.azimuth);
+      double normalizedAzimuth = projectedAzimuth / TWO_PI;
+      //double amplitudeNormal = sin((float)normalizedAzimuth);
+      double amplitudeNormal = sin((float)(projectedAzimuth * numWaves.getValuef()));      
+      float pointTop = (float)(this.waveFloor.getValuef() + (amplitudeNormal * (1 * FEET)));
+      if (p.y <= pointTop) {
+        float bandNormal = (float)this.bandGate.getBand(this.getBandIndex(p));
+        float yn = p.y / pointTop;
+        float hue = (lx.palette.getHuef() + (360 * bandNormal * yn)) % 360;
+        setColor(p.index, LX.hsb(hue, 100, brightnessParam.getValuef()));
+      } else {
+        setColor(p.index, LX.hsb(0, 0, 1));
+      }
+    }
+  }
+  
+  private int getBandIndex(LXPoint p) {
+    double projectedAzimuth = this.projectAzimuth(p.azimuth);
+    double normalizedPosition = LXUtils.constrain(projectedAzimuth / TWO_PI, 0.0, 1);
+    double bandIndex = LXUtils.constrain(normalizedPosition * this.meter.numBands, 0.0, this.meter.numBands - 1);
+    return (int)bandIndex;
+  }
+
+  private double projectAzimuth(double azimuth) {
+    return (azimuth - waveOrigin.getValuef() + TWO_PI) % TWO_PI;
   }
 }
