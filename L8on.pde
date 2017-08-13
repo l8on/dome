@@ -1,4 +1,4 @@
-public class ShadyWaffle extends LEDomePattern { //<>// //<>// //<>// //<>// //<>//
+public class ShadyWaffle extends LEDomePattern { //<>// //<>// //<>// //<>// //<>// //<>//
   private int PINK = LX.hsb(330, 59, 50);
 
   private int[] PINK_EDGES = {
@@ -2482,9 +2482,6 @@ public class Balls extends LEDomePattern {
     if (this.balls.size() == ball_count) {
       return;
     }
-    
-    println("There is a ball count", ball_count);
-    println("There is a size()", this.balls.size());
 
     removeLayer(this.blurLayer);
     if (this.balls.size() < ball_count) {
