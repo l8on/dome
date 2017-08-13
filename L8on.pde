@@ -972,7 +972,7 @@ public class DarkLights extends LEDomePattern {
     addModulator(currIndex).start();
     
     for (LEDomeAudioParameter radParam: radiusParameters) {
-      radParam.setModulationRange(.5);
+      radParam.setModulationRange(.35);
       addParameter(radParam);
     }
 
@@ -2368,7 +2368,7 @@ public class SurroundWave extends LEDomePattern {
   SinLFO waveOrigin = new SinLFO(0, TWO_PI, rotatePeriod);
   
   BoundedParameter wavePeriod = new BoundedParameter("WAVP", 12000, 12000, 6000);
-  SinLFO waveFloor = new SinLFO(model.yMin +  (.4 * model.yRange), model.yMin +  (.52 * model.yRange), wavePeriod);
+  SinLFO waveFloor = new SinLFO(model.yMin +  (.36 * model.yRange), model.yMin +  (.48 * model.yRange), wavePeriod);
   
   BoundedParameter numWavesPeriod = new BoundedParameter("NWVP", 12000, 12000, 6000);
   SinLFO numWaves = new SinLFO(3, 5, numWavesPeriod);
@@ -2409,16 +2409,14 @@ public class SurroundWave extends LEDomePattern {
 
     //int i = 0;
     for (LXPoint p : model.points) {
-      double projectedAzimuth = this.projectAzimuth(p.azimuth);
-      double normalizedAzimuth = projectedAzimuth / TWO_PI;
-      //double amplitudeNormal = sin((float)normalizedAzimuth);
+      double projectedAzimuth = this.projectAzimuth(p.azimuth);      
       double amplitudeNormal = sin((float)(projectedAzimuth * numWaves.getValuef()));      
       float pointTop = (float)(this.waveFloor.getValuef() + (amplitudeNormal * (1 * FEET)));
       if (p.y <= pointTop) {
         float bandNormal = (float)this.bandGate.getBand(this.getBandIndex(p));
         float yn = p.y / pointTop;
         float hue = (lx.palette.getHuef() + (360 * bandNormal * yn)) % 360;
-        setColor(p.index, LX.hsb(hue, 100, brightnessParam.getValuef()));
+        setColor(p.index, LX.hsb(hue, 95, brightnessParam.getValuef()));
       } else {
         setColor(p.index, LX.hsb(0, 0, 1));
       }
@@ -2434,5 +2432,91 @@ public class SurroundWave extends LEDomePattern {
 
   private double projectAzimuth(double azimuth) {
     return (azimuth - waveOrigin.getValuef() + TWO_PI) % TWO_PI;
+  }
+}
+
+public class Balls extends LEDomePattern {
+  DiscreteParameter num_balls =  new DiscreteParameter("NBALLS", 3, 1, 13); 
+  List<L8onBall> balls = new ArrayList<L8onBall>();
+  
+  FixedParameter blurParameter = new FixedParameter(0.60);
+  BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
+  
+  LEDomeAudioParameter[] ballRadii = new LEDomeAudioParameter[] {
+    new LEDomeAudioParameterLow("LOWBALL", 1 * FEET, 1 * FEET, 1.25 * FEET),
+    new LEDomeAudioParameterMid("MIDBALL", 1 * FEET, 1 * FEET, 1.25 * FEET),
+    new LEDomeAudioParameterHigh("HIGHBALL", 1 * FEET, 1 * FEET, 1.25 * FEET)
+  };
+  
+  LEDomeAudioParameter[] ballSpeeds = new LEDomeAudioParameter[] {
+    new LEDomeAudioParameterLow("LOWSPD", 12000, 12000, 500),
+    new LEDomeAudioParameterMid("MIDSPD", 15000, 15000, 1000),
+    new LEDomeAudioParameterHigh("HGHSPD", 15000, 15000, 1000)
+  };
+  
+  public Balls(LX lx) {
+    super(lx);    
+    
+    addParameter(num_balls);
+    
+    for(LEDomeAudioParameter radParam : ballRadii) {
+      radParam.setModulationRange(1.0);
+      addParameter(radParam);
+    }
+    
+    for(LEDomeAudioParameter ballSpeed : ballSpeeds) {
+      ballSpeed.setModulationRange(1.0);
+      addParameter(ballSpeed);
+    }
+    
+    initBalls();    
+  }
+  
+  public void run(double deltaMs) {
+    initBalls();
+    setColors(LX.hsb(0, 0, 1));
+  }
+  
+  public void initBalls() {   
+    int ball_count = num_balls.getValuei();
+    if (this.balls.size() == ball_count) {
+      return;
+    }
+    
+    println("There is a ball count", ball_count);
+    println("There is a size()", this.balls.size());
+
+    removeLayer(this.blurLayer);
+    if (this.balls.size() < ball_count) {
+      for (int i = 0; i < (ball_count - this.balls.size()); i++) {
+        LEDomeAudioParameter radParam = ballRadii[(this.balls.size() % ballRadii.length)];
+        LEDomeAudioParameter ballSpeed = ballSpeeds[(this.balls.size() % ballSpeeds.length)];
+        float minAngle = (this.balls.size() % 2 == 0) ? 0 : TWO_PI;
+        float maxAngle = (this.balls.size() % 2 == 0) ? TWO_PI : 0;
+        SawLFO azimuthPosition = new SawLFO(minAngle, maxAngle, ballSpeed);
+        azimuthPosition.randomBasis();
+        addModulator(azimuthPosition).start();
+        
+        float minHue = (this.balls.size() % 2 == 0) ? 360 : 0;
+        float maxHue = (this.balls.size() % 2 == 0) ? 0 : 360;
+        SawLFO ballHue = new SawLFO(minHue, maxHue, ballSpeed);        
+        ballHue.randomBasis();
+        addModulator(ballHue).start();
+
+        L8onBall ball = new L8onBall(lx, this, azimuthPosition, radParam, ballHue);
+        //L8onBall ball = new L8onBall(lx, this, azimuthPosition, new FixedParameter(1 * FEET));
+        this.balls.add(ball);
+        addLayer(ball);
+      }
+    } else {
+      for (int i = (this.balls.size() - 1); i >= ball_count; i--) {
+        removeModulator((LXModulator)this.balls.get(i).hue);
+        removeModulator((LXModulator)this.balls.get(i).center_azimuth);
+        removeLayer(this.balls.get(i));
+        this.balls.remove(i);
+      }
+    }
+    
+    addLayer(this.blurLayer);
   }
 }
