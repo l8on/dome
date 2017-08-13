@@ -17,6 +17,9 @@
 final static int INCHES = 1;
 final static int FEET = 12*INCHES;
 
+// Let's encode some useful values stuff
+final static float GRAVITY = -32.2 * FEET;
+
 // Let's work with human level times.
 final static int SECONDS = 1000;
 final static int MINUTES = 60 * SECONDS;

@@ -65,5 +65,9 @@ public abstract class LEDomeLayer extends LXLayer {
   
   protected LEDomeLayer(LX lx) {
     super(lx);
-  }  
+  }
+  
+  protected LEDomeLayer(LX lx, LXDeviceComponent pattern) {
+    super(lx, pattern);  
+  }
 }
