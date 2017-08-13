@@ -70,10 +70,6 @@ LXStudio lx;
 
 LXPattern[] patterns(P3LX lx) {
   return new LXPattern[] {
-    new Balls(lx),
-    
-    new SurroundWave(lx),
-    
     // Create New Pattern Instances Below HERE
     new ShadyWaffle(lx),
     
@@ -89,22 +85,24 @@ LXPattern[] patterns(P3LX lx) {
     new ClapDancers(lx),
     
     // L8on
-    new L8onMixColor(lx),
-    new SpotLights(lx),
+    new L8onMixColor(lx),    
+    new DomeEQ(lx),
     new DomeInvertEQ(lx),
     new JumpRopes(lx),
     new Explosions(lx),
     new Darksplosions(lx),
-    new DomeEQ(lx),
     new AudioBelts(lx),
+    new Snakes(lx),
     new SnakeApple(lx),
-    new Snakes(lx),    
-    new HeartsBeat(lx),
-    new DarkLights(lx),
+    new SpotLights(lx),
+    new DarkLights(lx),    
     new Life(lx),
     new ThunderStorm(lx),
     new SunriseSunsetReal(lx),
     new SunriseSunsetRainbow(lx),
+    new Balls(lx),
+    new SurroundWave(lx),
+    new HeartsBeat(lx),
     
     // Cackler
     new ColorSpiral(lx),
