@@ -239,7 +239,7 @@ public class SnakeLayer extends LXLayer {
     float distToTravel = dist(firstHeadPoint.x, firstHeadPoint.y, firstHeadPoint.z, secondHeadPoint.x, secondHeadPoint.y, secondHeadPoint.z);
     return max(distToTravel / (snakeSpeed.getValuef() / SECONDS), 0.0);      
   }
-} //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
+} //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
 
 /*
  * A container to keep state of the different 3d waves in the color remix.
@@ -397,7 +397,7 @@ public class L8onBall extends LEDomeLayer {
   }
   
   public void bounce() {
-    this.current_velocity = INITIAL_VELOCITY_PSEC;
+    this.current_velocity = INITIAL_VELOCITY_PSEC + random(-2 * FEET, 2 * FEET);
   }
   
   public void adjustHeightAndVelocity(double deltaMs) {
