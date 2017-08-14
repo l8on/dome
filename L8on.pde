@@ -1508,11 +1508,11 @@ public class L8onMixColor extends LEDomePattern {
  */
 public class Life extends LEDomePattern {
   // Controls the rate of life algorithm ticks, in milliseconds
-  private BoundedParameter rateParameter = new BoundedParameter("DELAY", 700, 0.0, 10 * SECONDS);
+  private BoundedParameter rateParameter = new BoundedParameter("DELAY", 750, 100, 10 * SECONDS);
   // Controls the probability of a mutation in the cycleOfLife
-  private LEDomeAudioParameterMid mutationParameter = new LEDomeAudioParameterMid("MUT", 0.03, 0.0, 0.2);
+  private LEDomeAudioParameterMid mutationParameter = new LEDomeAudioParameterMid("MUT", 0.03, 0.001, 0.2);
   // Controls the saturation.
-  private LEDomeAudioParameterFull saturationParameter = new LEDomeAudioParameterFull("SAT", 70.0, 0, 100.0);
+  private LEDomeAudioParameterFull saturationParameter = new LEDomeAudioParameterFull("SAT", 80.0, 0, 95.0);
 
   private BoundedParameter neighborCountParameter = new BoundedParameter("NEIG", 0.0, -2.0, 2.0);
 
@@ -1551,6 +1551,7 @@ public class Life extends LEDomePattern {
     new_lives = new ArrayList<Boolean>(this.faces.size());
 
     mutationParameter.setModulationRange(.6);
+    saturationParameter.setModulationRange(1);
     addParameter(rateParameter);
     addParameter(mutationParameter);
     addParameter(saturationParameter);
@@ -2347,7 +2348,7 @@ public class SurroundWave extends LEDomePattern {
   SinLFO waveOrigin = new SinLFO(0, TWO_PI, rotatePeriod);
   
   BoundedParameter wavePeriod = new BoundedParameter("WAVP", 12000, 12000, 6000);
-  SinLFO waveFloor = new SinLFO(model.yMin +  (.36 * model.yRange), model.yMin +  (.48 * model.yRange), wavePeriod);
+  SinLFO waveFloor = new SinLFO(model.yMin +  (.36 * model.yRange), model.yMin +  (.52 * model.yRange), wavePeriod);
   
   BoundedParameter numWavesPeriod = new BoundedParameter("NWVP", 12000, 12000, 6000);
   SinLFO numWaves = new SinLFO(3, 5, numWavesPeriod);
