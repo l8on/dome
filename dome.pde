@@ -69,7 +69,7 @@ LEDome model;
 LXStudio lx;
 
 LXPattern[] patterns(P3LX lx) {
-  return new LXPattern[] {
+  return new LXPattern[] {    
     // Create New Pattern Instances Below HERE
     new ShadyWaffle(lx),
     
@@ -101,6 +101,7 @@ LXPattern[] patterns(P3LX lx) {
     new SunriseSunsetReal(lx),
     new SunriseSunsetRainbow(lx),
     new Balls(lx),
+    new DarkBalls(lx),
     new SurroundWave(lx),
     new HeartsBeat(lx),
     
