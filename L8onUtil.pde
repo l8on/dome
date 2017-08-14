@@ -239,7 +239,7 @@ public class SnakeLayer extends LXLayer {
     float distToTravel = dist(firstHeadPoint.x, firstHeadPoint.y, firstHeadPoint.z, secondHeadPoint.x, secondHeadPoint.y, secondHeadPoint.z);
     return max(distToTravel / (snakeSpeed.getValuef() / SECONDS), 0.0);      
   }
-} //<>// //<>// //<>// //<>// //<>//
+} //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
 
 /*
  * A container to keep state of the different 3d waves in the color remix.
@@ -349,37 +349,32 @@ public class L8onSpotLight {
 public class L8onBall extends LEDomeLayer {
   LXProjection projection;
   float center_y;  
-  float current_velocity = 0;
-  float lastAngle = 0;
+  float current_velocity = 0;  
   
   float INITIAL_VELOCITY_PSEC = 14.4 * FEET;
   
   public LXParameter center_azimuth;
   public LXParameter radius;
   public LXParameter hue;
+  public BooleanParameter isDark;
 
   public L8onBall(LX lx, LXDeviceComponent pattern) {
-    this(lx, pattern, new SawLFO(0, TWO_PI, 10 * SECONDS), new FixedParameter(1.5 * FEET), new FixedParameter(lx.palette.getHuef()));
+    this(lx, pattern, new SawLFO(0, TWO_PI, 10 * SECONDS), new FixedParameter(1.5 * FEET), new FixedParameter(lx.palette.getHuef()), new BooleanParameter("DRKBALL", false));
   }
   
-  public L8onBall(LX lx, LXDeviceComponent pattern, LXParameter center_azimuth, LXParameter radius, LXParameter hue) {
+  public L8onBall(LX lx, LXDeviceComponent pattern, LXParameter center_azimuth, LXParameter radius, LXParameter hue, BooleanParameter isDark) {
     super(lx, pattern);
     this.projection = new LXProjection(lx.model);
     this.center_azimuth = center_azimuth;
     this.radius = radius;
     this.hue = hue;
     this.center_y = lx.model.yMin + radius.getValuef();
-    
-    lastAngle = center_azimuth.getValuef();
+    this.isDark = isDark;
   }
   
   public void run(double deltaMs) {
     projection.reset();
     projection.rotateY(center_azimuth.getValuef());
-    
-    //float rotationAmount = LXUtils.wrapdistf(this.lastAngle, center_azimuth.getValuef(), TWO_PI);
-    //projection.rotateY(rotationAmount);
-    this.lastAngle = center_azimuth.getValuef();
     
     if(this.hitBottom()) {
       this.bounce();      
@@ -391,11 +386,8 @@ public class L8onBall extends LEDomeLayer {
       //float pointDistance = dist(p.x, p.y, p.z, 0, center_y, p.z);
       float pointDistance = dist(p.x, p.y, p.z, p.x, center_y, 0);
       if (pointDistance <= this.radius.getValuef() && abs(lx.model.points[p.index].azimuth - center_azimuth.getValuef()) <= 0.5) {
-        //this.blendColor(p.index, LX.hsb(this.hue.getValuef(), 100, 100), LXColor.Blend.SUBTRACT);
-        setColor(p.index, LX.hsb(this.hue.getValuef(), 100, 100));
-      } else {
-        //this.blendColor(p.index, LX.hsb(0, 0, 0), LXColor.Blend.SUBTRACT);
-        //setColor(p.index, LX.hsb(0, 0, 0));
+        float brightness = this.isDark.getValueb() ? 0 : 100;
+        setColor(p.index, LX.hsb(this.hue.getValuef(), 95, brightness));
       }
     }
   }
