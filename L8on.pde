@@ -2282,7 +2282,7 @@ public class SunriseSunsetRainbow extends LEDomePattern {
       if (v.y > 0) {
         float yn = (v.y - model.yMin) / model.yRange;
         float hue = (lx.palette.getHuef() + ((360 * colorSpread.getValuef() * yn))) % 360;
-        setColor(i, LX.hsb(hue, 100, 100 * yn));
+        setColor(i, LX.hsb(hue, 100, 80 * yn));
       } else {
         setColor(i, 0);
       }
@@ -2329,7 +2329,7 @@ public class SunriseSunsetReal extends LEDomePattern {
           float yn = (v.y - model.yMin) / model.yRange;
           // 330 is a night sunsetty color of red
           float hue = (330 + (360 * COLOR_SPREAD * yn)) % 360;
-          setColor(i, LX.hsb(hue, 100, 100 * yn));
+          setColor(i, LX.hsb(hue, 100, 80 * yn));
         }
       } else {
         setColor(i, 0);
@@ -2348,7 +2348,7 @@ public class SurroundWave extends LEDomePattern {
   SinLFO waveOrigin = new SinLFO(0, TWO_PI, rotatePeriod);
   
   BoundedParameter wavePeriod = new BoundedParameter("WAVP", 12000, 12000, 6000);
-  SinLFO waveFloor = new SinLFO(model.yMin +  (.36 * model.yRange), model.yMin +  (.52 * model.yRange), wavePeriod);
+  SinLFO waveFloor = new SinLFO(model.yMin +  (.36 * model.yRange), model.yMin +  (.57 * model.yRange), wavePeriod);
   
   BoundedParameter numWavesPeriod = new BoundedParameter("NWVP", 12000, 12000, 6000);
   SinLFO numWaves = new SinLFO(3, 5, numWavesPeriod);
@@ -2387,7 +2387,6 @@ public class SurroundWave extends LEDomePattern {
 
   public void run(double deltaMs) {    
 
-    //int i = 0;
     for (LXPoint p : model.points) {
       double projectedAzimuth = this.projectAzimuth(p.azimuth);      
       double amplitudeNormal = sin((float)(projectedAzimuth * numWaves.getValuef()));      
