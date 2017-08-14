@@ -1,4 +1,4 @@
-public class ShadyWaffle extends LEDomePattern { //<>// //<>// //<>// //<>// //<>// //<>// //<>//
+public class ShadyWaffle extends LEDomePattern { //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
   private int PINK = LX.hsb(330, 59, 50);
 
   private int[] PINK_EDGES = {
@@ -2422,15 +2422,15 @@ public class Balls extends LEDomePattern {
   BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
   
   LEDomeAudioParameter[] ballRadii = new LEDomeAudioParameter[] {
-    new LEDomeAudioParameterLow("LOWBALL", 1 * FEET, 1 * FEET, 1.25 * FEET),
-    new LEDomeAudioParameterMid("MIDBALL", 1 * FEET, 1 * FEET, 1.25 * FEET),
-    new LEDomeAudioParameterHigh("HIGHBALL", 1 * FEET, 1 * FEET, 1.25 * FEET)
+    new LEDomeAudioParameterLow("LOWBALL", 1 * FEET, 1 * FEET, 1.6 * FEET),
+    new LEDomeAudioParameterMid("MIDBALL", 1 * FEET, 1 * FEET, 1.6 * FEET),
+    new LEDomeAudioParameterHigh("HIGHBALL", 1 * FEET, 1 * FEET, 1.6 * FEET)
   };
   
   LEDomeAudioParameter[] ballSpeeds = new LEDomeAudioParameter[] {
-    new LEDomeAudioParameterLow("LOWSPD", 12000, 12000, 500),
-    new LEDomeAudioParameterMid("MIDSPD", 15000, 15000, 1000),
-    new LEDomeAudioParameterHigh("HGHSPD", 15000, 15000, 1000)
+    new LEDomeAudioParameterLow("LOWSPD", 12000, 12000, 100),
+    new LEDomeAudioParameterMid("MIDSPD", 14000, 14000, 100),
+    new LEDomeAudioParameterHigh("HGHSPD", 13000, 13000, 100)
   };
   
   public Balls(LX lx) {
@@ -2497,7 +2497,7 @@ public class Balls extends LEDomePattern {
 }
 
 public class DarkBalls extends LEDomePattern {
-  DiscreteParameter num_balls =  new DiscreteParameter("NBALLS", 4, 1, 13); 
+  DiscreteParameter num_balls =  new DiscreteParameter("NBALLS", 6, 2, 25); 
   List<L8onBall> balls = new ArrayList<L8onBall>();
   
   FixedParameter blurParameter = new FixedParameter(0.3);
@@ -2508,15 +2508,15 @@ public class DarkBalls extends LEDomePattern {
   BoundedParameter brightnessParam = new BoundedParameter("BRIGHT", 60, 30, 100);
   
   LEDomeAudioParameter[] ballRadii = new LEDomeAudioParameter[] {
-    new LEDomeAudioParameterLow("LOWBALL", 1.2 * FEET, 1.2 * FEET, 1.5 * FEET),
-    new LEDomeAudioParameterMid("MIDBALL", 1.2 * FEET, 1.2 * FEET, 1.5 * FEET),
-    new LEDomeAudioParameterHigh("HIGHBALL", 1.2 * FEET, 1.2 * FEET, 1.5 * FEET)
+    new LEDomeAudioParameterLow("LOWBALL", 1.2 * FEET, 1.2 * FEET, 1.6 * FEET),
+    new LEDomeAudioParameterMid("MIDBALL", 1.2 * FEET, 1.2 * FEET, 1.6 * FEET),
+    new LEDomeAudioParameterHigh("HIGHBALL", 1.2 * FEET, 1.2 * FEET, 1.6 * FEET)
   };
   
   LEDomeAudioParameter[] ballSpeeds = new LEDomeAudioParameter[] {
-    new LEDomeAudioParameterLow("LOWSPD", 12000, 12000, 500),
-    new LEDomeAudioParameterMid("MIDSPD", 15000, 15000, 1000),
-    new LEDomeAudioParameterHigh("HGHSPD", 15000, 15000, 1000)
+    new LEDomeAudioParameterLow("LOWSPD", 12000, 12000, 100),
+    new LEDomeAudioParameterMid("MIDSPD", 14000, 14000, 100),
+    new LEDomeAudioParameterHigh("HGHSPD", 13000, 13000, 100)
   };
   
   public DarkBalls(LX lx) {
@@ -2526,7 +2526,7 @@ public class DarkBalls extends LEDomePattern {
     
     colorSpread.setModulationRange(1);
     addParameter(colorSpread);
-    addModulator(baseHueModulator);
+    addModulator(baseHueModulator).start();
     
     addParameter(brightnessParam);
     
