@@ -1,4 +1,4 @@
-public class ShadyWaffle extends LEDomePattern { //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
+public class ShadyWaffle extends LEDomePattern { //<>//
   private int PINK = LX.hsb(330, 59, 50);
 
   private int[] PINK_EDGES = {
@@ -2599,32 +2599,36 @@ public class DarkBalls extends LEDomePattern {
   }
 }
 
-public class FireBalls extends LEDomePattern {
+public class Marbles extends LEDomePattern {
   DiscreteParameter num_balls =  new DiscreteParameter("NBALLS", 6, 3, 13); 
   List<L8onBall> balls = new ArrayList<L8onBall>();
   
-  FixedParameter blurParameter = new FixedParameter(0.60);
+  FixedParameter blurParameter = new FixedParameter(0.65);
   BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
   
-  FixedParameter gravityParam = new FixedParameter(.15);
-  FixedParameter velocityParam = new FixedParameter(.35);
+  FixedParameter gravityParam = new FixedParameter(.07);
+  FixedParameter velocityParam = new FixedParameter(.3);
+  //BoundedParameter gravityParam = new BoundedParameter("GRAV", .15, .15, .01);
+  //BoundedParameter velocityParam = new BoundedParameter("VEL", .4, .45, .01);
   
   LEDomeAudioParameter[] ballRadii = new LEDomeAudioParameter[] {
-    new LEDomeAudioParameterLow("LOWBALL", .75 * FEET, .75 * FEET, 1 * FEET),
-    new LEDomeAudioParameterMid("MIDBALL", .75 * FEET, .75 * FEET, 1 * FEET),
-    new LEDomeAudioParameterHigh("HIGHBALL", .75 * FEET, .75 * FEET, 1 * FEET)
+    new LEDomeAudioParameterLow("LOWBALL", .75 * FEET, .75 * FEET, 1.1 * FEET),
+    new LEDomeAudioParameterMid("MIDBALL", .75 * FEET, .75 * FEET, 1.1 * FEET),
+    new LEDomeAudioParameterHigh("HIGHBALL", .75 * FEET, .75 * FEET, 1.1 * FEET)
   };
   
   LEDomeAudioParameter[] ballSpeeds = new LEDomeAudioParameter[] {
-    new LEDomeAudioParameterLow("LOWSPD", 2500, 2500, 2000),
-    new LEDomeAudioParameterMid("MIDSPD", 2500, 2500, 2000),
-    new LEDomeAudioParameterHigh("HGHSPD", 2500, 2500, 2000)
+    new LEDomeAudioParameterLow("LOWSPD", 2600, 2600, 2400),
+    new LEDomeAudioParameterMid("MIDSPD", 2600, 2600, 2400),
+    new LEDomeAudioParameterHigh("HGHSPD", 2600, 2600, 2400)
   };
   
-  public FireBalls(LX lx) {
+  public Marbles(LX lx) {
     super(lx);    
     
     addParameter(num_balls);
+    //addParameter(gravityParam);
+    //addParameter(velocityParam);
     
     for(LEDomeAudioParameter radParam : ballRadii) {
       radParam.setModulationRange(1.0);
