@@ -803,7 +803,7 @@ public class SpotLights extends LEDomePattern {
   private LEDomeAudioParameter[] radiusParameters =  new LEDomeAudioParameter[] {
     new LEDomeAudioParameterLow("RLOW", 1.75 * FEET, 1.0, model.xRange / 2.0),
     new LEDomeAudioParameterMid("RMID", 1.75 * FEET, 1.0, model.xRange / 2.0),
-    new LEDomeAudioParameterLow("RHGH", 1.75 * FEET, 1.0, model.xRange / 2.0)
+    new LEDomeAudioParameterHigh("RHGH", 1.75 * FEET, 1.0, model.xRange / 2.0)
   };
   private BoundedParameter numLightsParameter = new BoundedParameter("NUM", 3.0, 1.0, 30.0);
   private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 50, 10, 80);
