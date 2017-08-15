@@ -62,19 +62,26 @@ public class Meteor extends LXLayer {
   private int maxCount = 0;
   private int rate = DEFAULT_RATE;
   private float speed = DEFAULT_SPEED;
-  private boolean is_auto = false;
+  private boolean autoRestart = false;
 
-  public Meteor(LX lx, boolean is_auto) {
+  public Meteor(LX lx) {
+    this(lx, true);
+  }
+
+  public Meteor(LX lx, boolean autoRestart) {
     super(lx);
     addModulator(this.xMod);
     addModulator(this.yMod);
     addModulator(this.zMod);
     addModulator(this.delayMod);
-    this.is_auto = is_auto;
+    this.autoRestart = autoRestart;
   }
 
-  private void restart(boolean immediately) {
-    float delayDuration = immediately ? 0 : DELAY_MAX / this.rate + (int)random(-1 * DELAY_RAND, DELAY_RAND);
+  private void restart() {
+    this.restart(DELAY_MAX / this.rate + (int)random(-1 * DELAY_RAND, DELAY_RAND));
+  }
+
+  private void restart(float delayDuration) {
     this.delayMod.setRange(0, 1, delayDuration).trigger();
     this.speed = DEFAULT_SPEED + random(-1 * SPEED_RAND, SPEED_RAND);
     this.edges.clear();
@@ -157,10 +164,6 @@ public class Meteor extends LXLayer {
     return LX.hsb(METEOR_HUE, METEOR_SAT, brightness);
   }
 
-  public void go() {
-    this.restart(true);
-  }
-
   public void run(double deltaMs) {
     if (this.delayMod.isRunning()) {
       return;
@@ -173,13 +176,14 @@ public class Meteor extends LXLayer {
       } else if (this.count < 3 * this.points.size()) {
         this.count += 1;
         this.delayMod.setRange(0, 1, FADE_TIME).trigger();
-      } else if (this.is_auto) {
-        this.restart(false);
+      } else if (this.autoRestart) {
+        this.restart();
       }
     }
   }
 }
 
+// TODO: implements LXParameterListener ?
 public class Stargaze extends LXPattern {
   private final int SKY_COLOR = LX.hsb(240, 80, 40);
   private final int STAR_HUE = 60;
@@ -193,8 +197,8 @@ public class Stargaze extends LXPattern {
   private List<LXPoint> stars = new ArrayList<LXPoint>();
   private List<SinLFO> twinklers = new ArrayList<SinLFO>();
 
-  private Meteor meteor = new Meteor(lx, true);
-  private Meteor clapMeteor = new Meteor(lx, false);
+  private Meteor autoMeteor = new Meteor(lx, true);
+  private Meteor clapMeteor = new Meteor(lx);
 
   private BoundedParameter brightnessParam = new BoundedParameter("BRT", 70, 40, 100);
   private BoundedParameter numStarsParam = new BoundedParameter("STAR", 40, 10, 90);
@@ -218,7 +222,7 @@ public class Stargaze extends LXPattern {
       this.twinklers.add(twinkler);
       addModulator(twinkler).trigger();
     }
-    addLayer(this.meteor);
+    addLayer(this.autoMeteor);
     addLayer(this.clapMeteor);
     addModulator(this.clapGate).start();
     this.triggerParameter = this.clapGate.gate;
@@ -227,10 +231,10 @@ public class Stargaze extends LXPattern {
 
   public void onParameterChanged(LXParameter parameter) {
     if (parameter == this.meteorRateParam) {
-      this.meteor.setRate((int)this.meteorRateParam.getValue());
+      this.autoMeteor.setRate((int)this.meteorRateParam.getValue());
     }
     if (parameter == this.triggerParameter) {
-      this.clapMeteor.go();
+      this.clapMeteor.restart(0);
     }
   }
 
@@ -260,9 +264,9 @@ public class Stargaze extends LXPattern {
       this.colors[point.index] = LX.hsb(STAR_HUE, STAR_SAT, twinkler.getValuef());
     }
     for (LXPoint point : model.points) {
-      Integer meteorColor = this.meteor.getColor(point);
-      if (meteorColor != null) {
-        this.blendColor(point.index, (int)meteorColor);
+      Integer autoMeteorColor = this.autoMeteor.getColor(point);
+      if (autoMeteorColor != null) {
+        this.blendColor(point.index, (int)autoMeteorColor);
       }
       Integer clapMeteorColor = this.clapMeteor.getColor(point);
       if (clapMeteorColor != null) {
