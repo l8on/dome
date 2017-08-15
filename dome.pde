@@ -70,8 +70,6 @@ LXStudio lx;
 
 LXPattern[] patterns(P3LX lx) {
   return new LXPattern[] {
-    new FireBalls(lx),
-    
     // Create New Pattern Instances Below HERE
     new ShadyWaffle(lx),
     
@@ -91,6 +89,7 @@ LXPattern[] patterns(P3LX lx) {
     new DomeEQ(lx),
     new DomeInvertEQ(lx),
     new JumpRopes(lx),
+    new FireBalls(lx),
     new Explosions(lx),
     new Darksplosions(lx),
     new AudioBelts(lx),
