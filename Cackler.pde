@@ -1,3 +1,67 @@
+public class Ring extends LEDomeLayer {
+  private final float hue;
+  private final float thickness;
+  private LXProjection projection;
+  private final SinLFO heightMod;
+
+  public Ring(LX lx) {
+    this(lx, random(0, 360), random(0.25 * FEET, 1 * FEET), random(3 * SECONDS, 10 * SECONDS));
+  }
+
+  public Ring(LX lx, float hue, float thickness, float period) {
+    super(lx);
+    this.hue = hue;
+    this.thickness = thickness;
+    this.projection = new LXProjection(lx.model);
+    this.heightMod = new SinLFO(lx.model.yMin, lx.model.yMax, period);
+    addModulator(this.heightMod).start();
+  }
+
+  public void run(double deltaMs) {
+    this.projection.reset();
+    for (LXVector p: this.projection) {
+      float pointDistance = dist(p.x, p.y, p.z, p.x, this.heightMod.getValuef(), p.z);
+      if (pointDistance <= this.thickness) {
+        float brightness = 50 + 50 * (this.thickness - pointDistance) / this.thickness;
+        setColor(p.index, LX.hsb(this.hue, 100, brightness));
+      }
+    }
+  }
+}
+
+public class Rings extends LEDomePattern {
+  private SawLFO backgroundHueMod = new SawLFO(0, 360, 30 * SECONDS);
+  private LEDomeAudioParameterFull brightnessParam = new LEDomeAudioParameterFull("BRT", 25, 10, 40);
+  private DiscreteParameter ringCountParam = new DiscreteParameter("NRINGS", 2, 0, 5);
+  private List<Ring> rings = new ArrayList<Ring>();
+
+  public Rings(LX lx) {
+    super(lx);
+    addModulator(backgroundHueMod).start();
+    addParameter(brightnessParam);
+    addParameter(ringCountParam);
+  }
+
+  public void setRings() {
+    int ringCount = ringCountParam.getValuei();
+    while (this.rings.size() < ringCount) {
+      // TODO: bias ring colors toward variety
+      Ring ring = new Ring(lx);
+      this.rings.add(ring);
+      addLayer(ring);
+    }
+    while (this.rings.size() > ringCount) {
+      removeLayer(this.rings.get(0));
+      this.rings.remove(0);
+    }
+  }
+
+  public void run(double deltaMs) {
+    setRings();
+    setColors(LX.hsb(backgroundHueMod.getValuef(), 50, brightnessParam.getValuef()));
+  }
+}
+
 public class ColorSpiral extends LEDomePattern {
   private final int faceCount = model.faces.size();
   private final SawLFO currIndex = new SawLFO(0, faceCount, 5000);
@@ -36,7 +100,7 @@ public class ColorSpiral extends LEDomePattern {
   }
 }
 
-public class Meteor extends LXLayer {
+public class Meteor extends LEDomeLayer {
   private final int METEOR_HUE = 60;
   private final int METEOR_SAT = 40;
   private final int DEFAULT_RATE = 6;
