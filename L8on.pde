@@ -2600,16 +2600,19 @@ public class DarkBalls extends LEDomePattern {
 }
 
 public class FireBalls extends LEDomePattern {
-  DiscreteParameter num_balls =  new DiscreteParameter("NBALLS", 4, 1, 13); 
+  DiscreteParameter num_balls =  new DiscreteParameter("NBALLS", 6, 3, 13); 
   List<L8onBall> balls = new ArrayList<L8onBall>();
   
   FixedParameter blurParameter = new FixedParameter(0.60);
   BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
   
+  FixedParameter gravityParam = new FixedParameter(.15);
+  FixedParameter velocityParam = new FixedParameter(.35);
+  
   LEDomeAudioParameter[] ballRadii = new LEDomeAudioParameter[] {
-    new LEDomeAudioParameterLow("LOWBALL", 1 * FEET, 1 * FEET, 1.6 * FEET),
-    new LEDomeAudioParameterMid("MIDBALL", 1 * FEET, 1 * FEET, 1.6 * FEET),
-    new LEDomeAudioParameterHigh("HIGHBALL", 1 * FEET, 1 * FEET, 1.6 * FEET)
+    new LEDomeAudioParameterLow("LOWBALL", .75 * FEET, .75 * FEET, 1 * FEET),
+    new LEDomeAudioParameterMid("MIDBALL", .75 * FEET, .75 * FEET, 1 * FEET),
+    new LEDomeAudioParameterHigh("HIGHBALL", .75 * FEET, .75 * FEET, 1 * FEET)
   };
   
   LEDomeAudioParameter[] ballSpeeds = new LEDomeAudioParameter[] {
@@ -2665,8 +2668,8 @@ public class FireBalls extends LEDomePattern {
         addModulator(ballHue).start();
 
         L8onBall ball = new L8onBall(lx, this, azimuthPosition, radParam, ballHue, new BooleanParameter("DRKBALL" + this.balls, false));        
-        ball.gravity = .4 * GRAVITY;
-        ball.initialVelocityPerSecond = .6 * ball.initialVelocityPerSecond;
+        ball.gravityParam = gravityParam;
+        ball.bounceVelocity = velocityParam;        
         this.balls.add(ball);
         addLayer(ball);
       }
