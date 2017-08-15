@@ -70,7 +70,9 @@ LEDome model;
 LXStudio lx;
 
 LXPattern[] patterns(P3LX lx) {
-  return new LXPattern[] {    
+  return new LXPattern[] {
+    new FireBalls(lx),
+    
     // Create New Pattern Instances Below HERE
     new ShadyWaffle(lx),
     
