@@ -89,7 +89,7 @@ LXPattern[] patterns(P3LX lx) {
     new DomeEQ(lx),
     new DomeInvertEQ(lx),
     new JumpRopes(lx),
-    new FireBalls(lx),
+    new Marbles(lx),
     new Explosions(lx),
     new Darksplosions(lx),
     new AudioBelts(lx),
