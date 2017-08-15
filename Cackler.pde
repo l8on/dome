@@ -2,7 +2,7 @@ public class ColorSpiral extends LEDomePattern {
   private final int faceCount = model.faces.size();
   private final SawLFO currIndex = new SawLFO(0, faceCount, 5000);
 
-  private BoundedParameter brightnessParam  = new BoundedParameter("BRT", 50, 0, 100);
+  private LEDomeAudioParameterFull brightnessParam = new LEDomeAudioParameterFull("BRT", 50, 0, 100);
   private BoundedParameter saturationParam  = new BoundedParameter("SAT", 75, 50, 100);
   private BoundedParameter speedParam  = new BoundedParameter("SPD", 5000, 9000, 1000);
 
