@@ -62,17 +62,19 @@ public class Meteor extends LXLayer {
   private int maxCount = 0;
   private int rate = DEFAULT_RATE;
   private float speed = DEFAULT_SPEED;
+  private boolean is_auto = false;
 
-  public Meteor(LX lx) {
+  public Meteor(LX lx, boolean is_auto) {
     super(lx);
     addModulator(this.xMod);
     addModulator(this.yMod);
     addModulator(this.zMod);
     addModulator(this.delayMod);
+    this.is_auto = is_auto;
   }
 
-  private void restart() {
-    float delayDuration = DELAY_MAX / this.rate + (int)random(-1 * DELAY_RAND, DELAY_RAND);
+  private void restart(boolean immediately) {
+    float delayDuration = immediately ? 0 : DELAY_MAX / this.rate + (int)random(-1 * DELAY_RAND, DELAY_RAND);
     this.delayMod.setRange(0, 1, delayDuration).trigger();
     this.speed = DEFAULT_SPEED + random(-1 * SPEED_RAND, SPEED_RAND);
     this.edges.clear();
@@ -155,6 +157,10 @@ public class Meteor extends LXLayer {
     return LX.hsb(METEOR_HUE, METEOR_SAT, brightness);
   }
 
+  public void go() {
+    this.restart(true);
+  }
+
   public void run(double deltaMs) {
     if (this.delayMod.isRunning()) {
       return;
@@ -167,8 +173,8 @@ public class Meteor extends LXLayer {
       } else if (this.count < 3 * this.points.size()) {
         this.count += 1;
         this.delayMod.setRange(0, 1, FADE_TIME).trigger();
-      } else {
-        this.restart();
+      } else if (this.is_auto) {
+        this.restart(false);
       }
     }
   }
@@ -186,11 +192,16 @@ public class Stargaze extends LXPattern {
 
   private List<LXPoint> stars = new ArrayList<LXPoint>();
   private List<SinLFO> twinklers = new ArrayList<SinLFO>();
-  private Meteor meteor = new Meteor(lx);
+
+  private Meteor meteor = new Meteor(lx, true);
+  private Meteor clapMeteor = new Meteor(lx, false);
 
   private BoundedParameter brightnessParam = new BoundedParameter("BRT", 70, 40, 100);
   private BoundedParameter numStarsParam = new BoundedParameter("STAR", 40, 10, 90);
   private BoundedParameter meteorRateParam = new BoundedParameter("MET", 6, 1, 20);
+
+  private LEDomeAudioClapGate clapGate = new LEDomeAudioClapGate("XCLAP", lx);
+  private BooleanParameter triggerParameter;
 
   public Stargaze(LX lx) {
     super(lx);
@@ -208,11 +219,18 @@ public class Stargaze extends LXPattern {
       addModulator(twinkler).trigger();
     }
     addLayer(this.meteor);
+    addLayer(this.clapMeteor);
+    addModulator(this.clapGate).start();
+    this.triggerParameter = this.clapGate.gate;
+    this.triggerParameter.addListener(this);
   }
 
   public void onParameterChanged(LXParameter parameter) {
     if (parameter == this.meteorRateParam) {
       this.meteor.setRate((int)this.meteorRateParam.getValue());
+    }
+    if (parameter == this.triggerParameter) {
+      this.clapMeteor.go();
     }
   }
 
@@ -245,6 +263,10 @@ public class Stargaze extends LXPattern {
       Integer meteorColor = this.meteor.getColor(point);
       if (meteorColor != null) {
         this.blendColor(point.index, (int)meteorColor);
+      }
+      Integer clapMeteorColor = this.clapMeteor.getColor(point);
+      if (clapMeteorColor != null) {
+        this.blendColor(point.index, (int)clapMeteorColor);
       }
     }
   }
