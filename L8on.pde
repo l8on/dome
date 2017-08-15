@@ -1,4 +1,4 @@
-public class ShadyWaffle extends LEDomePattern { //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
+public class ShadyWaffle extends LEDomePattern { //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
   private int PINK = LX.hsb(330, 59, 50);
 
   private int[] PINK_EDGES = {
@@ -2613,9 +2613,9 @@ public class FireBalls extends LEDomePattern {
   };
   
   LEDomeAudioParameter[] ballSpeeds = new LEDomeAudioParameter[] {
-    new LEDomeAudioParameterLow("LOWSPD", 500, 500, 100),
-    new LEDomeAudioParameterMid("MIDSPD", 500, 500, 100),
-    new LEDomeAudioParameterHigh("HGHSPD", 500, 500, 100)
+    new LEDomeAudioParameterLow("LOWSPD", 2500, 2500, 2000),
+    new LEDomeAudioParameterMid("MIDSPD", 2500, 2500, 2000),
+    new LEDomeAudioParameterHigh("HGHSPD", 2500, 2500, 2000)
   };
   
   public FireBalls(LX lx) {
@@ -2665,6 +2665,8 @@ public class FireBalls extends LEDomePattern {
         addModulator(ballHue).start();
 
         L8onBall ball = new L8onBall(lx, this, azimuthPosition, radParam, ballHue, new BooleanParameter("DRKBALL" + this.balls, false));        
+        ball.gravity = .4 * GRAVITY;
+        ball.initialVelocityPerSecond = .6 * ball.initialVelocityPerSecond;
         this.balls.add(ball);
         addLayer(ball);
       }

@@ -239,7 +239,7 @@ public class SnakeLayer extends LXLayer {
     float distToTravel = dist(firstHeadPoint.x, firstHeadPoint.y, firstHeadPoint.z, secondHeadPoint.x, secondHeadPoint.y, secondHeadPoint.z);
     return max(distToTravel / (snakeSpeed.getValuef() / SECONDS), 0.0);      
   }
-} //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
+} //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
 
 /*
  * A container to keep state of the different 3d waves in the color remix.
@@ -346,12 +346,15 @@ public class L8onSpotLight {
 }
 
 
-public class L8onBall extends LEDomeLayer {
+public class L8onBall extends LEDomeLayer {  
   LXProjection projection;
-  float center_y;  
-  float current_velocity = 0;  
   
-  float INITIAL_VELOCITY_PSEC = 14.4 * FEET;
+  float center_y;
+  float current_velocity = 0;
+  
+  public float initialVelocityPerSecond = 14.4 * FEET;
+  
+  public float gravity = GRAVITY;  
   
   public LXParameter center_azimuth;
   public LXParameter radius;
@@ -397,13 +400,13 @@ public class L8onBall extends LEDomeLayer {
   }
   
   public void bounce() {
-    this.current_velocity = INITIAL_VELOCITY_PSEC + random(-2 * FEET, 2 * FEET);
+    this.current_velocity = initialVelocityPerSecond + random(-2 * FEET, 2 * FEET);
   }
   
   public void adjustHeightAndVelocity(double deltaMs) {
     double heightDelta = (this.current_velocity * (deltaMs / 1000));
     this.center_y += heightDelta;
-    this.current_velocity += (GRAVITY * (deltaMs / 1000));
+    this.current_velocity += (this.gravity * (deltaMs / 1000));
   }
 }
 
