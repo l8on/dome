@@ -12,28 +12,30 @@ public class ShadyWaffle extends LEDomePattern { //<>//
     40, 37, 67, 46, 70, 
     // Top
     85, 145, 205, 289, 25
-  }; 
+  };
 
   private int YELLOW = LX.hsb(61, 90, 50);
 
   private int[] YELLOW_SPOKES = {
     // Pentagon opposite door, left
-    126, 128, 129, 131, 102, 104, 105, 107, 108, 110, 
-    // Pentagon opposite door, right  
-    186, 188, 189, 191, 165, 167, 195, 197, 162, 164, 
+    126, 128, 129, 131, 102, 104, 105, 107, 108, 110,
+    // Pentagon opposite door, right
+    186, 188, 189, 191, 165, 167, 195, 197, 162, 164,
     // Pentagon left
-    216, 218, 246, 248, 249, 251, 231, 233, 261, 263, 
-    // Pentagon righT
-    39, 41, 36, 38, 66, 68, 45, 47, 69, 71, 
+    216, 218, 246, 248, 249, 251, 231, 233, 261, 263,
+    // Pentagon right
+    39, 41, 36, 38, 66, 68, 45, 47, 69, 71,
     // Top
     84, 86, 144, 146, 204, 206, 288, 290, 24, 26
   };
 
   private int BLUE = LX.hsb(239, 61, 50);
   private int[] BLUE_FACES = {
-    33, 39, 45, 51, 57, 
-    63, 68, 73, 78, 83, 
-    85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99  
+    33, 39, 45, 51, 57,
+    63, 68, 73, 78, 83,
+    85, 86, 87, 88, 89,
+    90, 91, 92, 93, 94,
+    95, 96, 97, 98, 99 
   };
 
   private int PURPLE = LX.hsb(293, 72, 50);
@@ -46,10 +48,10 @@ public class ShadyWaffle extends LEDomePattern { //<>//
   private int TEAL = LX.hsb(177, 97, 50);
 
   private int[] TEAL_FACES = {
-    0, 1, 32, 3, 4, 34, 
-    6, 7, 38, 9, 10, 40, 
-    12, 13, 44, 15, 46, 
-    19, 50, 21, 22, 52, 
+    0, 1, 32, 3, 4, 34,
+    6, 7, 38, 9, 10, 40,
+    12, 13, 44, 15, 46,
+    19, 50, 21, 22, 52,
     24, 25, 56, 27, 28, 58
   };
 
@@ -62,17 +64,17 @@ public class ShadyWaffle extends LEDomePattern { //<>//
     rateParam.setModulationRange(1);
     addParameter(rateParam);
     addLayer(twinkleLayer);
-  }  
+  }
 
-  public void run(double deltaMs) {  
-    // Draw spokes first. 
+  public void run(double deltaMs) {
+    // Draw spokes first.
     for (int i : YELLOW_SPOKES) {
       for (LXPoint p : model.edges.get(i).points) {
         colors[p.index] = YELLOW;
       }
     }
 
-    // Cover pink edges of pentagons 
+    // Cover pink edges of pentagons
     for (int i : PINK_EDGES) {
       for (LXPoint p : model.edges.get(i).points) {
         colors[p.index] = PINK;
@@ -113,15 +115,16 @@ public class HeartsBeat extends LEDomePattern {
 
   private int[] HEART_2_FACES = {
     64, 87, 88, 89, 101, 90
-  };  
+  };
 
   private int[] HEART_2_EDGES = {
-    111, 86, 236, 198, 204, 205, 137, 166
+    111, 86, 236, 198, 204,
+    205, 137, 166
   };
 
   private int[] HEART_3_FACES = {
     13, 43, 44, 45, 71, 73
-  };  
+  };
 
   private int[] HEART_3_EDGES = {
     248, 275, 279, 231, 259, 260, 241, 267
@@ -130,7 +133,7 @@ public class HeartsBeat extends LEDomePattern {
   private SinLFO[] heartColors = new SinLFO[NUM_HEARTS];
   private SinLFO[] heartBeats = new SinLFO[NUM_HEARTS];
   private SinLFO[] heartSaturations = new SinLFO[NUM_HEARTS];
-  private BoundedParameter rateParam = new BoundedParameter("RATE", 2.5, 0.5, 12);  
+  private BoundedParameter rateParam = new BoundedParameter("RATE", 2.5, 0.5, 12);
   private LEDomeAudioParameter[] brightnessParams = new LEDomeAudioParameter[] {
     new LEDomeAudioParameterLow("BRLW", 50, 50, 100), 
     new LEDomeAudioParameterMid("BRMD", 50, 50, 100), 
