@@ -55,9 +55,9 @@ public class Breather extends LEDomePattern {
   private double[] hues      = new double[lx.total];
   private SinLFO[] breathers = new SinLFO[lx.total];
 
-  private BoundedParameter satParam  = new BoundedParameter("SAT", 60, 40, 100);
-  private BoundedParameter huesParam = new BoundedParameter("HUES", 50, 30, 100);
-  private BoundedParameter rateParam = new BoundedParameter("RATE", 8, 0.6, 15);
+  private BoundedParameter satParam  = new BoundedParameter("SAT", 80, 40, 100);
+  private BoundedParameter huesParam = new BoundedParameter("HUES", 70, 30, 100);
+  private BoundedParameter rateParam = new BoundedParameter("RATE", 6, 0.6, 15);
   private BoundedParameter varParam  = new BoundedParameter("VAR", 0.5, 0.1, 0.9);
 
   public Breather(LX lx) {
