@@ -58,19 +58,21 @@ public class Breather extends LEDomePattern {
   private BoundedParameter satParam  = new BoundedParameter("SAT", 60, 40, 100);
   private BoundedParameter huesParam = new BoundedParameter("HUES", 50, 30, 100);
   private BoundedParameter rateParam = new BoundedParameter("RATE", 8, 0.6, 15);
+  private BoundedParameter varParam  = new BoundedParameter("VAR", 0.5, 0.1, 0.9);
 
   public Breather(LX lx) {
     super(lx);
     addParameter(satParam);
     addParameter(huesParam);
     addParameter(rateParam);
+    addParameter(varParam);
     initBreathers();
     resetHues();
     breathe();
   }
 
   public double getRate() {
-    float varianceRange = 0.2;
+    float varianceRange = varParam.getValuef();
     float rate = rateParam.getValuef();
     float variance = random(-varianceRange, varianceRange) * rate;
     return (rate + variance) * SECOND;
