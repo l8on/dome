@@ -5,7 +5,7 @@ public class Ring extends LEDomeLayer {
   private final SinLFO heightMod;
 
   public Ring(LX lx) {
-    this(lx, random(0, 360), random(0.25 * FEET, 1 * FEET), random(3 * SECONDS, 10 * SECONDS));
+    this(lx, random(0, 360), random(0.5 * FEET, 1 * FEET), random(5 * SECONDS, 15 * SECONDS));
   }
 
   public Ring(LX lx, float hue, float thickness, float period) {
@@ -23,6 +23,7 @@ public class Ring extends LEDomeLayer {
       float pointDistance = dist(p.x, p.y, p.z, p.x, this.heightMod.getValuef(), p.z);
       if (pointDistance <= this.thickness) {
         float brightness = 50 + 50 * (this.thickness - pointDistance) / this.thickness;
+        // TODO: blend ring colors
         setColor(p.index, LX.hsb(this.hue, 100, brightness));
       }
     }
@@ -32,7 +33,7 @@ public class Ring extends LEDomeLayer {
 public class Rings extends LEDomePattern {
   private SawLFO backgroundHueMod = new SawLFO(0, 360, 30 * SECONDS);
   private LEDomeAudioParameterFull brightnessParam = new LEDomeAudioParameterFull("BRT", 25, 10, 40);
-  private DiscreteParameter ringCountParam = new DiscreteParameter("NRINGS", 2, 0, 5);
+  private DiscreteParameter ringCountParam = new DiscreteParameter("NRINGS", 3, 1, 6);
   private List<Ring> rings = new ArrayList<Ring>();
 
   public Rings(LX lx) {
