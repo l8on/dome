@@ -5,6 +5,7 @@ public class Ring extends LEDomeLayer {
   private final SinLFO heightMod;
 
   public Ring(LX lx) {
+    // TODO: define constants
     this(lx, random(0, 360), random(0.5 * FEET, 1 * FEET), random(5 * SECONDS, 15 * SECONDS));
   }
 
@@ -101,7 +102,7 @@ public class ColorSpiral extends LEDomePattern {
   }
 }
 
-public class Meteor extends LEDomeLayer {
+public class Meteor extends LXLayer {
   private final int METEOR_HUE = 60;
   private final int METEOR_SAT = 40;
   private final int DEFAULT_RATE = 6;
@@ -248,7 +249,6 @@ public class Meteor extends LEDomeLayer {
   }
 }
 
-// TODO: implements LXParameterListener ?
 public class Stargaze extends LXPattern {
   private final int SKY_COLOR = LX.hsb(240, 80, 40);
   private final int STAR_HUE = 60;
