@@ -1,30 +1,33 @@
 public class Ring extends LEDomeLayer {
-  private final float hue;
-  private final float thickness;
+  private final float MIN_THICKNESS = 0.5 * FEET;
+  private final float MAX_THICKNESS = 1.0 * FEET;
+  private final float MIN_PERIOD = 5.0 * SECONDS;
+  private final float MAX_PERIOD = 15.0 * SECONDS;
+
+  private float hue;
+  private float thickness;
   private LXProjection projection;
-  private final SinLFO heightMod;
+  private SinLFO heightMod;
 
   public Ring(LX lx) {
-    // TODO: define constants
-    this(lx, random(0, 360), random(0.5 * FEET, 1 * FEET), random(5 * SECONDS, 15 * SECONDS));
+    this(lx, random(0, 360));
   }
 
-  public Ring(LX lx, float hue, float thickness, float period) {
+  public Ring(LX lx, float hue) {
     super(lx);
     this.hue = hue;
-    this.thickness = thickness;
+    this.thickness = random(MIN_THICKNESS, MAX_THICKNESS);
     this.projection = new LXProjection(lx.model);
-    this.heightMod = new SinLFO(lx.model.yMin, lx.model.yMax, period);
+    this.heightMod = new SinLFO(lx.model.yMin, lx.model.yMax, random(MIN_PERIOD, MAX_PERIOD));
     addModulator(this.heightMod).start();
   }
 
   public void run(double deltaMs) {
     this.projection.reset();
-    for (LXVector p: this.projection) {
+    for (LXVector p : this.projection) {
       float pointDistance = dist(p.x, p.y, p.z, p.x, this.heightMod.getValuef(), p.z);
       if (pointDistance <= this.thickness) {
         float brightness = 50 + 50 * (this.thickness - pointDistance) / this.thickness;
-        // TODO: blend ring colors
         setColor(p.index, LX.hsb(this.hue, 100, brightness));
       }
     }
@@ -32,10 +35,22 @@ public class Ring extends LEDomeLayer {
 }
 
 public class Rings extends LEDomePattern {
-  private SawLFO backgroundHueMod = new SawLFO(0, 360, 30 * SECONDS);
-  private LEDomeAudioParameterFull brightnessParam = new LEDomeAudioParameterFull("BRT", 25, 10, 40);
-  private DiscreteParameter ringCountParam = new DiscreteParameter("NRINGS", 3, 1, 6);
+  private final float BACKGROUND_PERIOD = 30.0 * SECONDS;
+  private final int MIN_BACKGROUND_BRIGHTNESS = 10;
+  private final int DEFAULT_BACKGROUND_BRIGHTNESS = 25;
+  private final int MAX_BACKGROUND_BRIGHTNESS = 40;
+  private final int MIN_RING_COUNT = 1;
+  private final int DEFAULT_RING_COUNT = 3;
+  private final int MAX_RING_COUNT = 5;
+  private final float MIN_HUE_DIFF = 30.0;
+
+  private SawLFO backgroundHueMod = new SawLFO(0, 360, BACKGROUND_PERIOD);
+  private LEDomeAudioParameterFull brightnessParam = new LEDomeAudioParameterFull(
+      "BRT", DEFAULT_BACKGROUND_BRIGHTNESS, MIN_BACKGROUND_BRIGHTNESS, MAX_BACKGROUND_BRIGHTNESS);
+  private DiscreteParameter ringCountParam = new DiscreteParameter(
+      "NRINGS", DEFAULT_RING_COUNT, MIN_RING_COUNT, MAX_RING_COUNT + 1);
   private List<Ring> rings = new ArrayList<Ring>();
+  private Random hueRandomizer = new Random();
 
   public Rings(LX lx) {
     super(lx);
@@ -44,11 +59,32 @@ public class Rings extends LEDomePattern {
     addParameter(ringCountParam);
   }
 
-  public void setRings() {
+  public float getNextRingHue() {
+    // randomize ring hues but enforce variety
+    List availableHues = new ArrayList<Float>();
+    for (int hue = 0; hue < 360; hue++) {
+      boolean isAvailable = true;
+      for (Ring ring: this.rings) {
+        float diff = abs(ring.hue - hue);
+        if (diff < MIN_HUE_DIFF || diff > (360 - MIN_HUE_DIFF)) {
+          isAvailable = false;
+          break;
+        }
+      }
+      if (isAvailable) {
+        availableHues.add((float)hue);
+      }
+    }
+    if (availableHues.isEmpty()) {
+      return random(0, 360);
+    }
+    return (float)availableHues.get(this.hueRandomizer.nextInt(availableHues.size()));
+  }
+
+  public void updateRings() {
     int ringCount = ringCountParam.getValuei();
     while (this.rings.size() < ringCount) {
-      // TODO: bias ring colors toward variety
-      Ring ring = new Ring(lx);
+      Ring ring = new Ring(lx, this.getNextRingHue());
       this.rings.add(ring);
       addLayer(ring);
     }
@@ -59,18 +95,23 @@ public class Rings extends LEDomePattern {
   }
 
   public void run(double deltaMs) {
-    setRings();
+    updateRings();
     setColors(LX.hsb(backgroundHueMod.getValuef(), 50, brightnessParam.getValuef()));
   }
 }
 
 public class ColorSpiral extends LEDomePattern {
-  private final int faceCount = model.faces.size();
-  private final SawLFO currIndex = new SawLFO(0, faceCount, 5000);
+  private final int FACE_COUNT = model.faces.size();
+  private final float MIN_PERIOD = 1.0 * SECONDS;
+  private final float DEFAULT_PERIOD = 5.0 * SECONDS;
+  private final float MAX_PERIOD = 10.0 * SECONDS;
+
+  private SawLFO currIndex = new SawLFO(0, FACE_COUNT, DEFAULT_PERIOD);
 
   private LEDomeAudioParameterFull brightnessParam = new LEDomeAudioParameterFull("BRT", 50, 0, 100);
   private BoundedParameter saturationParam  = new BoundedParameter("SAT", 75, 50, 100);
-  private BoundedParameter speedParam  = new BoundedParameter("SPD", 5000, 9000, 1000);
+  private BoundedParameter speedParam  = new BoundedParameter(
+      "SPD", DEFAULT_PERIOD, MAX_PERIOD, MIN_PERIOD);
 
   public ColorSpiral(LX lx) {
     super(lx);
@@ -88,15 +129,15 @@ public class ColorSpiral extends LEDomePattern {
     float saturation = saturationParam.getValuef();
     currIndex.setPeriod(speedParam.getValuef());
 
-    for (int i = 0; i < faceCount; i++) {
+    for (int i = 0; i < FACE_COUNT; i++) {
       LEDomeFace face = model.faces.get(i);
       if(!face.hasLights()) {
         continue;
       }
-      effectiveIndex = (i + index) % faceCount;
+      effectiveIndex = (i + index) % FACE_COUNT;
       for (LXPoint p : face.points) {
-        hue = effectiveIndex / float(faceCount) * 360;
-        colors[p.index] = LX.hsb(hue, saturation, brightness);
+        hue = effectiveIndex / float(FACE_COUNT) * 360;
+        this.colors[p.index] = LX.hsb(hue, saturation, brightness);
       }
     }
   }

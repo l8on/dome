@@ -109,6 +109,7 @@ LXPattern[] patterns(P3LX lx) {
     // Cackler
     new ColorSpiral(lx),
     new Stargaze(lx),
+    new Rings(lx),
 
     // Kristján
     new Disco(lx),
