@@ -1,4 +1,4 @@
-public class ShadyWaffle extends LEDomePattern { //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
+public class ShadyWaffle extends LEDomePattern { //<>//
   private int PINK = LX.hsb(330, 59, 50);
 
   private int[] PINK_EDGES = {
@@ -12,28 +12,30 @@ public class ShadyWaffle extends LEDomePattern { //<>// //<>// //<>// //<>// //<
     40, 37, 67, 46, 70, 
     // Top
     85, 145, 205, 289, 25
-  }; 
+  };
 
   private int YELLOW = LX.hsb(61, 90, 50);
 
   private int[] YELLOW_SPOKES = {
     // Pentagon opposite door, left
-    126, 128, 129, 131, 102, 104, 105, 107, 108, 110, 
-    // Pentagon opposite door, right  
-    186, 188, 189, 191, 165, 167, 195, 197, 162, 164, 
+    126, 128, 129, 131, 102, 104, 105, 107, 108, 110,
+    // Pentagon opposite door, right
+    186, 188, 189, 191, 165, 167, 195, 197, 162, 164,
     // Pentagon left
-    216, 218, 246, 248, 249, 251, 231, 233, 261, 263, 
-    // Pentagon righT
-    39, 41, 36, 38, 66, 68, 45, 47, 69, 71, 
+    216, 218, 246, 248, 249, 251, 231, 233, 261, 263,
+    // Pentagon right
+    39, 41, 36, 38, 66, 68, 45, 47, 69, 71,
     // Top
     84, 86, 144, 146, 204, 206, 288, 290, 24, 26
   };
 
   private int BLUE = LX.hsb(239, 61, 50);
   private int[] BLUE_FACES = {
-    33, 39, 45, 51, 57, 
-    63, 68, 73, 78, 83, 
-    85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99  
+    33, 39, 45, 51, 57,
+    63, 68, 73, 78, 83,
+    85, 86, 87, 88, 89,
+    90, 91, 92, 93, 94,
+    95, 96, 97, 98, 99 
   };
 
   private int PURPLE = LX.hsb(293, 72, 50);
@@ -46,10 +48,10 @@ public class ShadyWaffle extends LEDomePattern { //<>// //<>// //<>// //<>// //<
   private int TEAL = LX.hsb(177, 97, 50);
 
   private int[] TEAL_FACES = {
-    0, 1, 32, 3, 4, 34, 
-    6, 7, 38, 9, 10, 40, 
-    12, 13, 44, 15, 46, 
-    19, 50, 21, 22, 52, 
+    0, 1, 32, 3, 4, 34,
+    6, 7, 38, 9, 10, 40,
+    12, 13, 44, 15, 46,
+    19, 50, 21, 22, 52,
     24, 25, 56, 27, 28, 58
   };
 
@@ -62,17 +64,17 @@ public class ShadyWaffle extends LEDomePattern { //<>// //<>// //<>// //<>// //<
     rateParam.setModulationRange(1);
     addParameter(rateParam);
     addLayer(twinkleLayer);
-  }  
+  }
 
-  public void run(double deltaMs) {  
-    // Draw spokes first. 
+  public void run(double deltaMs) {
+    // Draw spokes first.
     for (int i : YELLOW_SPOKES) {
       for (LXPoint p : model.edges.get(i).points) {
         colors[p.index] = YELLOW;
       }
     }
 
-    // Cover pink edges of pentagons 
+    // Cover pink edges of pentagons
     for (int i : PINK_EDGES) {
       for (LXPoint p : model.edges.get(i).points) {
         colors[p.index] = PINK;
@@ -113,15 +115,16 @@ public class HeartsBeat extends LEDomePattern {
 
   private int[] HEART_2_FACES = {
     64, 87, 88, 89, 101, 90
-  };  
+  };
 
   private int[] HEART_2_EDGES = {
-    111, 86, 236, 198, 204, 205, 137, 166
+    111, 86, 236, 198, 204,
+    205, 137, 166
   };
 
   private int[] HEART_3_FACES = {
     13, 43, 44, 45, 71, 73
-  };  
+  };
 
   private int[] HEART_3_EDGES = {
     248, 275, 279, 231, 259, 260, 241, 267
@@ -130,7 +133,7 @@ public class HeartsBeat extends LEDomePattern {
   private SinLFO[] heartColors = new SinLFO[NUM_HEARTS];
   private SinLFO[] heartBeats = new SinLFO[NUM_HEARTS];
   private SinLFO[] heartSaturations = new SinLFO[NUM_HEARTS];
-  private BoundedParameter rateParam = new BoundedParameter("RATE", 2.5, 0.5, 12);  
+  private BoundedParameter rateParam = new BoundedParameter("RATE", 2.5, 0.5, 12);
   private LEDomeAudioParameter[] brightnessParams = new LEDomeAudioParameter[] {
     new LEDomeAudioParameterLow("BRLW", 50, 50, 100), 
     new LEDomeAudioParameterMid("BRMD", 50, 50, 100), 
@@ -2583,6 +2586,97 @@ public class DarkBalls extends LEDomePattern {
         addModulator(ballHue).start();
 
         L8onBall ball = new L8onBall(lx, this, azimuthPosition, radParam, ballHue, new BooleanParameter("DRKBALL" + this.balls, true));        
+        this.balls.add(ball);
+        addLayer(ball);
+      }
+    } else {
+      for (int i = (this.balls.size() - 1); i >= ball_count; i--) {
+        removeModulator((LXModulator)this.balls.get(i).hue);
+        removeModulator((LXModulator)this.balls.get(i).center_azimuth);
+        removeLayer(this.balls.get(i));
+        this.balls.remove(i);
+      }
+    }
+    
+    addLayer(this.blurLayer);
+  }
+}
+
+public class Marbles extends LEDomePattern {
+  DiscreteParameter num_balls =  new DiscreteParameter("NBALLS", 6, 3, 13); 
+  List<L8onBall> balls = new ArrayList<L8onBall>();
+  
+  FixedParameter blurParameter = new FixedParameter(0.65);
+  BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
+  
+  FixedParameter gravityParam = new FixedParameter(.07);
+  FixedParameter velocityParam = new FixedParameter(.3);
+  //BoundedParameter gravityParam = new BoundedParameter("GRAV", .15, .15, .01);
+  //BoundedParameter velocityParam = new BoundedParameter("VEL", .4, .45, .01);
+  
+  LEDomeAudioParameter[] ballRadii = new LEDomeAudioParameter[] {
+    new LEDomeAudioParameterLow("LOWBALL", .75 * FEET, .75 * FEET, 1.1 * FEET),
+    new LEDomeAudioParameterMid("MIDBALL", .75 * FEET, .75 * FEET, 1.1 * FEET),
+    new LEDomeAudioParameterHigh("HIGHBALL", .75 * FEET, .75 * FEET, 1.1 * FEET)
+  };
+  
+  LEDomeAudioParameter[] ballSpeeds = new LEDomeAudioParameter[] {
+    new LEDomeAudioParameterLow("LOWSPD", 2600, 2600, 2400),
+    new LEDomeAudioParameterMid("MIDSPD", 2600, 2600, 2400),
+    new LEDomeAudioParameterHigh("HGHSPD", 2600, 2600, 2400)
+  };
+  
+  public Marbles(LX lx) {
+    super(lx);    
+    
+    addParameter(num_balls);
+    //addParameter(gravityParam);
+    //addParameter(velocityParam);
+    
+    for(LEDomeAudioParameter radParam : ballRadii) {
+      radParam.setModulationRange(1.0);
+      addParameter(radParam);
+    }
+    
+    for(LEDomeAudioParameter ballSpeed : ballSpeeds) {
+      ballSpeed.setModulationRange(1.0);
+      addParameter(ballSpeed);
+    }
+    
+    initBalls();    
+  }
+  
+  public void run(double deltaMs) {
+    initBalls();
+    setColors(LX.hsb(0, 0, 0));
+  }
+  
+  public void initBalls() {   
+    int ball_count = num_balls.getValuei();
+    if (this.balls.size() == ball_count) {
+      return;
+    }
+
+    removeLayer(this.blurLayer);
+    if (this.balls.size() < ball_count) {
+      for (int i = 0; i < (ball_count - this.balls.size()); i++) {
+        LEDomeAudioParameter radParam = ballRadii[(this.balls.size() % ballRadii.length)];
+        LEDomeAudioParameter ballSpeed = ballSpeeds[(this.balls.size() % ballSpeeds.length)];
+        float minAngle = (this.balls.size() % 2 == 0) ? 0 : TWO_PI;
+        float maxAngle = (this.balls.size() % 2 == 0) ? TWO_PI : 0;
+        SawLFO azimuthPosition = new SawLFO(minAngle, maxAngle, ballSpeed);
+        azimuthPosition.randomBasis();
+        addModulator(azimuthPosition).start();
+        
+        float minHue = (this.balls.size() % 2 == 0) ? 360 : 0;
+        float maxHue = (this.balls.size() % 2 == 0) ? 0 : 360;
+        SawLFO ballHue = new SawLFO(minHue, maxHue, ballSpeed);        
+        ballHue.randomBasis();
+        addModulator(ballHue).start();
+
+        L8onBall ball = new L8onBall(lx, this, azimuthPosition, radParam, ballHue, new BooleanParameter("DRKBALL" + this.balls, false));        
+        ball.gravityParam = gravityParam;
+        ball.bounceVelocity = velocityParam;        
         this.balls.add(ball);
         addLayer(ball);
       }
