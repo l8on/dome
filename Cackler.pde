@@ -1,10 +1,117 @@
-public class ColorSpiral extends LEDomePattern {
-  private final int faceCount = model.faces.size();
-  private final SawLFO currIndex = new SawLFO(0, faceCount, 5000);
+public class Ring extends LEDomeLayer {
+  private final float MIN_THICKNESS = 0.5 * FEET;
+  private final float MAX_THICKNESS = 1.0 * FEET;
+  private final float MIN_PERIOD = 5.0 * SECONDS;
+  private final float MAX_PERIOD = 15.0 * SECONDS;
 
-  private BoundedParameter brightnessParam  = new BoundedParameter("BRT", 50, 0, 100);
+  private float hue;
+  private float thickness;
+  private LXProjection projection;
+  private SinLFO heightMod;
+
+  public Ring(LX lx) {
+    this(lx, random(0, 360));
+  }
+
+  public Ring(LX lx, float hue) {
+    super(lx);
+    this.hue = hue;
+    this.thickness = random(MIN_THICKNESS, MAX_THICKNESS);
+    this.projection = new LXProjection(lx.model);
+    this.heightMod = new SinLFO(lx.model.yMin, lx.model.yMax, random(MIN_PERIOD, MAX_PERIOD));
+    addModulator(this.heightMod).start();
+  }
+
+  public void run(double deltaMs) {
+    this.projection.reset();
+    for (LXVector p : this.projection) {
+      float pointDistance = dist(p.x, p.y, p.z, p.x, this.heightMod.getValuef(), p.z);
+      if (pointDistance <= this.thickness) {
+        float brightness = 50 + 50 * (this.thickness - pointDistance) / this.thickness;
+        setColor(p.index, LX.hsb(this.hue, 100, brightness));
+      }
+    }
+  }
+}
+
+public class Rings extends LEDomePattern {
+  private final float BACKGROUND_PERIOD = 30.0 * SECONDS;
+  private final int MIN_BACKGROUND_BRIGHTNESS = 10;
+  private final int DEFAULT_BACKGROUND_BRIGHTNESS = 25;
+  private final int MAX_BACKGROUND_BRIGHTNESS = 40;
+  private final int MIN_RING_COUNT = 1;
+  private final int DEFAULT_RING_COUNT = 3;
+  private final int MAX_RING_COUNT = 5;
+  private final float MIN_HUE_DIFF = 30.0;
+
+  private SawLFO backgroundHueMod = new SawLFO(0, 360, BACKGROUND_PERIOD);
+  private LEDomeAudioParameterFull brightnessParam = new LEDomeAudioParameterFull(
+      "BRT", DEFAULT_BACKGROUND_BRIGHTNESS, MIN_BACKGROUND_BRIGHTNESS, MAX_BACKGROUND_BRIGHTNESS);
+  private DiscreteParameter ringCountParam = new DiscreteParameter(
+      "NRINGS", DEFAULT_RING_COUNT, MIN_RING_COUNT, MAX_RING_COUNT + 1);
+  private List<Ring> rings = new ArrayList<Ring>();
+  private Random hueRandomizer = new Random();
+
+  public Rings(LX lx) {
+    super(lx);
+    addModulator(backgroundHueMod).start();
+    addParameter(brightnessParam);
+    addParameter(ringCountParam);
+  }
+
+  public float getNextRingHue() {
+    // randomize ring hues but enforce variety
+    List availableHues = new ArrayList<Float>();
+    for (int hue = 0; hue < 360; hue++) {
+      boolean isAvailable = true;
+      for (Ring ring: this.rings) {
+        float diff = abs(ring.hue - hue);
+        if (diff < MIN_HUE_DIFF || diff > (360 - MIN_HUE_DIFF)) {
+          isAvailable = false;
+          break;
+        }
+      }
+      if (isAvailable) {
+        availableHues.add((float)hue);
+      }
+    }
+    if (availableHues.isEmpty()) {
+      return random(0, 360);
+    }
+    return (float)availableHues.get(this.hueRandomizer.nextInt(availableHues.size()));
+  }
+
+  public void updateRings() {
+    int ringCount = ringCountParam.getValuei();
+    while (this.rings.size() < ringCount) {
+      Ring ring = new Ring(lx, this.getNextRingHue());
+      this.rings.add(ring);
+      addLayer(ring);
+    }
+    while (this.rings.size() > ringCount) {
+      removeLayer(this.rings.get(0));
+      this.rings.remove(0);
+    }
+  }
+
+  public void run(double deltaMs) {
+    updateRings();
+    setColors(LX.hsb(backgroundHueMod.getValuef(), 50, brightnessParam.getValuef()));
+  }
+}
+
+public class ColorSpiral extends LEDomePattern {
+  private final int FACE_COUNT = model.faces.size();
+  private final float MIN_PERIOD = 1.0 * SECONDS;
+  private final float DEFAULT_PERIOD = 5.0 * SECONDS;
+  private final float MAX_PERIOD = 10.0 * SECONDS;
+
+  private SawLFO currIndex = new SawLFO(0, FACE_COUNT, DEFAULT_PERIOD);
+
+  private LEDomeAudioParameterFull brightnessParam = new LEDomeAudioParameterFull("BRT", 50, 0, 100);
   private BoundedParameter saturationParam  = new BoundedParameter("SAT", 75, 50, 100);
-  private BoundedParameter speedParam  = new BoundedParameter("SPD", 5000, 9000, 1000);
+  private BoundedParameter speedParam  = new BoundedParameter(
+      "SPD", DEFAULT_PERIOD, MAX_PERIOD, MIN_PERIOD);
 
   public ColorSpiral(LX lx) {
     super(lx);
@@ -22,15 +129,15 @@ public class ColorSpiral extends LEDomePattern {
     float saturation = saturationParam.getValuef();
     currIndex.setPeriod(speedParam.getValuef());
 
-    for (int i = 0; i < faceCount; i++) {
+    for (int i = 0; i < FACE_COUNT; i++) {
       LEDomeFace face = model.faces.get(i);
       if(!face.hasLights()) {
         continue;
       }
-      effectiveIndex = (i + index) % faceCount;
+      effectiveIndex = (i + index) % FACE_COUNT;
       for (LXPoint p : face.points) {
-        hue = effectiveIndex / float(faceCount) * 360;
-        colors[p.index] = LX.hsb(hue, saturation, brightness);
+        hue = effectiveIndex / float(FACE_COUNT) * 360;
+        this.colors[p.index] = LX.hsb(hue, saturation, brightness);
       }
     }
   }
@@ -62,19 +169,26 @@ public class Meteor extends LXLayer {
   private int maxCount = 0;
   private int rate = DEFAULT_RATE;
   private float speed = DEFAULT_SPEED;
-  private boolean is_auto = false;
+  private boolean autoRestart = false;
 
-  public Meteor(LX lx, boolean is_auto) {
+  public Meteor(LX lx) {
+    this(lx, true);
+  }
+
+  public Meteor(LX lx, boolean autoRestart) {
     super(lx);
     addModulator(this.xMod);
     addModulator(this.yMod);
     addModulator(this.zMod);
     addModulator(this.delayMod);
-    this.is_auto = is_auto;
+    this.autoRestart = autoRestart;
   }
 
-  private void restart(boolean immediately) {
-    float delayDuration = immediately ? 0 : DELAY_MAX / this.rate + (int)random(-1 * DELAY_RAND, DELAY_RAND);
+  private void restart() {
+    this.restart(DELAY_MAX / this.rate + (int)random(-1 * DELAY_RAND, DELAY_RAND));
+  }
+
+  private void restart(float delayDuration) {
     this.delayMod.setRange(0, 1, delayDuration).trigger();
     this.speed = DEFAULT_SPEED + random(-1 * SPEED_RAND, SPEED_RAND);
     this.edges.clear();
@@ -157,10 +271,6 @@ public class Meteor extends LXLayer {
     return LX.hsb(METEOR_HUE, METEOR_SAT, brightness);
   }
 
-  public void go() {
-    this.restart(true);
-  }
-
   public void run(double deltaMs) {
     if (this.delayMod.isRunning()) {
       return;
@@ -173,8 +283,8 @@ public class Meteor extends LXLayer {
       } else if (this.count < 3 * this.points.size()) {
         this.count += 1;
         this.delayMod.setRange(0, 1, FADE_TIME).trigger();
-      } else if (this.is_auto) {
-        this.restart(false);
+      } else if (this.autoRestart) {
+        this.restart();
       }
     }
   }
@@ -193,8 +303,8 @@ public class Stargaze extends LXPattern {
   private List<LXPoint> stars = new ArrayList<LXPoint>();
   private List<SinLFO> twinklers = new ArrayList<SinLFO>();
 
-  private Meteor meteor = new Meteor(lx, true);
-  private Meteor clapMeteor = new Meteor(lx, false);
+  private Meteor autoMeteor = new Meteor(lx, true);
+  private Meteor clapMeteor = new Meteor(lx);
 
   private BoundedParameter brightnessParam = new BoundedParameter("BRT", 70, 40, 100);
   private BoundedParameter numStarsParam = new BoundedParameter("STAR", 40, 10, 90);
@@ -218,7 +328,7 @@ public class Stargaze extends LXPattern {
       this.twinklers.add(twinkler);
       addModulator(twinkler).trigger();
     }
-    addLayer(this.meteor);
+    addLayer(this.autoMeteor);
     addLayer(this.clapMeteor);
     addModulator(this.clapGate).start();
     this.triggerParameter = this.clapGate.gate;
@@ -227,10 +337,10 @@ public class Stargaze extends LXPattern {
 
   public void onParameterChanged(LXParameter parameter) {
     if (parameter == this.meteorRateParam) {
-      this.meteor.setRate((int)this.meteorRateParam.getValue());
+      this.autoMeteor.setRate((int)this.meteorRateParam.getValue());
     }
     if (parameter == this.triggerParameter) {
-      this.clapMeteor.go();
+      this.clapMeteor.restart(0);
     }
   }
 
@@ -260,9 +370,9 @@ public class Stargaze extends LXPattern {
       this.colors[point.index] = LX.hsb(STAR_HUE, STAR_SAT, twinkler.getValuef());
     }
     for (LXPoint point : model.points) {
-      Integer meteorColor = this.meteor.getColor(point);
-      if (meteorColor != null) {
-        this.blendColor(point.index, (int)meteorColor);
+      Integer autoMeteorColor = this.autoMeteor.getColor(point);
+      if (autoMeteorColor != null) {
+        this.blendColor(point.index, (int)autoMeteorColor);
       }
       Integer clapMeteorColor = this.clapMeteor.getColor(point);
       if (clapMeteorColor != null) {
