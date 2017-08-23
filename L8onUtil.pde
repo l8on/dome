@@ -1001,3 +1001,157 @@ public class LightningBolt extends LXLayer implements LXParameterListener {
     return null;
   }
 }
+
+public class DayLayer extends LEDomeLayer {  
+  LXProjection projection = new LXProjection(lx.model);
+  
+  private float lastAngle;
+  float COLOR_SPREAD = 0.6;
+
+  private LXParameter sunRadius;
+  private LXParameter sunPosition;
+  private LXParameter maxBrightness;
+
+  public DayLayer(LX lx) {
+    this(lx, new SawLFO(0, TWO_PI, 24000), new LEDomeAudioParameterLow("RAD", 1, 1, 9), new FixedParameter(80));
+  }
+  
+  public DayLayer(LX lx, LXParameter sunPosition, LXParameter sunRadius, LXParameter maxBrightness) {
+    super(lx);
+    this.sunPosition = sunPosition;
+    this.sunRadius = sunRadius;
+    this.maxBrightness = maxBrightness;
+    
+    this.lastAngle = sunPosition.getValuef();
+  }
+
+  public void run(double deltaMs) {
+    float rotationAmount = LXUtils.wrapdistf(this.lastAngle, sunPosition.getValuef(), TWO_PI);
+    projection.rotateZ(rotationAmount);
+    this.lastAngle = sunPosition.getValuef();
+
+    int i = 0;
+    for (LXVector v : projection) {
+      if (v.y > 0) {
+        if (lx.model.yMax - v.y < sunRadius.getValuef()) {
+          setColor(i, LX.hsb(120, 0, 100));
+        } else {
+          float yn = (v.y - lx.model.yMin) / lx.model.yRange;
+          // 330 is a night sunsetty color of red
+          float hue = (330 + (360 * COLOR_SPREAD * yn)) % 360;
+          setColor(i, 
+            LX.hsb(hue, 100, LXUtils.constrainf(maxBrightness.getValuef() * yn, 0, 100))
+          );
+        }
+      }
+      i++;
+    }
+  }
+}
+
+
+// Thank you Joe for the stargaze pattern!
+public class NightLayer extends LEDomeLayer {
+  private final int SKY_COLOR = LX.hsb(240, 80, 40);
+  private final int STAR_HUE = 60;
+  private final int STAR_SAT = 20;
+  private final int TWINKLE_MIN = 1000;
+  private final int TWINKLE_MAX = 5000;
+
+  private List<LEDomeFace> faces;
+
+  private List<LXPoint> stars = new ArrayList<LXPoint>();
+  private List<SinLFO> twinklers = new ArrayList<SinLFO>();
+
+  private Meteor autoMeteor = new Meteor(lx, true);
+  private Meteor clapMeteor = new Meteor(lx);
+
+  private LXParameter brightnessParam;
+  private LXParameter numStarsParam;
+  private LXParameter meteorRateParam;
+  private BooleanParameter triggerParam;  
+  
+  public NightLayer(LX lx) {
+    this(lx, new FixedParameter(70), new FixedParameter(40), new FixedParameter(6), new LEDomeAudioClapGate("CLAP", lx));
+  }
+  
+  public NightLayer(LX lx, LXParameter brightnessParam, LXParameter numStarsParam, LXParameter meteorRateParam, BandGate triggerGate) {
+    this(lx, brightnessParam, numStarsParam, meteorRateParam, triggerGate.gate);
+    addModulator(triggerGate).start();
+  }
+
+  public NightLayer(LX lx, LXParameter brightnessParam, LXParameter numStarsParam, LXParameter meteorRateParam, BooleanParameter triggerParam) {  
+    super(lx);
+    this.brightnessParam = brightnessParam;
+    this.numStarsParam = numStarsParam;
+    this.meteorRateParam = meteorRateParam;
+    this.triggerParam = triggerParam;
+    this.triggerParam.addListener(this);
+    
+    this.faces = new ArrayList<LEDomeFace>(((LEDome)lx.model).faces);
+
+    this.initTwinklers();
+
+    addLayer(this.autoMeteor);
+    addLayer(this.clapMeteor);
+  }
+
+  private void initTwinklers() {
+    Collections.shuffle(this.faces);
+    for (LEDomeFace face : this.faces) {
+      if (!face.hasLights()) {
+        continue;
+      }
+      this.stars.add(face.points.get((int)random(0, 6)));
+      SinLFO twinkler = new SinLFO(0, 1, random(TWINKLE_MIN, TWINKLE_MAX));
+      this.twinklers.add(twinkler);
+      addModulator(twinkler).trigger();
+    }
+  }
+
+  public void onParameterChanged(LXParameter parameter) {
+    if (parameter == this.meteorRateParam) {
+      this.autoMeteor.setRate((int)this.meteorRateParam.getValue());
+    }
+    if (parameter == this.triggerParam && this.triggerParam.getValueb() && this.clapMeteor.delayMod.isRunning()) {      
+      this.clapMeteor.restart(0);
+    }
+  }
+
+  public void blendColor(int index, int newColor) {
+    int existingColor = this.colors[index];
+    float h1 = LXColor.h(existingColor);
+    float s1 = LXColor.s(existingColor);
+    float b1 = LXColor.b(existingColor);
+    float h2 = LXColor.h(newColor);
+    float s2 = LXColor.s(newColor);
+    float b2 = LXColor.b(newColor);
+    float b3 = max(b1, b2);
+    float h3 = h2 + (h1 - h2) * (1 - (b3 - b1) / (101 - b1));
+    float s3 = s2 + (s1 - s2) * (1 - (b3 - b1) / (101 - b1));
+    this.colors[index] = LX.hsb(h3, s3, b3);
+  }
+
+  public void run(double deltaMs) {
+    float brightness = this.brightnessParam.getValuef();
+    for (LXPoint point : lx.model.points) {
+      this.colors[point.index] = SKY_COLOR;
+    }
+    for (int i = 0; i < this.numStarsParam.getValue(); i++) {
+      LXPoint point = this.stars.get(i);
+      SinLFO twinkler = this.twinklers.get(i);
+      twinkler.setRange(brightness / 2, brightness);
+      this.colors[point.index] = LX.hsb(STAR_HUE, STAR_SAT, twinkler.getValuef());
+    }
+    for (LXPoint point : lx.model.points) {
+      Integer autoMeteorColor = this.autoMeteor.getColor(point);
+      if (autoMeteorColor != null) {
+        this.blendColor(point.index, (int)autoMeteorColor);
+      }
+      Integer clapMeteorColor = this.clapMeteor.getColor(point);
+      if (clapMeteorColor != null) {
+        this.blendColor(point.index, (int)clapMeteorColor);
+      }
+    }
+  }
+}

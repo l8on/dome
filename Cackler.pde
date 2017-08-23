@@ -172,7 +172,7 @@ public class Meteor extends LXLayer {
   private boolean autoRestart = false;
 
   public Meteor(LX lx) {
-    this(lx, true);
+    this(lx, false);
   }
 
   public Meteor(LX lx, boolean autoRestart) {

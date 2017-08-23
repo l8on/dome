@@ -71,6 +71,8 @@ LXStudio lx;
 
 LXPattern[] patterns(P3LX lx) {
   return new LXPattern[] {
+    new DayNight(lx),
+    
     // Create New Pattern Instances Below HERE
     new ShadyWaffle(lx),
     
@@ -113,7 +115,7 @@ LXPattern[] patterns(P3LX lx) {
     new Rings(lx),
 
     // Kristján
-    new Disco(lx),
+    //new Disco(lx),
 
     // pld
     new Spiral(lx),
