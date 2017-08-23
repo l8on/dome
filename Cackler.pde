@@ -108,7 +108,7 @@ public class ColorSpiral extends LEDomePattern {
 
   private SawLFO currIndex = new SawLFO(0, FACE_COUNT, DEFAULT_PERIOD);
 
-  private LEDomeAudioParameterFull brightnessParam = new LEDomeAudioParameterFull("BRT", 50, 0, 100);
+  private LEDomeAudioParameterFull brightnessParam = new LEDomeAudioParameterFull("BRT", 50, 5, 85);
   private BoundedParameter saturationParam  = new BoundedParameter("SAT", 75, 50, 100);
   private BoundedParameter speedParam  = new BoundedParameter(
       "SPD", DEFAULT_PERIOD, MAX_PERIOD, MIN_PERIOD);
