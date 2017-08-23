@@ -2693,8 +2693,7 @@ public class Marbles extends LEDomePattern {
 
 
 public class DayNight extends LEDomePattern {
-
-  private BoundedParameter dayTime =  new BoundedParameter("DAYT", 48000, 12000, 120000);
+  private BoundedParameter dayTime =  new BoundedParameter("DAYT", 48000, 12000, 360000);
   SawLFO sunPosition = new SawLFO(0, TWO_PI, dayTime);
   private LEDomeAudioParameterFull sunRadius = new LEDomeAudioParameterFull("RAD", 2, 2, 9);
   private BoundedParameter maxBrightness = new BoundedParameter("BRIG", 80, 30, 95); 
@@ -2726,6 +2725,5 @@ public class DayNight extends LEDomePattern {
     addLayer(blurLayer);
   }
 
-  public void run(double deltaMs) {
-  }
+  public void run(double deltaMs) {}
 }

@@ -71,8 +71,6 @@ LXStudio lx;
 
 LXPattern[] patterns(P3LX lx) {
   return new LXPattern[] {
-    new DayNight(lx),
-    
     // Create New Pattern Instances Below HERE
     new ShadyWaffle(lx),
     
@@ -101,9 +99,10 @@ LXPattern[] patterns(P3LX lx) {
     new SpotLights(lx),
     new DarkLights(lx),    
     new Life(lx),
-    new ThunderStorm(lx),
     new SunriseSunsetReal(lx),
     new SunriseSunsetRainbow(lx),
+    new ThunderStorm(lx),
+    new DayNight(lx),
     new Balls(lx),
     new DarkBalls(lx),
     new SurroundWave(lx),
