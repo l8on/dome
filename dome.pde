@@ -92,26 +92,28 @@ LXPattern[] patterns(P3LX lx) {
     new Marbles(lx),
     new Explosions(lx),
     new Darksplosions(lx),
-    new AudioBelts(lx),
+    new AudioBelts(lx),    
     new Snakes(lx),
     new SnakeApple(lx),
     new SpotLights(lx),
     new DarkLights(lx),    
     new Life(lx),
-    new ThunderStorm(lx),
-    new SunriseSunsetReal(lx),
-    new SunriseSunsetRainbow(lx),
+    new HeartsBeat(lx),
     new Balls(lx),
     new DarkBalls(lx),
     new SurroundWave(lx),
-    new HeartsBeat(lx),
+    new ThunderStorm(lx),
+    new SunriseSunsetRainbow(lx),
+    new SunriseSunsetReal(lx),
+    new SunriseSunsetStargaze(lx),
     
     // Cackler
-    new ColorSpiral(lx),
     new Stargaze(lx),
+    new ColorSpiral(lx),    
+    new Rings(lx),
 
     // Kristján
-    new Disco(lx),
+    //new Disco(lx),
 
     // pld
     new Spiral(lx),

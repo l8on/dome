@@ -806,7 +806,7 @@ public class SpotLights extends LEDomePattern {
   private LEDomeAudioParameter[] radiusParameters =  new LEDomeAudioParameter[] {
     new LEDomeAudioParameterLow("RLOW", 1.75 * FEET, 1.0, model.xRange / 2.0),
     new LEDomeAudioParameterMid("RMID", 1.75 * FEET, 1.0, model.xRange / 2.0),
-    new LEDomeAudioParameterLow("RHGH", 1.75 * FEET, 1.0, model.xRange / 2.0)
+    new LEDomeAudioParameterHigh("RHGH", 1.75 * FEET, 1.0, model.xRange / 2.0)
   };
   private BoundedParameter numLightsParameter = new BoundedParameter("NUM", 3.0, 1.0, 30.0);
   private BoundedParameter brightnessParameter = new BoundedParameter("BRGT", 50, 10, 80);
@@ -2545,10 +2545,10 @@ public class DarkBalls extends LEDomePattern {
     
     initBalls();    
   }
-  
+
   public void run(double deltaMs) {
     initBalls();
-    
+
     for (LEDomeFace face: model.faces) {
       if (!face.hasLights()) { continue;}
       float indexNormal = ((float)face.index / (float)model.faces.size());
@@ -2556,19 +2556,17 @@ public class DarkBalls extends LEDomePattern {
       for (LXPoint p: face.points) {
         setColor(p.index, LX.hsb(hue, 95, brightnessParam.getValuef()));  
       }
-        
     }
-    
   }
-  
-  public void initBalls() {   
+
+  public void initBalls() {
     int ball_count = num_balls.getValuei();
     if (this.balls.size() == ball_count) {
       return;
     }
 
     removeLayer(this.blurLayer);
-    
+
     if (this.balls.size() < ball_count) {
       for (int i = 0; i < (ball_count - this.balls.size()); i++) {
         LEDomeAudioParameter radParam = ballRadii[(this.balls.size() % ballRadii.length)];
@@ -2597,7 +2595,7 @@ public class DarkBalls extends LEDomePattern {
         this.balls.remove(i);
       }
     }
-    
+
     addLayer(this.blurLayer);
   }
 }
@@ -2628,30 +2626,30 @@ public class Marbles extends LEDomePattern {
   
   public Marbles(LX lx) {
     super(lx);    
-    
+
     addParameter(num_balls);
     //addParameter(gravityParam);
     //addParameter(velocityParam);
-    
+
     for(LEDomeAudioParameter radParam : ballRadii) {
       radParam.setModulationRange(1.0);
       addParameter(radParam);
     }
-    
+
     for(LEDomeAudioParameter ballSpeed : ballSpeeds) {
       ballSpeed.setModulationRange(1.0);
       addParameter(ballSpeed);
     }
-    
-    initBalls();    
+
+    initBalls();
   }
-  
+
   public void run(double deltaMs) {
     initBalls();
     setColors(LX.hsb(0, 0, 0));
   }
-  
-  public void initBalls() {   
+
+  public void initBalls() { 
     int ball_count = num_balls.getValuei();
     if (this.balls.size() == ball_count) {
       return;
@@ -2691,4 +2689,40 @@ public class Marbles extends LEDomePattern {
     
     addLayer(this.blurLayer);
   }
+}
+
+public class SunriseSunsetStargaze extends LEDomePattern {
+  private BoundedParameter dayTime =  new BoundedParameter("DAYT", 48000, 12000, 360000);
+  SawLFO sunPosition = new SawLFO(0, TWO_PI, dayTime);
+  private LEDomeAudioParameterFull sunRadius = new LEDomeAudioParameterFull("RAD", 2, 2, 9);
+  private BoundedParameter maxBrightness = new BoundedParameter("BRIG", 80, 30, 95); 
+  private BoundedParameter numStarsParam = new BoundedParameter("STAR", 40, 10, 90);
+  private BoundedParameter meteorRateParam = new BoundedParameter("MET", 6, 1, 20);
+  
+  private LEDomeAudioClapGate clapGate = new LEDomeAudioClapGate("XCLAP", lx);
+
+  private NightLayer nightLayer = new NightLayer(lx, maxBrightness, numStarsParam, meteorRateParam, clapGate.gate);  
+  private DayLayer dayLayer = new DayLayer(lx, sunPosition, sunRadius, maxBrightness);
+
+  private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.2);
+  private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
+
+  public SunriseSunsetStargaze(LX lx) {
+    super(lx);
+    addParameter(dayTime);    
+    addParameter(maxBrightness);
+    addParameter(numStarsParam);
+    
+    sunRadius.setModulationRange(.5);
+    addParameter(sunRadius);
+
+    addModulator(sunPosition).start();
+    addModulator(clapGate).start();
+
+    addLayer(nightLayer);
+    addLayer(dayLayer);
+    addLayer(blurLayer);
+  }
+
+  public void run(double deltaMs) {}
 }
