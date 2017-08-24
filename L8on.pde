@@ -1,4 +1,4 @@
-public class ShadyWaffle extends LEDomePattern { //<>//
+public class ShadyWaffle extends LEDomePattern { //<>// //<>// //<>//
   private int PINK = LX.hsb(330, 59, 50);
 
   private int[] PINK_EDGES = {
@@ -2725,4 +2725,67 @@ public class SunriseSunsetStargaze extends LEDomePattern {
   }
 
   public void run(double deltaMs) {}
+}
+
+public class SpinEQ extends LEDomePattern {
+  private GraphicMeter meter;
+  private BandGate bandGate = new BandGate(lx);  
+  private BoundedParameter spinPeriod = new BoundedParameter("SPIN", 60 * SECONDS, 10 * SECONDS, 300 * SECONDS);
+  private LXModulator originAzimuth = new SinLFO(0, TWO_PI, spinPeriod);
+ 
+  private BoundedParameter brightnessParam = new BoundedParameter("BRIG", 60, 10, 100);
+
+  private BoundedParameter blurParameter = new BoundedParameter("BLUR", 0.69);
+  private BlurLayer blurLayer = new BlurLayer(lx, this, blurParameter);
+  private LXModulator huePeriod = new SinLFO(10000, 20000, 60000);
+  private LXModulator hueModulator = new SinLFO(0, 360, huePeriod);
+
+  private final double GAIN = 6;
+
+  public SpinEQ(LX lx) {
+    super(lx);
+    this.meter = bandGate.meter;
+    
+    addParameter(spinPeriod);        
+    addParameter(brightnessParam);
+    addParameter(blurParameter);
+    addLayer(blurLayer);
+
+    addModulator(originAzimuth).start();
+    addModulator(huePeriod).start();
+    addModulator(hueModulator).start();
+
+    bandGate.gain.setValue(GAIN);
+    addModulator(bandGate).start();
+  }
+
+  public void run(double deltaMs) {   
+    for (LXPoint p : model.points) {
+      double azimuthNormal = this.getAzimuthNormal(p.azimuth);
+      double bandNormal = this.bandGate.getBand(this.getBandIndex(azimuthNormal));
+      double minYn = 0.5 - (0.5 * bandNormal);
+      double maxYn = 0.5 + (0.5 * bandNormal);
+      
+      if (minYn <= p.yn && p.yn <= maxYn) {
+        double hue = ((hueModulator.getValuef() + ((p.yn - minYn) * 360.0)) + (360 * azimuthNormal)) % 360.0;
+        setColor(p.index, LX.hsb((float)hue, 100, brightnessParam.getValuef()));
+      } else {
+        setColor(p.index, LX.hsb(120, 0, 1));
+      }
+    }
+  }
+
+  private int getBandIndex(double azimuthNormal) {
+    double bandIndex = LXUtils.constrain(azimuthNormal * this.meter.numBands, 0.0, this.meter.numBands - 1);
+    return (int)bandIndex;  
+  }
+  
+  private double getAzimuthNormal(double azimuth){
+    double projectedAzimuth = this.projectAzimuth(azimuth);    
+    return LXUtils.constrain(projectedAzimuth / LX.TWO_PI, 0.0, 1);
+  }
+
+  private double projectAzimuth(double azimuth) {
+    return (azimuth - originAzimuth.getValuef() + LX.TWO_PI) % LX.TWO_PI;
+  }
 }
