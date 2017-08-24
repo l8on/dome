@@ -103,13 +103,14 @@ LXPattern[] patterns(P3LX lx) {
     new DarkBalls(lx),
     new SurroundWave(lx),
     new ThunderStorm(lx),
+    new SpinEQ(lx),
     new SunriseSunsetRainbow(lx),
     new SunriseSunsetReal(lx),
     new SunriseSunsetStargaze(lx),
-    
+
     // Cackler
     new Stargaze(lx),
-    new ColorSpiral(lx),    
+    new ColorSpiral(lx),
     new Rings(lx),
 
     // Kristján
@@ -117,7 +118,7 @@ LXPattern[] patterns(P3LX lx) {
 
     // pld
     new Spiral(lx),
-    
+
     // rohan
     //new Sunshine(lx),
     //new SunshineHalf(lx),
